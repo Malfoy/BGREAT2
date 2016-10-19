@@ -109,7 +109,7 @@ int main(int argc, char ** argv){
 		}
 	}
 	 if(reads!=""){
-               	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,incomplete,fastq,pathOption,correctionMode,effort,dogMode,true,true);
+               	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,incomplete,fastq,pathOption,correctionMode,effort,dogMode,false,true);
                	supervisor.indexUnitigs();
 				// supervisor.knowNeighbour();
                	supervisor.alignAll(!brute,reads);
