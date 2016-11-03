@@ -421,7 +421,7 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 		string unitig(getUnitig(numbers[i])),inter(compactionEndNoRC(path, unitig, k-1));
 		if(inter.empty()){
 			cout<<i<<endl;
-			cout<<"bug compaction"<<endl;
+			cout<<"bug compaction super reads"<<endl;
 			cin.get();
 			return {};
 		}else{
