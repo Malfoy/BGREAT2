@@ -420,34 +420,30 @@ void Aligner::alignPartGreedy(){
 			read2=multiread[i+1].second;
 			++readNumber;
 			bool rc(false),noOverlap(false);
-			if(pathOption){
-				path=alignReadGreedyPath(read,overlapFound,errorsMax,rc);
-			}else{
-				if(dogMode){
-					bool best(true);//TODO MAKE PARAMETER
-					if(best){
-						uint errors(0);
-						path={};
-						//~ cout<<"salut"<<endl;
-						while(path.empty() and errors<=errorsMax and noOverlap==false){
-							rc=overlapFound=false;
-							path=alignReadGreedyAnchors(read,overlapFound,errors,rc,noOverlap);
-							++errors;
-						}
-						errors=(0);
-						path2={};
-						while(path2.empty() and errors<=errorsMax and noOverlap==false){
-							rc=overlapFound=false;
-							path2=alignReadGreedyAnchors(read2,overlapFound,errors,rc,noOverlap);
-							++errors;
-						}
-					}else{
+			if(dogMode){
+				bool best(true);//TODO MAKE PARAMETER
+				if(best){
+					uint errors(0);
+					path={};
+					//~ cout<<"salut"<<endl;
+					while(path.empty() and errors<=errorsMax and noOverlap==false){
 						rc=overlapFound=false;
-						path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
+						path=alignReadGreedyAnchors(read,overlapFound,errors,rc,noOverlap);
+						++errors;
+					}
+					errors=(0);
+					path2={};
+					while(path2.empty() and errors<=errorsMax and noOverlap==false){
+						rc=overlapFound=false;
+						path2=alignReadGreedyAnchors(read2,overlapFound,errors,rc,noOverlap);
+						++errors;
 					}
 				}else{
-					path=alignReadGreedy(read,overlapFound,errorsMax,rc);
+					rc=overlapFound=false;
+					path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
 				}
+			}else{
+				path=alignReadGreedy(read,overlapFound,errorsMax,rc);
 			}
 			pair<string,string> superpath(recoverSuperReadsPaired(path,path2));
 			if(superpath.first!=""){

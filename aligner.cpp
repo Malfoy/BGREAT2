@@ -24,7 +24,6 @@
 
 #include "aligner.h"
 #include "utils.h"
-#include "alignerPaths.cpp"
 #include "alignerExhaustive.cpp"
 #include "alignerGreedy.cpp"
 #include <thread>
@@ -905,7 +904,7 @@ void Aligner::indexUnitigs(){
 
 
 void Aligner::alignAll(bool greedy, const string& reads){
-	startChrono=chrono::system_clock::now();
+	auto startChrono=chrono::system_clock::now();
 	uint last(0);
 	string file;
 	for(uint i(0);i<reads.size();++i){

@@ -62,7 +62,6 @@ struct unitigIndicesVector{
 
 class Aligner{
 public:
-	bool partial,fastq,pathOption,dogMode;
 	ifstream unitigFile, readFile;
 	ofstream pathFile, noOverlapFile, notMappedFile;
 	FILE * pathFilef;
@@ -73,45 +72,33 @@ public:
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
 	vector<kmer> anchorsChecking;
 	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps,iter;
-	uint k;
-	vector<string> unitigs;
-	vector<string> unitigsRC;
+	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdate;
-	uint coreNumber;
-	uint gammaFactor;
-	uint errorsMax,tryNumber,fracKmer;
-	mutex unitigMutex,unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
-	string unitigFileName,pathToWrite;
-	chrono::system_clock::time_point startChrono;
-	bool fullMemory,correctionMode,vectorMode,rcMode;
+	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k;
+	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
+	string unitigFileName, pathToWrite;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, unsigned char cores,unsigned int errorsAllowed, bool bpartial,bool bfastq,bool bpath,bool bcorrectionMode,uint effort,bool mode, bool vectorModeBool, bool rcModeBool){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool){
 		unitigFileName=Unitigs;
 		vectorMode=vectorModeBool;
 		rcMode=rcModeBool;
-		dogMode=mode;
+		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
-		// pathFile.open(paths);
 		pathFilef=fopen(paths.c_str(),"wb");
 		notMappedFilef=fopen(notMapped.c_str(),"wb");
-		// noOverlapFile.open(noOverlaps);
-		// notMappedFile.open(notMapped);
-		// notMappedFile.open(notMapped,ios::binary);
 		k=kValue;
 		coreNumber=cores;
 		errorsMax=errorsAllowed;
 		tryNumber=effort;
 		gammaFactor=10;
-		fracKmer=1;
-		fullMemory=true;
+		fracKmer=dogModeInt;
 		correctionMode=bcorrectionMode;
-		partial=bpartial;
 		fastq=bfastq;
 		alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
 		offsetUpdate=1;
 		offsetUpdate<<=(2*(k-1));
 		iter=1;
-		pathOption=bpath;
 	}
 
 	void indexUnitigs();

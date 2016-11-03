@@ -54,77 +54,77 @@ using namespace std;
 int main(int argc, char ** argv){
 	// initRc();
 	string reads;
+	string pairedReads;
 	string unitigs("unitig.fa");
 	string pathFile("paths");
-	string noOverlapFile("noOverlap.fa");
 	string notAlignedFile("notAligned.fa");
 	int errors(2);
 	int threads(1);
 	int ka(30);
 	int c;
 	int effort(2);
-	bool brute(false),incomplete(false),fastq(false),pathOption(false),correctionMode(false),dogMode(false);
-	while ((c = getopt (argc, argv, "r:k:g:m:t:e:f:o:a:biqpcG")) != -1){
+	bool brute(false),fastq(false),correctionMode(false);
+	uint dogMode(1);
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqc")) != -1){
 	switch(c){
-		case 'r':
+		case 'u':
 			reads=optarg;
 			break;
-			case 'k':
-				ka=stoi(optarg);
+		case 'x':
+			pairedReads=optarg;
 			break;
-			case 'g':
-				unitigs=(optarg);
+		case 'k':
+			ka=stoi(optarg);
 			break;
-			case 'm':
-				errors=stoi(optarg);
+		case 'g':
+			unitigs=(optarg);
 			break;
-			case 't':
-				threads=stoi(optarg);
+		case 'm':
+			errors=stoi(optarg);
 			break;
-			case 'e':
-				effort=stoi(optarg);
+		case 't':
+			threads=stoi(optarg);
 			break;
-			case 'f':
-				pathFile=(optarg);
+		case 'e':
+			effort=stoi(optarg);
 			break;
-			case 'a':
-				notAlignedFile=(optarg);
+		case 'f':
+			pathFile=(optarg);
 			break;
-			case 'b':
-				brute=(true);
+		case 'a':
+			notAlignedFile=(optarg);
 			break;
-			case 'i':
-				incomplete=(true);
+		case 'b':
+			brute=(true);
 			break;
-			case 'q':
-				fastq=(true);
+		case 'q':
+			fastq=(true);
 			break;
-			case 'G':
-				dogMode=(true);
+		case 'i':
+			dogMode=stoi(optarg);
 			break;
-			case 'c':
-				correctionMode=true;
-				// pathFile="corrected.fa";
+		case 'c':
+			correctionMode=true;
 			break;
 		}
 	}
-	 if(reads!=""){
-               	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,incomplete,fastq,pathOption,correctionMode,effort,dogMode,false,true);
-               	supervisor.indexUnitigs();
-				// supervisor.knowNeighbour();
-               	supervisor.alignAll(!brute,reads);
-       	}else{
-				cout<<"-r read_file"<<endl
-				<<"-k k_value (30)"<<endl
-              	<<"-g unitig_file (unitig.dot)"<<endl
-              	<<"-m n_missmatch (2)"<<endl
-              	<<"-t n_thread (1)"<<endl
-				<<"-e effort put in mapping (2)"<<endl
-              	<<"-f path_file (paths)"<<endl
-              	<<"-a not_aligned_file (notAligned.fa)"<<endl
-              	<<"-p to align on paths instead of walks"<<endl
-              	<<"-q for fastq read file"<<endl
-				<<"-c to output corrected reads"<<endl;
-
-        }
+	if(reads!=""){
+		Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,false,true);
+		supervisor.indexUnitigs();
+		// supervisor.knowNeighbour();
+		supervisor.alignAll(not brute,reads);
+	}else{
+		cout
+		<<"-u read file (unpaired)"<<endl
+		<<"-x read file (paired)"<<endl
+		<<"-k k value (30)"<<endl
+		<<"-g unitig file (unitig.fa)"<<endl
+		<<"-m number of missmatch allowed (2)"<<endl
+		<<"-t number of thread (1)"<<endl
+		<<"-e effort put in mapping (2)"<<endl
+		<<"-f path file (paths)"<<endl
+		<<"-a not aligned file (notAligned.fa)"<<endl
+		<<"-q for fastq read file"<<endl
+		<<"-c to output corrected reads"<<endl;
+	}
 }

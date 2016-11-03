@@ -219,7 +219,7 @@ uint Aligner::checkEndExhaustive(const string& read, const  pair<kmer, uint>& ov
 	uint minMiss(errors+1),indiceMinMiss(9);
 	bool ended(false);
 	int offset(-2);
-	if(partial & rangeUnitigs.empty()){
+	if(rangeUnitigs.empty()){
 		//if(!path.empty()){
 			return 0;
 		//}
@@ -279,11 +279,7 @@ void Aligner::alignPartExhaustive(){
 			header=multiread[i].first;
 			read=multiread[i].second;
 			overlapFound=false;
-			if(pathOption){
-				path=alignReadExhaustivePath(read,overlapFound,errorsMax);
-			}else{
-				path=alignReadExhaustive(read,overlapFound,errorsMax);
-			}
+			path=alignReadExhaustive(read,overlapFound,errorsMax);
 			if(path.size()!=0){
 				pathMutex.lock();
 				{
@@ -307,17 +303,6 @@ void Aligner::alignPartExhaustive(){
 					notMappedMutex.unlock();
 				}
 			}
-		}
-		if(iter++%10==0){
-			cout<<"Read : "<<readNumber<<endl;
-			cout<<"No Overlap : "<<noOverlapRead<<" Percent : "<<(100*float(noOverlapRead))/readNumber<<endl;
-			cout<<"Got Overlap : "<<alignedRead+notAligned<<" Percent : "<<(100*float(alignedRead+notAligned))/readNumber<<endl;
-			cout<<"Overlap and Aligned : "<<alignedRead<<" Percent : "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
-			cout<<"Overlap but no aligne: "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
-			auto end=chrono::system_clock::now();auto waitedFor=end-startChrono;
-			cout<<"Reads/seconds : "<<readNumber/(chrono::duration_cast<chrono::seconds>(waitedFor).count()+1)<<endl;
-			cout<<"Overlap per reads : "<<(overlaps)/(alignedRead+notAligned)<<endl;
-			cout<<endl;
 		}
 	}
 }
