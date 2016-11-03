@@ -404,81 +404,108 @@ void Aligner::alignPartGreedy(){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
 	string read,read2,header,header2,corrected;
-	bool overlapFound(false);
 	while(!readFile.eof()){
 		readMutex.lock();
-		{
-			getReads(multiread,10000);
-		}
+		getReads(multiread,10000);
 		readMutex.unlock();
-		//~ cout<<"read read lololol"<<endl;
-		for(uint i(0);i<multiread.size();i+=2){
-			overlapFound=false;
-			header=multiread[i].first;
-			read=multiread[i].second;
-			header2=multiread[i+1].first;
-			read2=multiread[i+1].second;
-			++readNumber;
-			bool rc(false),noOverlap(false);
-			if(dogMode){
-				bool best(true);//TODO MAKE PARAMETER
-				if(best){
+		if(pairedMode){
+			for(uint i(0);i<multiread.size();i+=2){
+				header=multiread[i].first;
+				read=multiread[i].second;
+				header2=multiread[i+1].first;
+				read2=multiread[i+1].second;
+				++readNumber;
+				bool rc(false), noOverlap(false), overlapFound(false);
+				if(dogMode){
+					bool best(true);//TODO MAKE PARAMETER
 					uint errors(0);
-					path={};
-					//~ cout<<"salut"<<endl;
-					while(path.empty() and errors<=errorsMax and noOverlap==false){
+					if(best){
+						path={};
+						while(path.empty() and errors<=errorsMax and noOverlap==false){
+							rc=overlapFound=false;
+							path=alignReadGreedyAnchors(read,overlapFound,errors,rc,noOverlap);
+							++errors;
+						}
+						errors=(0);
+						path2={};
+						while(path2.empty() and errors<=errorsMax and noOverlap==false){
+							rc=overlapFound=false;
+							path2=alignReadGreedyAnchors(read2,overlapFound,errors,rc,noOverlap);
+							++errors;
+						}
+					}else{
+						path=path2={};
+						path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
 						rc=overlapFound=false;
-						path=alignReadGreedyAnchors(read,overlapFound,errors,rc,noOverlap);
-						++errors;
-					}
-					errors=(0);
-					path2={};
-					while(path2.empty() and errors<=errorsMax and noOverlap==false){
-						rc=overlapFound=false;
-						path2=alignReadGreedyAnchors(read2,overlapFound,errors,rc,noOverlap);
-						++errors;
+						path2=alignReadGreedyAnchors(read2,overlapFound,errorsMax,rc,noOverlap);
 					}
 				}else{
+					path=path2={};
+					path=alignReadGreedy(read,overlapFound,errorsMax,rc);
 					rc=overlapFound=false;
-					path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
+					path2=alignReadGreedy(read2,overlapFound,errorsMax,rc);
 				}
-			}else{
-				path=alignReadGreedy(read,overlapFound,errorsMax,rc);
+				pair<string,string> superpath(recoverSuperReadsPaired(path,path2));
+				if(superpath.first!=""){
+					if(superpath.second==""){
+						header+='\n'+superpath.first+'\n';
+						pathMutex.lock();
+						{
+							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
+						}
+						pathMutex.unlock();
+					}else{
+						header+='\n'+superpath.first+'\n';
+						header2+='\n'+superpath.second+'\n';
+						pathMutex.lock();
+						{
+							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
+							fwrite((header2).c_str(), sizeof(char), header2.size(), pathFilef);
+						}
+						pathMutex.unlock();
+					}
+				}else{
+					if(superpath.second!=""){
+						header2+='\n'+superpath.second+'\n';
+						pathMutex.lock();
+						{
+							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
+						}
+						pathMutex.unlock();
+					}else{
+					}
+				}
 			}
-			pair<string,string> superpath(recoverSuperReadsPaired(path,path2));
-			if(superpath.first!=""){
-				//~ alignedRead++;
-				if(superpath.second==""){
-					//~ notAligned++;
-					header+='\n'+superpath.first+'\n';
-					pathMutex.lock();
-					{
-						fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
+		}else{
+			for(uint i(0);i<multiread.size();i+=2){
+				header=multiread[i].first;
+				read=multiread[i].second;
+				++readNumber;
+				bool rc(false), noOverlap(false), overlapFound(false);
+				if(dogMode){
+					bool best(true);//TODO MAKE PARAMETER
+					if(best){
+						uint errors(0);
+						path={};
+						while(path.empty() and errors<=errorsMax and noOverlap==false){
+							rc=overlapFound=false;
+							path=alignReadGreedyAnchors(read,overlapFound,errors,rc,noOverlap);
+							++errors;
+						}
+					}else{
+						path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
 					}
-					pathMutex.unlock();
 				}else{
-					//~ alignedRead++;
-					header+='\n'+superpath.first+'\n';
-					header2+='\n'+superpath.second+'\n';
-					pathMutex.lock();
-					{
-						fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
-						fwrite((header2).c_str(), sizeof(char), header2.size(), pathFilef);
-					}
-					pathMutex.unlock();
+					path=alignReadGreedy(read,overlapFound,errorsMax,rc);
 				}
-			}else{
-				//~ notAligned++;
-				if(superpath.second!=""){
-					//~ alignedRead++;
-					header2+='\n'+superpath.second+'\n';
+				string superpath(recoverSuperReads(path));
+				if(superpath!=""){
+					header+='\n'+superpath+'\n';
 					pathMutex.lock();
 					{
 						fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
 					}
 					pathMutex.unlock();
-				}else{
-					//~ notAligned++;
 				}
 			}
 		}

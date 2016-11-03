@@ -53,18 +53,9 @@ using namespace std;
 
 int main(int argc, char ** argv){
 	// initRc();
-	string reads;
-	string pairedReads;
-	string unitigs("unitig.fa");
-	string pathFile("paths");
-	string notAlignedFile("notAligned.fa");
-	int errors(2);
-	int threads(1);
-	int ka(30);
-	int c;
-	int effort(2);
+	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
+	int errors(2), threads(1), ka(30), c, effort(2),dogMode(1);
 	bool brute(false),fastq(false),correctionMode(false);
-	uint dogMode(1);
 	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqc")) != -1){
 	switch(c){
 		case 'u':
@@ -108,12 +99,7 @@ int main(int argc, char ** argv){
 			break;
 		}
 	}
-	if(reads!=""){
-		Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,false,true);
-		supervisor.indexUnitigs();
-		// supervisor.knowNeighbour();
-		supervisor.alignAll(not brute,reads);
-	}else{
+	if(reads=="" and pairedReads==""){
 		cout
 		<<"-u read file (unpaired)"<<endl
 		<<"-x read file (paired)"<<endl
@@ -126,5 +112,15 @@ int main(int argc, char ** argv){
 		<<"-a not aligned file (notAligned.fa)"<<endl
 		<<"-q for fastq read file"<<endl
 		<<"-c to output corrected reads"<<endl;
+		return 0;
 	}
+	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,false,true);
+	supervisor.indexUnitigs();
+	if(reads!=""){
+		supervisor.alignAll(not brute,reads,false);
+	}
+	if(pairedReads!=""){
+		supervisor.alignAll(not brute,pairedReads,true);
+	}
+	return 0;
 }

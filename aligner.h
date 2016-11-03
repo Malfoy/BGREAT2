@@ -77,7 +77,7 @@ public:
 	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool){
 		unitigFileName=Unitigs;
@@ -102,7 +102,7 @@ public:
 	}
 
 	void indexUnitigs();
-	void alignAll(bool, const string&);
+	void alignAll(bool, const string&,bool);
 	void alignPartGreedy();
 	void alignPartExhaustive();
 	void indexUnitigsAux();

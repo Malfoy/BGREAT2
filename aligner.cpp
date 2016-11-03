@@ -903,7 +903,8 @@ void Aligner::indexUnitigs(){
 
 
 
-void Aligner::alignAll(bool greedy, const string& reads){
+void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
+	pairedMode=boolPaired;
 	auto startChrono=chrono::system_clock::now();
 	uint last(0);
 	string file;
@@ -944,7 +945,6 @@ void Aligner::alignAll(bool greedy, const string& reads){
 	cout<<"The End"<<endl;
 	cout<<"Reads : "<<readNumber<<endl;
 	cout<<"No overlap : "<<noOverlapRead<<" Percent : "<<(100*float(noOverlapRead))/readNumber<<endl;
-	//~ cout<<"Got overlap : "<<alignedRead+notAligned<<" Percent : "<<(100*float(alignedRead+notAligned))/readNumber<<endl;
 	cout<<"Overlap and aligned : "<<alignedRead<<" Percent : "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
 	cout<<"Overlap but not aligned : "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
 	auto end=chrono::system_clock::now();auto waitedFor=end-startChrono;
