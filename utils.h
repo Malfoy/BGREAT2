@@ -19,8 +19,12 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
+
+
+
 #ifndef BGREAT_UTILS
 #define BGREAT_UTILS
+
 
 
 #define uNumber int32_t
@@ -28,7 +32,9 @@
 #define kmer __uint128_t
 
 
+
 using namespace std;
+
 
 
 struct overlapStruct{
@@ -39,7 +45,9 @@ struct overlapStruct{
 };
 
 
+
 static char char2int[85];
+
 
 
 uint64_t transform_to_size_t(__uint128_t& n);
@@ -57,7 +65,6 @@ kmer rcb(kmer min,uint n);
 string reverseComplements(const string& s);
 string getRepresent(const string& s);
 void initRc();
-
 
 
 

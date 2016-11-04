@@ -116,6 +116,7 @@ int main(int argc, char ** argv){
 	}
 	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,false,true);
 	supervisor.indexUnitigs();
+	cout<<"go"<<endl;
 	if(reads!=""){
 		supervisor.alignAll(not brute,reads,false);
 	}

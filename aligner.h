@@ -21,8 +21,11 @@
 *****************************************************************************/
 
 
+
 #ifndef __BGREAT__Aligner__
 #define __BGREAT__Aligner__
+
+
 
 #include <stdio.h>
 #include <fstream>
@@ -34,17 +37,41 @@
 #include "BooPHF.h"
 
 
+
 using namespace std;
+
+
+
+class Custom_string_Hasher
+{
+public:
+	// the class should have operator () with this signature :
+	uint64_t operator ()   (std::string key, uint64_t seed=0) const
+	{
+		uint64_t hash  =  hash_fn(key);
+		hash ^= seed;
+		return hash;
+	}
+     std::hash<std::string> hash_fn;
+};
+
+
+//then tell BBhash to use this custom hash : (also appears below, line 104)
+typedef boomphf::mphf<  std::string, Custom_string_Hasher  > MPHFSTR;
+
+
 
 
 typedef boomphf::SingleHashFunctor<kmer>  hasher;
 typedef boomphf::mphf<  kmer, hasher  > MPHF;
 
 
+
 namespace std { template <> struct hash<__uint128_t> {
 	typedef __uint128_t argument_type;
 	typedef uint64_t result_type; uint64_t operator()(__uint128_t key) const { return transform_to_size_t(key); } };
 }
+
 
 struct unitigIndices{
 	kmer overlap;
@@ -54,10 +81,23 @@ struct unitigIndices{
 	uint32_t indice4;
 };
 
+
+
+struct unitigIndicesstr{
+	string overlap;
+	uint32_t indice1;
+	uint32_t indice2;
+	uint32_t indice3;
+	uint32_t indice4;
+};
+
+
+
 struct unitigIndicesVector{
 	kmer overlap;
 	vector<uNumber> vec;
 };
+
 
 
 class Aligner{
@@ -67,17 +107,20 @@ public:
 	FILE * pathFilef;
 	FILE * notMappedFilef;
 	MPHF leftMPHF,rightMPHF,anchorsMPHF;
+	MPHFSTR leftMPHFstr,rightMPHFstr,anchorsMPHFstr;
 	vector<unitigIndices> leftIndices,rightIndices;
+	vector<unitigIndicesstr> leftIndicesstr,rightIndicesstr;
 	vector<unitigIndicesVector> leftIndicesV,rightIndicesV;
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
 	vector<kmer> anchorsChecking;
+	vector<string> anchorsCheckingstr;
 	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps,iter;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdate;
 	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool){
 		unitigFileName=Unitigs;
@@ -88,6 +131,11 @@ public:
 		pathFilef=fopen(paths.c_str(),"wb");
 		notMappedFilef=fopen(notMapped.c_str(),"wb");
 		k=kValue;
+		if(k>63){
+			stringMode=true;
+		}else{
+			stringMode=false;
+		}
 		coreNumber=cores;
 		errorsMax=errorsAllowed;
 		tryNumber=effort;
@@ -179,7 +227,18 @@ public:
 	void fillIndicesVector();
 	vector<pair<string,uNumber>> getBeginV(kmer bin);
 	vector<pair<string,uNumber>> getEndV(kmer bin);
-
+	void indexUnitigsAuxStr();
+	void fillIndicesstr();
+	vector<pair<pair<uint,uint>,uint>> getNAnchorsstr(const string& read,uint n);
+	vector<pair<string,uNumber>> getBegin(string bin);
+	vector<pair<string,uNumber>> getEnd(string bin);
+	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, bool& overlapFound, uint errorMax, bool& rc, bool& noOverlap);
+	uint checkBeginGreedy(const string& read,const pair<string, uint>& overlap, vector<uNumber>& path, uint errors);
+	uint checkEndGreedy(const string& read,const pair<string, uint>& overlap, vector<uNumber>& path, uint errors);
+	uint mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors);
+	uint mapOnRightEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors);
 };
+
+
 
 #endif /* defined(__BGREAT__Aligner__) */
