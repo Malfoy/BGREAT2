@@ -622,6 +622,7 @@ bool Aligner::isNeighboor(const uint number1, const uint number2){
 
 
 pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec, vector<uNumber>& vec2){
+	//If one is empty return one read
 	if(vec.size()<=0){
 		if(vec2.size()<=0){
 			return {"",""};
@@ -641,7 +642,7 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
 		return{recoverSuperReads(numbers),recoverSuperReads(numbers2)};
 	}
-
+	//if they overlap
 	vector<uNumber> numbers(getcleanPaths(vec,false,true));
 	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
 	for(uint i(0);i<numbers.size();++i){
@@ -655,15 +656,20 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		}
 		if(overlap){
 			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			++superReads;
 			return{recoverSuperReads(numbers),""};
 		}
 	}
+	//it they do not overlap but can be compacted
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		++superReads;
 		return{recoverSuperReads(numbers),""};
 	}
+	//reverse complement
 	numbers=getcleanPaths(numbers,true,false);
 	numbers2=getcleanPaths(numbers2,true,false);
+	//overlaps
 	for(uint i(0);i<numbers.size();++i){
 		bool overlap(true);
 		uint j(0);
@@ -675,11 +681,14 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		}
 		if(overlap){
 			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			++superReads;
 			return{recoverSuperReads(numbers),""};
 		}
 	}
+	//compaction
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		++superReads;
 		return{recoverSuperReads(numbers),""};
 	}
 	return{recoverSuperReads(numbers),recoverSuperReads(numbers2)};
@@ -1096,7 +1105,6 @@ void Aligner::fillIndices(){
 
 
 void Aligner::fillIndicesstr(){
-	cout<<"begfill"<<endl;
 	string line;
 	unitigIndicesstr indices;
 	for(uint i(1);i<unitigs.size();++i){
@@ -1173,7 +1181,6 @@ void Aligner::fillIndicesstr(){
 			leftIndicesstr[leftMPHFstr.lookup(rcEnd)]=indices;
 		}
 	}
-	cout<<"endfill"<<endl;
 }
 
 
@@ -1292,6 +1299,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	auto end=chrono::system_clock::now();auto waitedFor=end-startChrono;
 	cout<<"Reads/seconds : "<<readNumber/(chrono::duration_cast<chrono::seconds>(waitedFor).count()+1)<<endl;
 	cout<<"Mapping in seconds : "<<(chrono::duration_cast<chrono::seconds>(waitedFor).count())<<endl;
+	cout<<"Super reads : "<<superReads<<endl;
 }
 
 

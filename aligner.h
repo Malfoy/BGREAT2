@@ -114,7 +114,7 @@ public:
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
 	vector<kmer> anchorsChecking;
 	vector<string> anchorsCheckingstr;
-	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps,iter;
+	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdate;
 	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k;
