@@ -12,7 +12,7 @@
  *  License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty ofF
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero General Public License for more details.
  *
@@ -569,9 +569,9 @@ string Aligner::recoverPath(vector<uNumber>& numbers,uint size){
 
 
 string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
-	//~ if(numbers.size()<=1){
-		//~ return "";
-	//~ }
+	if(numbers.size()<=1){
+		return "";
+	}
 	string path(getUnitig(numbers[0]));
 	for(uint i(1); i<numbers.size(); ++i){
 		string unitig(getUnitig(numbers[i])),inter(compactionEndNoRC(path, unitig, k-1));
