@@ -569,9 +569,9 @@ string Aligner::recoverPath(vector<uNumber>& numbers,uint size){
 
 
 string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
-	//if(numbers.size()<=1){
-	//	return "";
-	//}
+	if(numbers.size()<=1){
+		return "";
+	}
 	string path(getUnitig(numbers[0]));
 	for(uint i(1); i<numbers.size(); ++i){
 		string unitig(getUnitig(numbers[i])),inter(compactionEndNoRC(path, unitig, k-1));
