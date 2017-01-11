@@ -572,9 +572,9 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 	if(numbers.size()<=1){
 		return "";
 	}
-	string path(getUnitig(numbers[0]));
+	string path(getUnitig(numbers[0])),unitig,inter;
 	for(uint i(1); i<numbers.size(); ++i){
-		string unitig(getUnitig(numbers[i])),inter(compactionEndNoRC(path, unitig, k-1));
+		unitig=(getUnitig(numbers[i]));inter=(compactionEndNoRC(path, unitig, k-1));
 		if(inter.empty()){
 			cout<<i<<endl;
 			cout<<"bug compaction super reads"<<endl;
@@ -657,6 +657,7 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		if(overlap){
 			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
 			++superReads;
+			//~ if(numbers.size)
 			return{recoverSuperReads(numbers),""};
 		}
 	}
@@ -988,11 +989,11 @@ void Aligner::indexUnitigsAuxStr(){
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
 	auto data_iterator = boomphf::range(static_cast<const string*>(&((*leftOver)[0])), static_cast<const string*>((&(*leftOver)[0])+leftOver->size()));
-	leftMPHFstr= MPHFSTR(leftOver->size(),data_iterator,4,gammaFactor,false);
+	leftMPHFstr= MPHFSTR(leftOver->size(),data_iterator,coreNumber,gammaFactor,false);
 	leftsize=leftOver->size();
 	delete leftOver;
 	auto data_iterator2 = boomphf::range(static_cast<const string*>(&(*rightOver)[0]), static_cast<const string*>((&(*rightOver)[0])+rightOver->size()));
-	rightMPHFstr= MPHFSTR(rightOver->size(),data_iterator2,4,gammaFactor,false);
+	rightMPHFstr= MPHFSTR(rightOver->size(),data_iterator2,coreNumber,gammaFactor,false);
 	rightsize=rightOver->size();
 	delete rightOver;
 	if(dogMode){
@@ -1002,7 +1003,7 @@ void Aligner::indexUnitigsAuxStr(){
 			anchors->erase( unique( anchors->begin(), anchors->end() ), anchors->end() );
 		}
 		auto data_iterator3 = boomphf::range(static_cast<const string*>(&(*anchors)[0]), static_cast<const string*>((&(*anchors)[0])+anchors->size()));
-		anchorsMPHFstr= MPHFSTR(anchors->size(),data_iterator3,4,gammaFactor,false);
+		anchorsMPHFstr= MPHFSTR(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
 	anchorSize=anchors->size();
 	delete anchors;
@@ -1115,11 +1116,11 @@ void Aligner::fillIndices(){
 
 //TODO multihread
 void Aligner::fillIndicesstr(){
-	string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 	unitigIndicesstr indices;
 	uint i;
 	#pragma omp parallel for num_threads(coreNumber)
 	for(i=(1);i<unitigs.size();++i){
+		string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 		line=unitigs[i];
 		if(dogMode){
 			for(uint j(0);j+k<=line.size();++j){
@@ -1138,7 +1139,9 @@ void Aligner::fillIndicesstr(){
 			}
 		}
 	}
+	string line, seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 	for(i=(1);i<unitigs.size();++i){
+		line=unitigs[i];
 		beg=((line.substr(0,k-1)));
 		rcBeg=(reverseComplements(beg));
 		if(beg<=rcBeg){
