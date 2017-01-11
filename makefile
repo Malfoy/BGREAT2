@@ -1,8 +1,8 @@
 # CC=/usr/bin/g++
 CC=g++
 #~ CC=clang++
-CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors
-LDFLAGS=-flto -lpthread
+CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp
+LDFLAGS=-flto -lpthread -fopenmp
 
 
 ifeq ($(gprof),1)
