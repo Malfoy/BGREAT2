@@ -1117,7 +1117,9 @@ void Aligner::fillIndices(){
 void Aligner::fillIndicesstr(){
 	string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 	unitigIndicesstr indices;
-	for(uint i(1);i<unitigs.size();++i){
+	uint i;
+	#pragma omp parallel for num_threads(coreNumber)
+	for(i=(1);i<unitigs.size();++i){
 		line=unitigs[i];
 		if(dogMode){
 			for(uint j(0);j+k<=line.size();++j){
@@ -1135,6 +1137,8 @@ void Aligner::fillIndicesstr(){
 				}
 			}
 		}
+	}
+	for(i=(1);i<unitigs.size();++i){
 		beg=((line.substr(0,k-1)));
 		rcBeg=(reverseComplements(beg));
 		if(beg<=rcBeg){
