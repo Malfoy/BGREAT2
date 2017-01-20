@@ -143,7 +143,7 @@ public:
 		fracKmer=dogModeInt;
 		correctionMode=bcorrectionMode;
 		fastq=bfastq;
-		alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
+		superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
 		offsetUpdate=1;
 		offsetUpdate<<=(2*(k-1));
 		iter=1;

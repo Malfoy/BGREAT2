@@ -686,7 +686,7 @@ void Aligner::alignPartGreedy(){
 		getReads(multiread,10000);
 		readMutex.unlock();
 		if(pairedMode){
-			for(uint i(0);i<multiread.size();i+=2){
+			for(uint i(0);i+1<multiread.size();i+=2){
 				header=multiread[i].first;
 				read=multiread[i].second;
 				header2=multiread[i+1].first;

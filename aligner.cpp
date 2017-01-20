@@ -85,9 +85,9 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 						}
 					}
 					if(!fail){
-						if(read.size()>k){
+						//~ if(read.size()>k){
 							reads.push_back({header,read});
-						}
+						//~ }
 					}
 				}
 				read="";
@@ -106,9 +106,9 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 							}
 						}
 						if(!fail){
-							if(read.size()>k){
+							//~ if(read.size()>k){
 								reads.push_back({header,read});
-							}
+							//~ }
 						}
 					}
 					return;
