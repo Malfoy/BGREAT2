@@ -738,6 +738,7 @@ void Aligner::alignPartGreedy(){
 					rc=overlapFound=false;
 					path2=alignReadGreedy(read2,overlapFound,errorsMax,rc);
 				}
+
 				superpath=(recoverSuperReadsPaired(path,path2));
 				if(superpath.first!=""){
 					if(superpath.second==""){
@@ -748,7 +749,9 @@ void Aligner::alignPartGreedy(){
 						}
 						pathMutex.unlock();
 					}else{
-						header+='\n'+superpath.first+'\n'+'\n'+superpath.second+'\n';
+						//~ cout<<"lol"<<endl;
+						//~ cout<<header2<<endl;
+						header+='\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
 						pathMutex.lock();
 						{
 							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
@@ -760,7 +763,7 @@ void Aligner::alignPartGreedy(){
 						header2+='\n'+superpath.second+'\n';
 						pathMutex.lock();
 						{
-							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
+							fwrite((header2).c_str(), sizeof(char), header2.size(), pathFilef);
 						}
 						pathMutex.unlock();
 					}else{
