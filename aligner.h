@@ -222,6 +222,8 @@ public:
 	vector<pair<pair<uint,uint>,uint>> getNAnchors(const string& read,uint n);
 	string recoverSuperReads(const vector<uNumber>& numbers);
 	pair<string,string> recoverSuperReadsPaired( const vector<uNumber>& vec, vector<uNumber>& vec2);
+	string recoverSuperReadsNoStr(const vector<uNumber>& numbers);
+	pair<string,string> recoverSuperReadsPairedNoStr( const vector<uNumber>& vec, vector<uNumber>& vec2);
 	bool isNeighboor(const uint number1, const uint number2);
 	void fillIndices();
 	void fillIndicesVector();

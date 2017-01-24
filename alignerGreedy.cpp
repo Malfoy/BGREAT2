@@ -738,8 +738,11 @@ void Aligner::alignPartGreedy(){
 					rc=overlapFound=false;
 					path2=alignReadGreedy(read2,overlapFound,errorsMax,rc);
 				}
-
-				superpath=(recoverSuperReadsPaired(path,path2));
+				if(correctionMode){
+					superpath=(recoverSuperReadsPaired(path,path2));
+				}else{
+					superpath=(recoverSuperReadsPairedNoStr(path,path2));
+				}
 				if(superpath.first!=""){
 					if(superpath.second==""){
 						header+='\n'+superpath.first+'\n';
@@ -749,8 +752,6 @@ void Aligner::alignPartGreedy(){
 						}
 						pathMutex.unlock();
 					}else{
-						//~ cout<<"lol"<<endl;
-						//~ cout<<header2<<endl;
 						header+='\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
 						pathMutex.lock();
 						{
@@ -802,7 +803,11 @@ void Aligner::alignPartGreedy(){
 				}
 				if(not path.empty()){
 					path=vector<uNumber>(&path[1],&path[path.size()]);
-					superRead=(recoverSuperReads(path));
+					if(correctionMode){
+						superRead=(recoverSuperReads(path));
+					}else{
+						superRead=(recoverSuperReadsNoStr(path));
+					}
 					if(superRead!=""){
 						header+='\n'+superRead+'\n';
 						pathMutex.lock();

@@ -588,6 +588,19 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 
 
 
+string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers){
+	string path;
+	if(numbers.size()<=1){
+		return "";
+	}
+	for(uint i(1); i<numbers.size(); ++i){
+		path+=to_string(numbers[i])+";";
+	}
+	return path;
+}
+
+
+
 vector<uNumber> getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean){
 	vector<uNumber> res;
 	if(clean){
@@ -696,6 +709,82 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 	return{recoverSuperReads(numbers),recoverSuperReads(numbers2)};
 }
 
+
+
+pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>& vec, vector<uNumber>& vec2){
+	//If one is empty return one read
+	if(vec.size()<=0){
+		if(vec2.size()<=0){
+			return {"",""};
+		}else{
+			vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
+			return{recoverSuperReadsNoStr(numbers2),""};
+		}
+	}else{
+		if(vec2.size()<=0){
+			vector<uNumber> numbers(getcleanPaths(vec,false,true));
+			return{recoverSuperReadsNoStr(numbers),""};
+		}
+	}
+
+	if(false){//TODO PARAMETERS
+		vector<uNumber> numbers(getcleanPaths(vec,false,true));
+		vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
+		return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
+	}
+
+	//if they overlap
+	vector<uNumber> numbers(getcleanPaths(vec,false,true));
+	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
+	for(uint i(0);i<numbers.size();++i){
+		bool overlap(true);
+		uint j(0);
+		for(;j+i<numbers.size() and j<numbers2.size();++j){
+			if(numbers[i+j]!=numbers2[j]){
+				overlap=false;
+				break;
+			}
+		}
+		if(overlap){
+			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			++superReads;
+			return{recoverSuperReadsNoStr(numbers),""};
+		}
+	}
+
+	//it they do not overlap but can be compacted
+	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
+		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		++superReads;
+		return{recoverSuperReadsNoStr(numbers),""};
+	}
+	//reverse complement
+	numbers=getcleanPaths(numbers,true,false);
+	numbers2=getcleanPaths(numbers2,true,false);
+	//overlaps
+	for(uint i(0);i<numbers.size();++i){
+		bool overlap(true);
+		uint j(0);
+		for(;j+i<numbers.size() and j<numbers2.size();++j){
+			if(numbers[i+j]!=numbers2[j]){
+				overlap=false;
+				break;
+			}
+		}
+		if(overlap){
+			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			++superReads;
+			return{recoverSuperReadsNoStr(numbers),""};
+		}
+	}
+	//compaction
+	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
+		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		++superReads;
+		return{recoverSuperReadsNoStr(numbers),""};
+	}
+	return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
+}
 
 
 string Aligner::getUnitig(int position){
