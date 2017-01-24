@@ -106,7 +106,7 @@ int main(int argc, char ** argv){
 		<<"-k k value (30)"<<endl
 		<<"-g unitig file (unitig.fa)"<<endl
 		<<"-m number of missmatch allowed (2)"<<endl
-		<<"-t number of thread (1)"<<endl
+		<<"-t number of threads (1)"<<endl
 		<<"-e effort put in mapping (2)"<<endl
 		<<"-f path file (paths)"<<endl
 		<<"-a not aligned file (notAligned.fa)"<<endl
