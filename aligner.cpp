@@ -642,13 +642,14 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
 		return{recoverSuperReads(numbers),recoverSuperReads(numbers2)};
 	}
+
 	//if they overlap
 	vector<uNumber> numbers(getcleanPaths(vec,false,true));
 	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
 	for(uint i(0);i<numbers.size();++i){
 		bool overlap(true);
 		uint j(0);
-		for(;j+i<numbers.size();++j){
+		for(;j+i<numbers.size() and j<numbers2.size();++j){
 			if(numbers[i+j]!=numbers2[j]){
 				overlap=false;
 				break;
@@ -657,10 +658,10 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		if(overlap){
 			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
 			++superReads;
-			//~ if(numbers.size)
 			return{recoverSuperReads(numbers),""};
 		}
 	}
+
 	//it they do not overlap but can be compacted
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
