@@ -590,10 +590,10 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 
 string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers){
 	string path;
-	if(numbers.size()<=1){
+	if(numbers.size()<1){
 		return "";
 	}
-	for(uint i(1); i<numbers.size(); ++i){
+	for(uint i(0); i<numbers.size(); ++i){
 		path+=to_string(numbers[i])+";";
 	}
 	return path;
@@ -711,6 +711,31 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 
 
 
+bool Aligner::compactVectors( vector<uNumber>& numbers, vector<uNumber>& numbers2){
+	for(uint i(0);i<numbers.size();++i){
+		bool overlap(true);
+		uint j(0);
+		for(;j+i<numbers.size() and j<numbers2.size();++j){
+			if(numbers[i+j]!=numbers2[j]){
+				overlap=false;
+				break;
+			}
+		}
+		if(overlap){
+			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			numbers2={};
+			return true;
+		}
+	}
+	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
+		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		numbers2={};
+			return true;
+	}
+}
+
+
+
 pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>& vec, vector<uNumber>& vec2){
 	//If one is empty return one read
 	if(vec.size()<=0){
@@ -733,53 +758,30 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 		return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
 	}
 
-	//if they overlap
+
 	vector<uNumber> numbers(getcleanPaths(vec,false,true));
 	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
-	for(uint i(0);i<numbers.size();++i){
-		bool overlap(true);
-		uint j(0);
-		for(;j+i<numbers.size() and j<numbers2.size();++j){
-			if(numbers[i+j]!=numbers2[j]){
-				overlap=false;
-				break;
-			}
-		}
-		if(overlap){
-			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
-			++superReads;
-			return{recoverSuperReadsNoStr(numbers),""};
-		}
-	}
-
-	//it they do not overlap but can be compacted
-	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+	//if they overlap
+	if(compactVectors(numbers,numbers2)){
 		++superReads;
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
-	//reverse complement
-	numbers=getcleanPaths(numbers,true,false);
-	numbers2=getcleanPaths(numbers2,true,false);
-	//overlaps
-	for(uint i(0);i<numbers.size();++i){
-		bool overlap(true);
-		uint j(0);
-		for(;j+i<numbers.size() and j<numbers2.size();++j){
-			if(numbers[i+j]!=numbers2[j]){
-				overlap=false;
-				break;
-			}
-		}
-		if(overlap){
-			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
-			++superReads;
-			return{recoverSuperReadsNoStr(numbers),""};
-		}
+
+	//reverse complement of second
+	vector<uNumber>numbers2RC=getcleanPaths(numbers2,true,false);
+	if(compactVectors(numbers,numbers2RC)){
+		++superReads;
+		return{recoverSuperReadsNoStr(numbers),""};
 	}
-	//compaction
-	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+	//reversecomplement of first
+	vector<uNumber>numbersRC=getcleanPaths(numbers,true,false);
+	if(compactVectors(numbersRC,numbers2)){
+		++superReads;
+		return{recoverSuperReadsNoStr(numbers),""};
+	}
+
+	//RC OF BOTH ...
+	if(compactVectors(numbers2,numbers)){
 		++superReads;
 		return{recoverSuperReadsNoStr(numbers),""};
 	}

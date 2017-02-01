@@ -239,6 +239,7 @@ public:
 	uint checkEndGreedy(const string& read,const pair<string, uint>& overlap, vector<uNumber>& path, uint errors);
 	uint mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors);
 	uint mapOnRightEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors);
+	bool compactVectors( vector<uNumber>& numbers1, vector<uNumber>& numbers2);
 };
 
 
