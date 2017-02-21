@@ -650,12 +650,6 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 		}
 	}
 
-	if(false){//TODO PARAMETERS
-		vector<uNumber> numbers(getcleanPaths(vec,false,true));
-		vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
-		return{recoverSuperReads(numbers),recoverSuperReads(numbers2)};
-	}
-
 	//if they overlap
 	vector<uNumber> numbers(getcleanPaths(vec,false,true));
 	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
@@ -676,31 +670,6 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 	}
 
 	//it they do not overlap but can be compacted
-	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-		++superReads;
-		return{recoverSuperReads(numbers),""};
-	}
-	//reverse complement
-	numbers=getcleanPaths(numbers,true,false);
-	numbers2=getcleanPaths(numbers2,true,false);
-	//overlaps
-	for(uint i(0);i<numbers.size();++i){
-		bool overlap(true);
-		uint j(0);
-		for(;j+i<numbers.size() and j<numbers2.size();++j){
-			if(numbers[i+j]!=numbers2[j]){
-				overlap=false;
-				break;
-			}
-		}
-		if(overlap){
-			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
-			++superReads;
-			return{recoverSuperReads(numbers),""};
-		}
-	}
-	//compaction
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		++superReads;
@@ -752,13 +721,6 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 		}
 	}
 
-	if(false){//TODO PARAMETERS
-		vector<uNumber> numbers(getcleanPaths(vec,false,true));
-		vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
-		return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
-	}
-
-
 	vector<uNumber> numbers(getcleanPaths(vec,false,true));
 	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
 	//if they overlap
@@ -767,26 +729,9 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
 
-	//reverse complement of second
-	vector<uNumber>numbers2RC=getcleanPaths(numbers2,true,false);
-	if(compactVectors(numbers,numbers2RC)){
-		++superReads;
-		return{recoverSuperReadsNoStr(numbers),""};
-	}
-	//reversecomplement of first
-	vector<uNumber>numbersRC=getcleanPaths(numbers,true,false);
-	if(compactVectors(numbersRC,numbers2)){
-		++superReads;
-		return{recoverSuperReadsNoStr(numbers),""};
-	}
-
-	//RC OF BOTH ...
-	if(compactVectors(numbers2,numbers)){
-		++superReads;
-		return{recoverSuperReadsNoStr(numbers),""};
-	}
 	return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
 }
+
 
 
 string Aligner::getUnitig(int position){
@@ -813,9 +758,24 @@ void Aligner::update(kmer& min, char nuc){
 
 
 
+void Aligner::updateK(kmer& min, char nuc){
+	min<<=2;
+	min+=nuc2int(nuc);
+	min%=offsetUpdateK;
+}
+
+
+
 void Aligner::updateRC(kmer& min, char nuc){
 	min>>=2;
 	min+=(nuc2intrc(nuc)<<(2*k-4));
+}
+
+
+
+void Aligner::updateRCK(kmer& min, char nuc){
+	min>>=2;
+	min+=(nuc2intrc(nuc)<<(2*k-2));
 }
 
 
@@ -937,16 +897,17 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 	uint64_t hash;
 	string unitig;
 	uint positionUnitig;
-	for(uint i(0);i+k<=read.size();++i){
+	for(uint i(0);i+k<read.size();++i){
 		bool returned(false);
 		string num((read.substr(i,k))),rcnum(reverseComplements(num)), rep(min(num, rcnum));
 		hash=anchorsMPHFstr.lookup(rep);
-		//~ cout<<hash<<" "<<endl;
-		if(hash!=ULLONG_MAX and anchorsCheckingstr[hash]==rep){
-			if(num==rep){
-				list.push_back({anchorsPosition[hash],i});
-			}else{
-				list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+		if(hash!=ULLONG_MAX){
+			if(anchorsCheckingstr[hash]==rep){
+				if(num==rep){
+					list.push_back({anchorsPosition[hash],i});
+				}else{
+					list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+				}
 			}
 		}
 		if(list.size()>=n){
@@ -987,8 +948,12 @@ void Aligner::indexUnitigsAux(){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
-				for(uint j(0);j+k<=line.size();++j){
-					kmer seq(str2num(line.substr(j,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
+				kmer seq(str2num(line.substr(0,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
+				anchors->push_back(canon);
+				for(uint j(0);j+k<line.size();++j){
+					updateK(seq,line[j+k]);
+					updateRCK(rcSeq,line[j+k]);
+					canon=(min(seq, rcSeq));
 					anchors->push_back(canon);
 				}
 			}
@@ -1044,6 +1009,7 @@ void Aligner::indexUnitigsAuxStr(){
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
 	vector<string>* anchors=new vector<string>;
+
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
@@ -1067,9 +1033,13 @@ void Aligner::indexUnitigsAuxStr(){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
-				for(uint j(0);j+k<=line.size();++j){
-					seq=((line.substr(j,k)));
-					rcSeq=(reverseComplements(seq));
+				seq=((line.substr(0,k)));
+				rcSeq=(reverseComplements(seq));
+				canon=(min(seq,rcSeq));
+				anchors->push_back(canon);
+				for(uint j(0);j+k<line.size();++j){
+					seq=seq.substr(1,k-1)+line[j+k];
+					rcSeq=revCompChar(line[j+k])+rcSeq.substr(0,k-1);
 					canon=(min(seq,rcSeq));
 					anchors->push_back(canon);
 				}
@@ -1100,7 +1070,6 @@ void Aligner::indexUnitigsAuxStr(){
 	anchorSize=anchors->size();
 	delete anchors;
 	anchorsPosition.resize(anchorSize,{0,0});
-
 	if(stringMode){
 		leftIndicesstr.resize(leftsize,{});
 		rightIndicesstr.resize(rightsize,{});
@@ -1121,6 +1090,7 @@ void Aligner::indexUnitigsAuxStr(){
 }
 
 
+
 //TODO multihread
 void Aligner::fillIndices(){
 	unitigIndices indices;
@@ -1129,17 +1099,25 @@ void Aligner::fillIndices(){
 	for(i=1;i<unitigs.size();++i){
 		string line(unitigs[i]);
 		if(dogMode){
-			for(uint j(0);j+k<=line.size();++j){
-				if(j%fracKmer==0){
-					//TODO remove substr
-					kmer seq(str2num(line.substr(j,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
-					if(canon==seq){
-						anchorsPosition[anchorsMPHF.lookup(canon)]={i,j};
-					}else{
-						anchorsPosition[anchorsMPHF.lookup(canon)]={-i,j};
-					}
-					anchorsChecking[anchorsMPHF.lookup(canon)]=canon;
+			kmer seq(str2num(line.substr(0,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
+			uint64_t hash=anchorsMPHF.lookup(canon);
+			if(canon==seq){
+				anchorsPosition[hash]={i,0};
+			}else{
+				anchorsPosition[hash]={-i,0};
+			}
+			anchorsChecking[hash]=canon;
+			for(uint j(0);j+k<line.size();++j){
+				updateK(seq,line[j+k]);
+				updateRCK(rcSeq,line[j+k]);
+				canon=(min(seq, rcSeq));
+				uint64_t hash=anchorsMPHF.lookup(canon);
+				if(canon==seq){
+					anchorsPosition[hash]={i,j+1};
+				}else{
+					anchorsPosition[hash]={-i,j+1};
 				}
+				anchorsChecking[hash]=canon;
 			}
 		}
 	}
@@ -1206,31 +1184,46 @@ void Aligner::fillIndices(){
 }
 
 
-//TODO multihread
+
 void Aligner::fillIndicesstr(){
 	unitigIndicesstr indices;
 	uint i;
+	//~ cout<<"lool"<<endl;
 	#pragma omp parallel for num_threads(coreNumber)
 	for(i=(1);i<unitigs.size();++i){
+		//~ cout<<i<<endl;
 		string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 		line=unitigs[i];
 		if(dogMode){
-			for(uint j(0);j+k<=line.size();++j){
-				if(j%fracKmer==0){
-					//TODO remove substr
-					seq=((line.substr(j,k)));
-					rcSeq=(reverseComplements(seq));
-					canon=(min(seq,rcSeq));
-					if(canon==seq){
-						anchorsPosition[anchorsMPHFstr.lookup(canon)]={i,j};
-					}else{
-						anchorsPosition[anchorsMPHFstr.lookup(canon)]={-i,j};
-					}
-					anchorsCheckingstr[anchorsMPHFstr.lookup(canon)]=canon;
+			seq=((line.substr(0,k)));
+			rcSeq=(reverseComplements(seq));
+			canon=(min(seq,rcSeq));
+			uint64_t hash=anchorsMPHFstr.lookup(canon);
+			if(canon==seq){
+				anchorsPosition[hash]={i,0};
+			}else{
+				anchorsPosition[hash]={-i,0};
+			}
+			anchorsCheckingstr[hash]=canon;
+			for(uint j(0);j+k<line.size();++j){
+				//~ cout<<j<<endl;
+				seq=seq.substr(1,k-1)+line[j+k];
+				rcSeq=revCompChar(line[j+k])+rcSeq.substr(0,k-1);
+				//~ cout<<rcSeq<<endl;
+				//~ cout<<
+				canon=(min(seq,rcSeq));
+				int64_t hash=anchorsMPHFstr.lookup(canon);
+				//~ cout<<hash<<endl;
+				if(canon==seq){
+					anchorsPosition[hash]={i,j+1};
+				}else{
+					anchorsPosition[hash]={-i,j+1};
 				}
+				anchorsCheckingstr[hash]=canon;
 			}
 		}
 	}
+	//~ cout<<"end"<<endl;
 	string line, seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 	for(i=(1);i<unitigs.size();++i){
 		line=unitigs[i];

@@ -59,7 +59,7 @@ vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound,
 			}
 		}
 	}
-	if(!rc){rc=true;return alignReadGreedy(reverseComplements(read), overlapFound,errors, rc);}
+	//~ if(!rc){rc=true;return alignReadGreedy(reverseComplements(read), overlapFound,errors, rc);}
 	++notAligned;
 	return {};
 }
@@ -164,7 +164,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 			}
 		}
 	}
-	if(!rc){rc=true;return alignReadGreedyAnchors(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
+	//~ if(!rc){rc=true;return alignReadGreedyAnchors(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
 	notAligned++;
 	//~ cin.get();
 	return {};
@@ -177,7 +177,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, bool& ove
 	if(listAnchors.empty()){noOverlap=true; ++noOverlapRead;return {};}
 	overlapFound=false;
 	vector<uNumber> pathBegin,pathEnd;
-	string unitig;
+	string unitig("");
 	bool returned(false);
 	for(uint start(0); start<(uint)listAnchors.size(); ++start){
 		int unitigNumber(listAnchors[start].first.first),positionUnitig(listAnchors[start].first.second),positionRead(listAnchors[start].second);
@@ -246,7 +246,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, bool& ove
 			}
 		}
 	}
-	if(!rc){rc=true;return alignReadGreedyAnchorsstr(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
+	//~ if(!rc){rc=true;return alignReadGreedyAnchorsstr(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
 	notAligned++;
 	return {};
 }
@@ -321,7 +321,7 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 	uint miniMiss(errors+1),miniMissIndice(9);
 	bool ended(false);
 	int offset(0);
-	string nextOverlap(0);
+	string nextOverlap;
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
 		unitig=(rangeUnitigs[i].first);
 		//case the rest of the read is too small

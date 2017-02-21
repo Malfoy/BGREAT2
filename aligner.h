@@ -117,6 +117,7 @@ public:
 	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdate;
+	kmer offsetUpdateK;
 	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
 	string unitigFileName, pathToWrite;
@@ -146,6 +147,8 @@ public:
 		superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
 		offsetUpdate=1;
 		offsetUpdate<<=(2*(k-1));
+		offsetUpdateK=1;
+		offsetUpdateK<<=(2*(k));
 		iter=1;
 	}
 
@@ -189,6 +192,8 @@ public:
 	vector<uNumber> getEndNumber(kmer bin);
 	void updateRC(kmer&	min, char nuc);
 	void update(kmer&	min, char nuc);
+	void updateRCK(kmer&	min, char nuc);
+	void updateK(kmer&	min, char nuc);
 	pair<uint,uint> mapOnRight(const string &read, vector<uNumber>& path, const pair<kmer, uint>& overlap, const  vector<pair<kmer,uint>>& listOverlap, bool& ended,uint start, uint errors);
 	uint mapOnRightEndExhaustivePartial(const string &read, vector<uNumber>& path, const pair<kmer, uint>& overlap , uint errors);
 	uint mapOnLeftEndExhaustivePartial(const string &read, vector<uNumber>& path, const pair<kmer, uint>& overlap , uint errors);
