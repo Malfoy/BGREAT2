@@ -569,7 +569,7 @@ string Aligner::recoverPath(vector<uNumber>& numbers,uint size){
 
 
 string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
-	if(numbers.size()<=1){
+	if(numbers.size()<1){
 		return "";
 	}
 	string path(getUnitig(numbers[0])),unitig,inter;
@@ -1372,7 +1372,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 			vector<thread> threads;
 			for (size_t i(0); i<nbThreads; ++i){
 				if(greedy){
-					threads.push_back(thread(&Aligner::alignPartGreedy,this));
+					threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
 				}else{
 					threads.push_back(thread(&Aligner::alignPartExhaustive,this));
 				}
@@ -1389,7 +1389,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	vector<thread> threads;
 	for (size_t i(0); i<nbThreads; ++i){
 		if(greedy){
-			threads.push_back(thread(&Aligner::alignPartGreedy,this));
+			threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
 		}else{
 			threads.push_back(thread(&Aligner::alignPartExhaustive,this));
 		}

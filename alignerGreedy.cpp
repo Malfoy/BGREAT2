@@ -165,7 +165,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 		}
 	}
 	//~ if(!rc){rc=true;return alignReadGreedyAnchors(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
-	notAligned++;
+	//~ notAligned++;
 	//~ cin.get();
 	return {};
 }
@@ -247,7 +247,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, bool& ove
 		}
 	}
 	//~ if(!rc){rc=true;return alignReadGreedyAnchorsstr(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
-	notAligned++;
+	//~ notAligned++;
 	return {};
 }
 
@@ -676,15 +676,26 @@ uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overl
 
 
 
-void Aligner::alignPartGreedy(){
+void Aligner::alignPartGreedy(uint indiceThread){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
-	string read,read2,header,header2,corrected,superRead;
+	string read,read2,header,header2,corrected,superRead,toWrite;
 	pair<string,string> superpath;
 	while(!readFile.eof()){
-		readMutex.lock();
-		getReads(multiread,10000);
-		readMutex.unlock();
+		toWrite="";
+		if(keepOrder){
+			while(threadToRead!=indiceThread){
+				this_thread::sleep_for (chrono::microseconds(1));
+			}
+			readMutex.lock();
+			getReads(multiread,10000);
+			threadToRead=(threadToRead+1)%coreNumber;
+			readMutex.unlock();
+		}else{
+			readMutex.lock();
+			getReads(multiread,10000);
+			readMutex.unlock();
+		}
 		if(pairedMode){
 			for(uint i(0);i+1<multiread.size();i+=2){
 				header=multiread[i].first;
@@ -738,36 +749,27 @@ void Aligner::alignPartGreedy(){
 					rc=overlapFound=false;
 					path2=alignReadGreedy(read2,overlapFound,errorsMax,rc);
 				}
-				if(correctionMode){
-					superpath=(recoverSuperReadsPaired(path,path2));
-				}else{
-					superpath=(recoverSuperReadsPairedNoStr(path,path2));
-				}
+				//~ if(correctionMode){
+					//~ superpath=(recoverSuperReadsPaired(path,path2));
+				//~ }else{
+				superpath=(recoverSuperReadsPairedNoStr(path,path2));
+				//~ }
 				if(superpath.first!=""){
 					if(superpath.second==""){
 						header+='\n'+superpath.first+'\n';
-						pathMutex.lock();
-						{
-							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
-						}
-						pathMutex.unlock();
+						toWrite+=header;
 					}else{
+						notAligned++;
 						header+='\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
-						pathMutex.lock();
-						{
-							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
-						}
-						pathMutex.unlock();
+						toWrite+=header;
 					}
 				}else{
+					notAligned++;
 					if(superpath.second!=""){
 						header2+='\n'+superpath.second+'\n';
-						pathMutex.lock();
-						{
-							fwrite((header2).c_str(), sizeof(char), header2.size(), pathFilef);
-						}
-						pathMutex.unlock();
+						toWrite+=header;
 					}else{
+						notAligned++;
 					}
 				}
 			}
@@ -775,6 +777,7 @@ void Aligner::alignPartGreedy(){
 			for(uint i(0);i<multiread.size();i++){
 				header=multiread[i].first;
 				read=multiread[i].second;
+				//~ cout<<header<<endl;
 				++readNumber;
 				bool rc(false), noOverlap(false), overlapFound(false);
 				if(dogMode){
@@ -791,6 +794,9 @@ void Aligner::alignPartGreedy(){
 							}
 							++errors;
 						}
+						//~ if(not path.empty()){
+							//~ cout<<errors<<" ";
+						//~ }
 					}else{
 						if(stringMode){
 							path=alignReadGreedyAnchorsstr(read,overlapFound,errorsMax,rc,noOverlap);
@@ -801,23 +807,64 @@ void Aligner::alignPartGreedy(){
 				}else{
 					path=alignReadGreedy(read,overlapFound,errorsMax,rc);
 				}
-				if(not path.empty()){
-					path=vector<uNumber>(&path[1],&path[path.size()]);
-					if(correctionMode){
+				if(correctionMode){
+					if(not path.empty()){
+						//~ cout<<"go"<<endl;
+						uint position(path[0]);
+						path=vector<uNumber>(&path[1],&path[path.size()]);
 						superRead=(recoverSuperReads(path));
-					}else{
-						superRead=(recoverSuperReadsNoStr(path));
-					}
-					if(superRead!=""){
-						header+='\n'+superRead+'\n';
-						pathMutex.lock();
-						{
-							fwrite((header).c_str(), sizeof(char), header.size(), pathFilef);
+						if(superRead!=""){
+							//~ cout<<superRead<<endl;
+							//~ cout<<position<<endl;
+							superRead=superRead.substr(position,read.size());
+							//~ cout<<superRead<<endl;
+							//~ cout<<"lol"<<endl;
+							//~ cout<<read<<endl;
+							//~ cin.get();
+							//~ cout<<"success"<<endl;
+							header+='\n'+superRead+'\n';
+							toWrite+=header;
+						}else{
+							cout<<"wow"<<endl;
+							header+='\n'+read+'\n';
+							toWrite+=header;
 						}
-						pathMutex.unlock();
+					}else{
+						notAligned++;
+						header+='\n'+read+'\n';
+						toWrite+=header;
+					}
+				}else{
+					if(not path.empty()){
+						path=vector<uNumber>(&path[1],&path[path.size()]);
+						superRead=(recoverSuperReadsNoStr(path));
+						if(superRead!=""){
+							header+='\n'+superRead+'\n';
+							toWrite+=header;
+						}else{
+							notAligned++;
+						}
 					}
 				}
 			}
+		}
+		//WRITE OUTPUT HERE
+		if(keepOrder){
+			while(threadToPrint!=indiceThread){
+				this_thread::sleep_for (chrono::microseconds(1));
+			}
+			pathMutex.lock();
+			{
+				fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+				threadToPrint=(threadToPrint+1)%coreNumber;
+			}
+			pathMutex.unlock();
+		}else{
+			pathMutex.lock();
+			{
+				fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+			}
+			pathMutex.unlock();
 		}
 	}
 }

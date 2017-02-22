@@ -34,9 +34,11 @@
 #include "utils.h"
 
 
+
 uint64_t transform_to_size_t(__uint128_t& n){
 	return (uint64_t)n;
 }
+
 
 
 void printPath(const vector<int32_t>& path, ofstream* file){
@@ -49,6 +51,7 @@ void printPath(const vector<int32_t>& path, ofstream* file){
 }
 
 
+
 char revCompChar(char c) {
 	switch (c) {
 		case 'A': return 'T';
@@ -58,9 +61,12 @@ char revCompChar(char c) {
 	return 'A';
 }
 
+
+
 string getRepresent(const string& s){
 	return min(s,reverseComplements(s));
 }
+
 
 
 string reverseComplements(const string& s){
@@ -71,6 +77,7 @@ string reverseComplements(const string& s){
 	}
 	return rc;
 }
+
 
 
 string reverseinplace(string& str){
@@ -90,6 +97,7 @@ string reverseinplace(string& str){
 }
 
 
+
 char randNuc(){
 	switch (rand()%4){
 		case 0:
@@ -105,6 +113,7 @@ char randNuc(){
 }
 
 
+
 string mutate(string& read, int n){
 	for(int i(0); i<n; ++i){
 		int position(rand()%read.size());
@@ -112,6 +121,7 @@ string mutate(string& read, int n){
 	}
 	return read;
 }
+
 
 
 kmer str2num(const string& str){

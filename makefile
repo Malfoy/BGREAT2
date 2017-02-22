@@ -17,7 +17,7 @@ endif
 
 
 
-EXEC=bgreat
+EXEC=bgreat numbersToSequences
 
 all: $(EXEC)
 
@@ -32,10 +32,13 @@ utils.o: utils.cpp utils.h
 bgreat: bgreat.o   aligner.o utils.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-getBigUnitigs.o: getBigUnitigs.cpp
+bgreat.o: bgreat.cpp  aligner.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-bgreat.o: bgreat.cpp  aligner.h
+numbersToSequences: numbersToSequences.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+numbersToSequences.o: numbersToSequences.cpp
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 

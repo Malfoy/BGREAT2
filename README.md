@@ -18,7 +18,17 @@ usage:
 -t number of thread (1)
 -e effort put in mapping (2)
 -f path file (paths)
--a not aligned file (notAligned.fa)
 -q for fastq read file
 -c to output corrected reads
+-O to keep read ordering
+
+In correction mode, only unpaired reads can be used, and corrected reads are outputed, if the -O option is used, the corrected reads will be in the right order.
+In default mode, the numbers outputed correspond to the paths of unitigs the reads or pair of reads maps on.
+>read1
+3;4;-6; mean that the read1 mapped on unitig 3 then 4 then the reverse complement of the unitig 6.
+
+To get the corresponding sequence the tool numberToSequences will do the conversion (warning: large file may be produced this way due to redundancy of large unitigs)
+
+usage:
+./numbersToSequences  unitigs.fa paths 31 > superReads.fa
 

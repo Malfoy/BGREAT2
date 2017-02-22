@@ -118,19 +118,20 @@ public:
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdate;
 	kmer offsetUpdateK;
-	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k;
+	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep){
+		keepOrder=orderKeep;
 		unitigFileName=Unitigs;
 		vectorMode=vectorModeBool;
 		rcMode=rcModeBool;
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
 		pathFilef=fopen(paths.c_str(),"wb");
-		notMappedFilef=fopen(notMapped.c_str(),"wb");
+		//~ notMappedFilef=fopen(notMapped.c_str(),"wb");
 		k=kValue;
 		if(k>63){
 			stringMode=true;
@@ -144,7 +145,7 @@ public:
 		fracKmer=dogModeInt;
 		correctionMode=bcorrectionMode;
 		fastq=bfastq;
-		superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
+		threadToPrint=superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
 		offsetUpdate=1;
 		offsetUpdate<<=(2*(k-1));
 		offsetUpdateK=1;
@@ -154,7 +155,7 @@ public:
 
 	void indexUnitigs();
 	void alignAll(bool, const string&,bool);
-	void alignPartGreedy();
+	void alignPartGreedy(uint indice);
 	void alignPartExhaustive();
 	void indexUnitigsAux();
 	vector<pair<kmer,uint>> getListOverlap(const string& read);
