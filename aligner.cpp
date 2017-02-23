@@ -975,10 +975,8 @@ void Aligner::indexUnitigsAux(){
 	if(dogMode){
 		if(vectorMode){
 			//TODO MULTITHREAD
-			//~ cout<<anchors->size()<<endl;
 			sort( anchors->begin(), anchors->end() );
 			anchors->erase( unique( anchors->begin(), anchors->end() ), anchors->end() );
-			cout<<anchors->size()<<endl;
 		}
 		auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
 		anchorsMPHF= boomphf::mphf<kmer,hasher>(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);

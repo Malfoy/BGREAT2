@@ -57,8 +57,8 @@ int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
 	int errors(2), threads(1), ka(30), c, effort(2),dogMode(1);
-	bool brute(false),fastq(false),correctionMode(false),orderKeep(false);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcO")) != -1){
+	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false);
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcOv")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -102,6 +102,9 @@ int main(int argc, char ** argv){
 		case 'O':
 			orderKeep=true;
 			break;
+		case 'v':
+			vectorMode=true;
+			break;
 		}
 	}
 	if(reads=="" and pairedReads==""){
@@ -120,7 +123,7 @@ int main(int argc, char ** argv){
 		<<"-O to keep order of the reads"<<endl;
 		return 0;
 	}
-	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,false,true,orderKeep);
+	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep);
 	supervisor.indexUnitigs();
 	cout<<"go"<<endl;
 	if(reads!=""){
