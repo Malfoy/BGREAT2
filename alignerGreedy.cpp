@@ -83,7 +83,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 			}else{
 				unitig=reverseComplements(unitigs[-unitigNumber]);
 			}
-			positionUnitig=unitig.size()-positionUnitig-anchorSize-1;
+			positionUnitig=unitig.size()-positionUnitig-anchorSize;
 			returned=true;
 		}
 		if(positionRead>=positionUnitig){
