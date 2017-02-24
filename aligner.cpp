@@ -307,51 +307,6 @@ vector<pair<string,uNumber>> Aligner::getEnd(string bin){
 
 
 
-vector<pair<string,uNumber>> Aligner::getEndV(kmer bin){
-	vector<pair<string,uNumber>> result;
-	kmer rc(rcb(bin,k-1));
-	string unitig;
-	unitigIndicesVector indices;
-	uNumber num;
-	bool go(false);
-	if(bin<rc){
-		uint64_t hash=rightMPHF.lookup(bin);
-		if(hash!=ULLONG_MAX){
-			indices=rightIndicesV[hash];
-			if(indices.overlap==bin){
-				go=true;
-			}
-		}
-	}else{
-		uint64_t hash=leftMPHF.lookup(rc);
-		if(hash!=ULLONG_MAX){
-			indices=leftIndicesV[hash];
-			if(indices.overlap==rc){
-				go=true;
-			}
-		}
-	}
-	if(go){
-		for(uint i(0);i<indices.vec.size();++i){
-			unitig=unitigs[indices.vec[i]];
-			if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
-				result.push_back({unitig,indices.vec[i]});
-			}else{
-				if(rcMode){
-					result.push_back({unitigsRC[indices.vec[i]],-indices.vec[i]});
-				}else{
-					result.push_back({reverseComplements(unitig),-indices.vec[i]});
-				}
-			}
-		}
-	}
-	//~ cout<<result.size()<<endl;
-	//~ cin.get();
-	return result;
-}
-
-
-
 vector<pair<string,uNumber>> Aligner::getBegin(kmer bin){
 	vector<pair<string,uNumber>> result;
 	kmer rc(rcb(bin,k-1));
@@ -499,48 +454,6 @@ vector<pair<string,uNumber>> Aligner::getBegin(string bin){
 							}
 						}
 					}
-				}
-			}
-		}
-	}
-	return result;
-}
-
-
-
-vector<pair<string,uNumber>> Aligner::getBeginV(kmer bin){
-	vector<pair<string,uNumber>> result;
-	kmer rc(rcb(bin,k-1));
-	string unitig;
-	unitigIndicesVector indices;
-	bool go(false);
-	if(bin<rc){
-		uint64_t hash=leftMPHF.lookup(bin);
-		if(hash!=ULLONG_MAX){
-			indices=leftIndicesV[hash];
-			if(indices.overlap==bin){
-				go=true;
-			}
-		}
-	}else{
-		uint64_t hash=rightMPHF.lookup(rc);
-		if(hash!=ULLONG_MAX){
-			indices=rightIndicesV[hash];
-			if(indices.overlap==rc){
-				go=true;
-			}
-		}
-	}
-	if(go){
-		for(uint i(0);i<indices.vec.size();++i){
-			unitig=unitigs[indices.vec[i]];
-			if(str2num(unitig.substr(0,k-1))==bin){
-				result.push_back({unitig,indices.vec[i]});
-			}else{
-				if(rcMode){
-					result.push_back({unitigsRC[indices.vec[i]],-indices.vec[i]});
-				}else{
-					result.push_back({reverseComplements(unitig),-indices.vec[i]});
 				}
 			}
 		}
@@ -753,7 +666,7 @@ string Aligner::getUnitig(int position){
 void Aligner::update(kmer& min, char nuc){
 	min<<=2;
 	min+=nuc2int(nuc);
-	min%=offsetUpdate;
+	min%=offsetUpdateOverlap;
 }
 
 
@@ -761,7 +674,7 @@ void Aligner::update(kmer& min, char nuc){
 void Aligner::updateK(kmer& min, char nuc){
 	min<<=2;
 	min+=nuc2int(nuc);
-	min%=offsetUpdateK;
+	min%=offsetUpdateAnchor;
 }
 
 
@@ -816,29 +729,16 @@ vector<pair<kmer,uint>> Aligner::getNOverlap(const string& read, uint n){
 		bool done(false);
 		hash=leftMPHF.lookup(rep);
 		if(hash!=ULLONG_MAX){
-			if(vectorMode){
-				if(leftIndicesV[hash].overlap==rep){
-					listOverlap.push_back({num,i});
-					done=true;
-				}
-			}else{
-				if(leftIndices[hash].overlap==rep){
-					listOverlap.push_back({num,i});
-					done=true;
-				}
+			if(leftIndices[hash].overlap==rep){
+				listOverlap.push_back({num,i});
+				done=true;
 			}
 		}
 		if(not done){
 			hash=rightMPHF.lookup(rep);
 			if(hash!=ULLONG_MAX){
-				if(vectorMode){
-					if(rightIndicesV[hash].overlap==rep){
-						listOverlap.push_back({num,i});
-					}
-				}else{
-					if(rightIndices[hash].overlap==rep){
-						listOverlap.push_back({num,i});
-					}
+				if(rightIndices[hash].overlap==rep){
+					listOverlap.push_back({num,i});
 				}
 			}
 		}
@@ -858,34 +758,37 @@ vector<pair<kmer,uint>> Aligner::getNOverlap(const string& read, uint n){
 
 
 
-vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchors(const string& read,uint n){
+vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchors(const string& read, uint n){
 	vector<pair<pair<uint,uint>,uint>> list;
 	uint64_t hash;
 	string unitig;
-	uint positionUnitig;
-	//~ kmer num(str2num(read.substr(0,k))),rcnum(rcb(num,k)), rep(min(num, rcnum));
-	for(uint i(0);i+k<=read.size();++i){
+	for(uint i(0);i+anchorSize<read.size();++i){
 		//TODO REMOVE SUBSTR
 		bool returned(false);
-		kmer num(str2num(read.substr(i,k))),rcnum(rcb(num,k)), rep(min(num, rcnum));
+		kmer num(str2num(read.substr(i,anchorSize))),rcnum(rcb(num,anchorSize)), rep(min(num, rcnum));
 		hash=anchorsMPHF.lookup(rep);
 		if(hash!=ULLONG_MAX and anchorsChecking[hash]==rep){
-			if(num==rep){
-				list.push_back({anchorsPosition[hash],i});
+			if(vectorMode){
+				if(num==rep){
+					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
+						list.push_back({anchorsPositionVector[hash][j],i});
+					}
+				}else{
+					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
+						list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+					}
+				}
 			}else{
-				list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+				if(num==rep){
+					list.push_back({anchorsPosition[hash],i});
+				}else{
+					list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+				}
 			}
 		}
 		if(list.size()>=n){
 			return list;
 		}
-		//~ if(i+k<read.size()){
-			//~ update(num,read[i+k]);
-			//~ updateRC(rcnum,read[i+k]);
-			//~ rep=(min(num, rcnum));
-		//~ }else{
-			//~ return list;
-		//~ }
 	}
 	return list;
 }
@@ -923,7 +826,7 @@ void Aligner::indexUnitigsAux(){
 	string line;
 	unitigs.push_back("");
 	unitigsRC.push_back("");
-	uint leftsize,rightsize,anchorSize;
+	uint leftsize,rightsize,anchorNumber;
 	vector<kmer>* leftOver=new vector<kmer>;
 	vector<kmer>* rightOver=new vector<kmer>;
 	vector<kmer>* anchors=new vector<kmer>;
@@ -948,18 +851,17 @@ void Aligner::indexUnitigsAux(){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
-				kmer seq(str2num(line.substr(0,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
+				kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
 				anchors->push_back(canon);
-				for(uint j(0);j+k<line.size();++j){
-					updateK(seq,line[j+k]);
-					updateRCK(rcSeq,line[j+k]);
+				for(uint j(0);j+anchorSize<line.size();++j){
+					updateK(seq,line[j+anchorSize]);
+					updateRCK(rcSeq,line[j+anchorSize]);
 					canon=(min(seq, rcSeq));
 					anchors->push_back(canon);
 				}
 			}
 		}
 	}
-
 	sort( leftOver->begin(), leftOver->end() );
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
@@ -981,20 +883,17 @@ void Aligner::indexUnitigsAux(){
 		auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
 		anchorsMPHF= boomphf::mphf<kmer,hasher>(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
-	anchorSize=anchors->size();
+	anchorNumber=anchors->size();
 	delete anchors;
-
-	anchorsPosition.resize(anchorSize,{0,0});
-	anchorsChecking.resize(anchorSize,0);
 	if(vectorMode){
-		leftIndicesV.resize(leftsize,{});
-		rightIndicesV.resize(rightsize,{});
-		fillIndicesVector();
+		anchorsPositionVector.resize(anchorNumber,{});
 	}else{
-		leftIndices.resize(leftsize,{});
-		rightIndices.resize(rightsize,{});
-		fillIndices();
+		anchorsPosition.resize(anchorNumber,{0,0});
 	}
+	anchorsChecking.resize(anchorNumber,0);
+	leftIndices.resize(leftsize,{});
+	rightIndices.resize(rightsize,{});
+	fillIndices();
 }
 
 
@@ -1003,11 +902,10 @@ void Aligner::indexUnitigsAuxStr(){
 	string line,beg,end,seq,rcBeg,rcEnd,rcSeq,canon;
 	unitigs.push_back("");
 	unitigsRC.push_back("");
-	uint leftsize,rightsize,anchorSize;
+	uint leftsize,rightsize,anchorNumber;
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
 	vector<string>* anchors=new vector<string>;
-
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
@@ -1031,13 +929,13 @@ void Aligner::indexUnitigsAuxStr(){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
-				seq=((line.substr(0,k)));
+				seq=((line.substr(0,anchorSize)));
 				rcSeq=(reverseComplements(seq));
 				canon=(min(seq,rcSeq));
 				anchors->push_back(canon);
-				for(uint j(0);j+k<line.size();++j){
-					seq=seq.substr(1,k-1)+line[j+k];
-					rcSeq=revCompChar(line[j+k])+rcSeq.substr(0,k-1);
+				for(uint j(0);j+anchorSize<line.size();++j){
+					seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
+					rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
 					canon=(min(seq,rcSeq));
 					anchors->push_back(canon);
 				}
@@ -1065,26 +963,17 @@ void Aligner::indexUnitigsAuxStr(){
 		auto data_iterator3 = boomphf::range(static_cast<const string*>(&(*anchors)[0]), static_cast<const string*>((&(*anchors)[0])+anchors->size()));
 		anchorsMPHFstr= MPHFSTR(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
-	anchorSize=anchors->size();
+	anchorNumber=anchors->size();
 	delete anchors;
-	anchorsPosition.resize(anchorSize,{0,0});
-	if(stringMode){
-		leftIndicesstr.resize(leftsize,{});
-		rightIndicesstr.resize(rightsize,{});
-		anchorsCheckingstr.resize(anchorSize,"");
-		fillIndicesstr();
+	if(vectorMode){
+		anchorsPositionVector.resize(anchorNumber,{});
 	}else{
-		anchorsChecking.resize(anchorSize,0);
-		if(vectorMode){
-			leftIndicesV.resize(leftsize,{});
-			rightIndicesV.resize(rightsize,{});
-			fillIndicesVector();
-		}else{
-			leftIndices.resize(leftsize,{});
-			rightIndices.resize(rightsize,{});
-			fillIndices();
-		}
+		anchorsPosition.resize(anchorNumber,{0,0});
 	}
+	leftIndicesstr.resize(leftsize,{});
+	rightIndicesstr.resize(rightsize,{});
+	anchorsCheckingstr.resize(anchorNumber,"");
+	fillIndicesstr();
 }
 
 
@@ -1097,23 +986,43 @@ void Aligner::fillIndices(){
 	for(i=1;i<unitigs.size();++i){
 		string line(unitigs[i]);
 		if(dogMode){
-			kmer seq(str2num(line.substr(0,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
+			kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
 			uint64_t hash=anchorsMPHF.lookup(canon);
 			if(canon==seq){
-				anchorsPosition[hash]={i,0};
+				if(vectorMode){
+					mutexV[hash%1000].lock();
+					anchorsPositionVector[hash].push_back({i,0});
+					mutexV[hash%1000].unlock();
+				}else{
+					anchorsPosition[hash]={i,0};
+				}
 			}else{
-				anchorsPosition[hash]={-i,0};
+				if(vectorMode){
+					mutexV[hash%1000].lock();
+					anchorsPositionVector[hash].push_back({-i,0});
+					mutexV[hash%1000].unlock();
+				}else{
+					anchorsPosition[hash]={-i,0};
+				}
 			}
 			anchorsChecking[hash]=canon;
-			for(uint j(0);j+k<line.size();++j){
-				updateK(seq,line[j+k]);
-				updateRCK(rcSeq,line[j+k]);
+			for(uint j(0);j+anchorSize<line.size();++j){
+				updateK(seq,line[j+anchorSize]);
+				updateRCK(rcSeq,line[j+anchorSize]);
 				canon=(min(seq, rcSeq));
 				uint64_t hash=anchorsMPHF.lookup(canon);
 				if(canon==seq){
-					anchorsPosition[hash]={i,j+1};
+					if(vectorMode){
+						anchorsPositionVector[hash].push_back({i,j+1});
+					}else{
+						anchorsPosition[hash]={i,j+1};
+					}
 				}else{
-					anchorsPosition[hash]={-i,j+1};
+					if(vectorMode){
+						anchorsPositionVector[hash].push_back({-i,j+1});
+					}else{
+						anchorsPosition[hash]={-i,j+1};
+					}
 				}
 				anchorsChecking[hash]=canon;
 			}
@@ -1186,42 +1095,51 @@ void Aligner::fillIndices(){
 void Aligner::fillIndicesstr(){
 	unitigIndicesstr indices;
 	uint i;
-	//~ cout<<"lool"<<endl;
-	#pragma omp parallel for num_threads(coreNumber)
+	#pragma omp parallel for num_threads(1)
 	for(i=(1);i<unitigs.size();++i){
-		//~ cout<<i<<endl;
 		string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 		line=unitigs[i];
 		if(dogMode){
-			seq=((line.substr(0,k)));
+			seq=((line.substr(0,anchorSize)));
 			rcSeq=(reverseComplements(seq));
 			canon=(min(seq,rcSeq));
 			uint64_t hash=anchorsMPHFstr.lookup(canon);
 			if(canon==seq){
-				anchorsPosition[hash]={i,0};
+				if(vectorMode){
+					anchorsPositionVector[hash].push_back({i,0});
+				}else{
+					anchorsPosition[hash]={i,0};
+				}
 			}else{
-				anchorsPosition[hash]={-i,0};
+				if(vectorMode){
+					anchorsPositionVector[hash].push_back({-i,0});
+				}else{
+					anchorsPosition[hash]={-i,0};
+				}
 			}
 			anchorsCheckingstr[hash]=canon;
-			for(uint j(0);j+k<line.size();++j){
-				//~ cout<<j<<endl;
-				seq=seq.substr(1,k-1)+line[j+k];
-				rcSeq=revCompChar(line[j+k])+rcSeq.substr(0,k-1);
-				//~ cout<<rcSeq<<endl;
-				//~ cout<<
+			for(uint j(0);j+anchorSize<line.size();++j){
+				seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
+				rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
 				canon=(min(seq,rcSeq));
 				int64_t hash=anchorsMPHFstr.lookup(canon);
-				//~ cout<<hash<<endl;
 				if(canon==seq){
-					anchorsPosition[hash]={i,j+1};
+					if(vectorMode){
+						anchorsPositionVector[hash].push_back({i,j+1});
+					}else{
+						anchorsPosition[hash]={i,j+1};
+					}
 				}else{
-					anchorsPosition[hash]={-i,j+1};
+					if(vectorMode){
+						anchorsPositionVector[hash].push_back({-i,j+1});
+					}else{
+						anchorsPosition[hash]={-i,j+1};
+					}
 				}
 				anchorsCheckingstr[hash]=canon;
 			}
 		}
 	}
-	//~ cout<<"end"<<endl;
 	string line, seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 	for(i=(1);i<unitigs.size();++i){
 		line=unitigs[i];
@@ -1288,55 +1206,6 @@ void Aligner::fillIndicesstr(){
 
 
 
-void Aligner::fillIndicesVector(){
-	string line;
-	unitigIndicesVector indices;
-	for(uint i(1);i<unitigs.size();++i){
-		line=unitigs[i];
-		if(dogMode){
-			for(uint j(0);j+k<=line.size();++j){
-				if(j%fracKmer==0){
-					//TODO remove substr
-					kmer seq(str2num(line.substr(j,k))),rcSeq(rcb(seq,k)),canon(min(seq,rcSeq));
-					uint64_t hash(anchorsMPHF.lookup(canon));
-					if(canon==seq){
-						anchorsPosition[hash]={i,j};
-					}else{
-						anchorsPosition[hash]={-i,j};
-					}
-					anchorsChecking[hash]=canon;
-				}
-			}
-		}
-		kmer beg(str2num(line.substr(0,k-1))),rcBeg(rcb(beg,k-1));
-		if(beg<=rcBeg){
-			indices=leftIndicesV[leftMPHF.lookup(beg)];
-			indices.overlap=beg;
-			indices.vec.push_back(i);
-			leftIndicesV[leftMPHF.lookup(beg)]=indices;
-		}else{
-			indices=rightIndicesV[rightMPHF.lookup(rcBeg)];
-			indices.overlap=rcBeg;
-			indices.vec.push_back(i);
-			rightIndicesV[rightMPHF.lookup(rcBeg)]=indices;
-		}
-		kmer end(str2num(line.substr(line.size()-k+1,k-1))),rcEnd(rcb(end,k-1));
-		if(end<=rcEnd){
-			indices=rightIndicesV[rightMPHF.lookup(end)];
-			indices.overlap=end;
-			indices.vec.push_back(i);
-			rightIndicesV[rightMPHF.lookup(end)]=indices;
-		}else{
-			indices=leftIndicesV[leftMPHF.lookup(rcEnd)];
-			indices.overlap=rcEnd;
-			indices.vec.push_back(i);
-			leftIndicesV[leftMPHF.lookup(rcEnd)]=indices;
-		}
-	}
-}
-
-
-
 void Aligner::indexUnitigs(){
 	auto startChrono=chrono::system_clock::now();
 	uint nbThreads(1);
@@ -1396,9 +1265,9 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 
 	cout<<"The End"<<endl;
 	cout<<"Reads : "<<readNumber<<endl;
-	cout<<"No overlap : "<<noOverlapRead<<" Percent : "<<(100*float(noOverlapRead))/readNumber<<endl;
-	cout<<"Overlap and aligned : "<<alignedRead<<" Percent : "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
-	cout<<"Overlap but not aligned : "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
+	cout<<"Not anchored : "<<noOverlapRead<<" Percent : "<<(100*float(noOverlapRead))/readNumber<<endl;
+	cout<<"Anchored and aligned : "<<alignedRead<<" Percent : "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
+	cout<<"Anchored but not aligned : "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
 	auto end=chrono::system_clock::now();auto waitedFor=end-startChrono;
 	cout<<"Reads/seconds : "<<readNumber/(chrono::duration_cast<chrono::seconds>(waitedFor).count()+1)<<endl;
 	cout<<"Mapping in seconds : "<<(chrono::duration_cast<chrono::seconds>(waitedFor).count())<<endl;

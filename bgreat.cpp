@@ -56,9 +56,10 @@ using namespace std;
 int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
-	int errors(2), threads(1), ka(30), c, effort(2),dogMode(1);
+	int errors(2), threads(1), ka(31), c, effort(2),dogMode(1);
+	int anchorSize(ka);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcOv")) != -1){
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcO")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -85,7 +86,8 @@ int main(int argc, char ** argv){
 			pathFile=(optarg);
 			break;
 		case 'a':
-			notAlignedFile=(optarg);
+			anchorSize=stoi(optarg);
+			vectorMode=true;
 			break;
 		case 'b':
 			brute=(true);
@@ -102,30 +104,29 @@ int main(int argc, char ** argv){
 		case 'O':
 			orderKeep=true;
 			break;
-		case 'v':
-			vectorMode=true;
-			break;
 		}
+	}
+	if(not vectorMode){
+		anchorSize=ka;
 	}
 	if(reads=="" and pairedReads==""){
 		cout
 		<<"-u read file (unpaired)"<<endl
 		<<"-x read file (paired)"<<endl
-		<<"-k k value (30)"<<endl
+		<<"-k k value (graph) (31)"<<endl
+		<<"-a anchors length (k)"<<endl
 		<<"-g unitig file (unitig.fa)"<<endl
 		<<"-m number of missmatch allowed (2)"<<endl
 		<<"-t number of threads (1)"<<endl
 		<<"-e effort put in mapping (2)"<<endl
 		<<"-f path file (paths)"<<endl
-		//~ <<"-a not aligned file (notAligned.fa)"<<endl
 		<<"-q for fastq read file"<<endl
 		<<"-c to output corrected reads"<<endl
 		<<"-O to keep order of the reads"<<endl;
 		return 0;
 	}
-	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep);
+	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize);
 	supervisor.indexUnitigs();
-	cout<<"go"<<endl;
 	if(reads!=""){
 		supervisor.alignAll(not brute,reads,false);
 	}

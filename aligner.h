@@ -110,20 +110,30 @@ public:
 	MPHFSTR leftMPHFstr,rightMPHFstr,anchorsMPHFstr;
 	vector<unitigIndices> leftIndices,rightIndices;
 	vector<unitigIndicesstr> leftIndicesstr,rightIndicesstr;
-	vector<unitigIndicesVector> leftIndicesV,rightIndicesV;
+	//~ vector<unitigIndicesVector> leftIndicesV,rightIndicesV;
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
+	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
 	vector<kmer> anchorsChecking;
 	vector<string> anchorsCheckingstr;
 	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads;
 	vector<string> unitigs, unitigsRC;
-	kmer offsetUpdate;
-	kmer offsetUpdateK;
-	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead;
+	kmer offsetUpdateOverlap;
+	kmer offsetUpdateAnchor;
+	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
+	array<mutex,1000> mutexV;
+
 	string unitigFileName, pathToWrite;
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize){
+		//~ if(vectorMode){
+			//~ mutexV.resize(1000);
+			//~ for(uint i(0);i<1000;++i){
+				//~ mutexV[i]=new mutex();
+			//~ }
+		//~ }
+		anchorSize=anchorsSize;
 		keepOrder=orderKeep;
 		unitigFileName=Unitigs;
 		vectorMode=vectorModeBool;
@@ -146,10 +156,10 @@ public:
 		correctionMode=bcorrectionMode;
 		fastq=bfastq;
 		threadToPrint=superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
-		offsetUpdate=1;
-		offsetUpdate<<=(2*(k-1));
-		offsetUpdateK=1;
-		offsetUpdateK<<=(2*(k));
+		offsetUpdateOverlap=1;
+		offsetUpdateOverlap<<=(2*(k-1));
+		offsetUpdateAnchor=1;
+		offsetUpdateAnchor<<=(2*(anchorSize));
 		iter=1;
 	}
 

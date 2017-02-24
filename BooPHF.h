@@ -654,7 +654,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		 // epsilon =  64 / _nb_bits_per_rank_sample   bits
 		// additional size for rank is epsilon * _size
-		static const uint64_t _nb_bits_per_rank_sample = 512; //512 seems ok
+		static const uint64_t _nb_bits_per_rank_sample = 256; //512 seems ok
 		std::vector<uint64_t> _ranks;
 	};
 
