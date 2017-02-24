@@ -138,6 +138,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 		}else{
 			if(read.size()-positionRead>=unitig.size()-positionUnitig){
 				//CASE 3 : read overlap unitig
+				//~ cout<<"3:"<<endl;
 				uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
 				if(errors<=errorMax){
 					pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
@@ -145,7 +146,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 					if(false){
 						errorsEnd=(checkEndExhaustive(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors));
 					}else{
-						errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+						errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-anchorSize},pathEnd,errorMax-errors));
 					}
 					if(errors+errorsEnd<=errorMax){
 						++alignedRead;
@@ -364,7 +365,7 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 
 uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, const pair<kmer, uint>& overlap , uint errors){
 	string unitig,readLeft(read.substr(overlap.second)),nextUnitig;
-	if(readLeft.size()<k+trimingBases){return 0;}
+	if(readLeft.size()<trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=getBegin(overlap.first);
 	uint miniMiss(errors+1), miniMissIndice(9);
@@ -799,6 +800,11 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						superRead=(recoverSuperReads(path));
 						if(superRead!=""){
 							superRead=superRead.substr(position,read.size());
+							//~ if(superRead!=read){
+								//~ cout<<superRead<<endl;
+								//~ cout<<read<<endl;
+								//~ cin.get();
+							//~ }
 							header+='\n'+superRead+'\n';
 							toWrite+=header;
 						}else{
