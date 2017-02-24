@@ -105,7 +105,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 						if(false){
 							errorsEnd=(checkEndExhaustive(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors-errorBegin));
 						}else{
-							errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
+							errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-anchorSize},pathEnd,errorMax-errors-errorBegin));
 						}
 						if(errorBegin+errors+errorsEnd<=errorMax){
 							++alignedRead;
@@ -800,7 +800,8 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						superRead=(recoverSuperReads(path));
 						if(superRead!=""){
 							superRead=superRead.substr(position,read.size());
-							//~ if(superRead!=read){
+							//~ if(missmatchNumber(superRead,read,errorsMax)>errorsMax){
+								//~ cout<<missmatchNumber(superRead,read,1000)<<endl;
 								//~ cout<<superRead<<endl;
 								//~ cout<<read<<endl;
 								//~ cin.get();
