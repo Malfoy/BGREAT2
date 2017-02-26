@@ -32,6 +32,7 @@
 #include <string>
 #include <iterator>
 #include <unordered_map>
+#include <unordered_set>
 #include <set>
 #include <algorithm>
 #include <chrono>
@@ -688,7 +689,7 @@ void Aligner::updateRC(kmer& min, char nuc){
 
 void Aligner::updateRCK(kmer& min, char nuc){
 	min>>=2;
-	min+=(nuc2intrc(nuc)<<(2*k-2));
+	min+=(nuc2intrc(nuc)<<(2*anchorSize-2));
 }
 
 
@@ -759,30 +760,49 @@ vector<pair<kmer,uint>> Aligner::getNOverlap(const string& read, uint n){
 
 
 vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchors(const string& read, uint n){
+	unordered_set<uint> unitigsSelected;
 	vector<pair<pair<uint,uint>,uint>> list;
 	uint64_t hash;
 	string unitig;
+	kmer num(0),rcnum(0),rep(0);
 	for(uint i(0);i+anchorSize<read.size();++i){
 		//TODO REMOVE SUBSTR
 		bool returned(false);
-		kmer num(str2num(read.substr(i,anchorSize))),rcnum(rcb(num,anchorSize)), rep(min(num, rcnum));
+		if(num==0 and rcnum==0){
+			num=(str2num(read.substr(i,anchorSize)));
+			rcnum=(rcb(num,anchorSize));
+			rep=(min(num, rcnum));
+		}else{
+			updateK(num,read[i+anchorSize-1]);
+			updateRCK(rcnum,read[i+anchorSize-1]);
+			rep=(min(num, rcnum));
+		}
 		hash=anchorsMPHF.lookup(rep);
 		if(hash!=ULLONG_MAX and anchorsChecking[hash]==rep){
 			if(vectorMode){
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						list.push_back({anchorsPositionVector[hash][j],i});
+						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
+							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+							list.push_back({anchorsPositionVector[hash][j],i});
+						}
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
+							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+						}
 					}
 				}
 			}else{
-				if(num==rep){
-					list.push_back({anchorsPosition[hash],i});
-				}else{
-					list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+				if(unitigsSelected.count(anchorsPosition[hash].first)==0){
+					unitigsSelected.insert(anchorsPosition[hash].first);
+					if(num==rep){
+						list.push_back({anchorsPosition[hash],i});
+					}else{
+						list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+					}
 				}
 			}
 		}

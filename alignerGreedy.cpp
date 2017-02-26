@@ -105,7 +105,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 						if(false){
 							errorsEnd=(checkEndExhaustive(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors-errorBegin));
 						}else{
-							errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-anchorSize},pathEnd,errorMax-errors-errorBegin));
+							errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-anchorSize+1},pathEnd,errorMax-errors-errorBegin));
 						}
 						if(errorBegin+errors+errorsEnd<=errorMax){
 							++alignedRead;
@@ -146,7 +146,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overla
 					if(false){
 						errorsEnd=(checkEndExhaustive(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors));
 					}else{
-						errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-anchorSize},pathEnd,errorMax-errors));
+						errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-anchorSize+1},pathEnd,errorMax-errors));
 					}
 					if(errors+errorsEnd<=errorMax){
 						++alignedRead;
@@ -568,7 +568,7 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<string, uint>& over
 
 
 uint Aligner::checkEndGreedy(const string& read, const pair<kmer, uint>& overlap, vector<uNumber>& path, uint errors){
-	string readLeft(read.substr(overlap.second)),unitig,nextUnitig;
+	string readLeft(read.substr(overlap.second+anchorSize-1)),unitig,nextUnitig;
 	if(readLeft.size()<=trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=(getBegin(overlap.first));
@@ -800,12 +800,6 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						superRead=(recoverSuperReads(path));
 						if(superRead!=""){
 							superRead=superRead.substr(position,read.size());
-							//~ if(missmatchNumber(superRead,read,errorsMax)>errorsMax){
-								//~ cout<<missmatchNumber(superRead,read,1000)<<endl;
-								//~ cout<<superRead<<endl;
-								//~ cout<<read<<endl;
-								//~ cin.get();
-							//~ }
 							header+='\n'+superRead+'\n';
 							toWrite+=header;
 						}else{
