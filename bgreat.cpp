@@ -58,8 +58,8 @@ int main(int argc, char ** argv){
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
 	int errors(2), threads(1), ka(31), c, effort(2),dogMode(1);
 	int anchorSize(ka);
-	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcO")) != -1){
+	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false);
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcOp")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -104,6 +104,9 @@ int main(int argc, char ** argv){
 		case 'O':
 			orderKeep=true;
 			break;
+		case 'p':
+			preciseOutput=true;
+			break;
 		}
 	}
 	if(not vectorMode){
@@ -114,7 +117,7 @@ int main(int argc, char ** argv){
 		<<"-u read file (unpaired)"<<endl
 		<<"-x read file (paired)"<<endl
 		<<"-k k value (graph) (31)"<<endl
-		<<"-a anchors length (k)"<<endl
+		//~ <<"-a anchors length (k)"<<endl
 		<<"-g unitig file (unitig.fa)"<<endl
 		<<"-m number of missmatch allowed (2)"<<endl
 		<<"-t number of threads (1)"<<endl
@@ -122,10 +125,11 @@ int main(int argc, char ** argv){
 		<<"-f path file (paths)"<<endl
 		<<"-q for fastq read file"<<endl
 		<<"-c to output corrected reads"<<endl
+		<<"-p to precise output"<<endl
 		<<"-O to keep order of the reads"<<endl;
 		return 0;
 	}
-	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize);
+	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput);
 	supervisor.indexUnitigs();
 	if(reads!=""){
 		supervisor.alignAll(not brute,reads,false);

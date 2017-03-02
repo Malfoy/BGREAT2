@@ -110,7 +110,6 @@ public:
 	MPHFSTR leftMPHFstr,rightMPHFstr,anchorsMPHFstr;
 	vector<unitigIndices> leftIndices,rightIndices;
 	vector<unitigIndicesstr> leftIndicesstr,rightIndicesstr;
-	//~ vector<unitigIndicesVector> leftIndicesV,rightIndicesV;
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
 	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
 	vector<kmer> anchorsChecking;
@@ -124,15 +123,10 @@ public:
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize){
-		//~ if(vectorMode){
-			//~ mutexV.resize(1000);
-			//~ for(uint i(0);i<1000;++i){
-				//~ mutexV[i]=new mutex();
-			//~ }
-		//~ }
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB){
+		preciseOutput=preciseB;
 		anchorSize=anchorsSize;
 		keepOrder=orderKeep;
 		unitigFileName=Unitigs;
@@ -141,7 +135,6 @@ public:
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
 		pathFilef=fopen(paths.c_str(),"wb");
-		//~ notMappedFilef=fopen(notMapped.c_str(),"wb");
 		k=kValue;
 		if(k>63){
 			stringMode=true;

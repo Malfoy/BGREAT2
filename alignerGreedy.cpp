@@ -805,12 +805,25 @@ void Aligner::alignPartGreedy(uint indiceThread){
 					}
 				}else{
 					if(not path.empty()){
-						path=vector<uNumber>(&path[1],&path[path.size()]);
-						superRead=(recoverSuperReadsNoStr(path));
-						if(superRead!=""){
-							header+='\n'+superRead+'\n';
-							toWrite+=header;
+						if(preciseOutput){
+							uint position(path[0]);
+							path=vector<uNumber>(&path[1],&path[path.size()]);
+							superRead=(recoverSuperReads(path));
+							superRead=superRead.substr(position);
+							path.push_back(position);
+							path.push_back(unitigs[path[path.size()-2]].size()-(superRead.size()+read.size()));
+							superRead=(recoverSuperReadsNoStr(path));
+							if(superRead!=""){
+								header+='\n'+superRead+'\n';
+								toWrite+=header;
+							}
 						}else{
+							path=vector<uNumber>(&path[1],&path[path.size()]);
+							superRead=(recoverSuperReadsNoStr(path));
+							if(superRead!=""){
+								header+='\n'+superRead+'\n';
+								toWrite+=header;
+							}
 						}
 					}
 				}
