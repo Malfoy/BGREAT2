@@ -811,7 +811,11 @@ void Aligner::alignPartGreedy(uint indiceThread){
 							superRead=(recoverSuperReads(path));
 							superRead=superRead.substr(position);
 							path.push_back(position);
-							path.push_back(unitigs[path[path.size()-2]].size()-(superRead.size()+read.size()));
+							int lastUnitigNumber(path[path.size()-2]);
+							if (lastUnitigNumber<0){
+								lastUnitigNumber=-lastUnitigNumber;
+							}
+							path.push_back((int)unitigs[lastUnitigNumber].size()+(int)read.size()-(int)superRead.size());
 							superRead=(recoverSuperReadsNoStr(path));
 							if(superRead!=""){
 								header+='\n'+superRead+'\n';
