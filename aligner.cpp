@@ -760,13 +760,23 @@ vector<pair<kmer,uint>> Aligner::getNOverlap(const string& read, uint n){
 
 
 vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchors(const string& read, uint n){
+	if(stringModeAnchor){
+		return getNAnchorsstr(read,n);
+	}
+	return getNAnchorsnostr(read,n);
+
+
+}
+
+
+
+vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read, uint n){
 	unordered_set<uint> unitigsSelected;
 	vector<pair<pair<uint,uint>,uint>> list;
 	uint64_t hash;
 	string unitig;
 	kmer num(0),rcnum(0),rep(0);
 	for(uint i(0);i+anchorSize<read.size();++i){
-		//TODO REMOVE SUBSTR
 		bool returned(false);
 		if(num==0 and rcnum==0){
 			num=(str2num(read.substr(i,anchorSize)));
@@ -816,24 +826,55 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchors(const string& read, uint
 
 
 vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,uint n){
+	unordered_set<uint> unitigsSelected;
 	vector<pair<pair<uint,uint>,uint>> list;
 	uint64_t hash;
-	string unitig;
+	string unitig,num,rcnum,rep;
 	uint positionUnitig;
-	for(uint i(0);i+k<read.size();++i){
+	for(uint i(0);i+anchorSize<read.size();++i){
 		bool returned(false);
-		string num((read.substr(i,k))),rcnum(reverseComplements(num)), rep(min(num, rcnum));
+		if(num.empty()){
+			num=((read.substr(i,anchorSize)));
+			rcnum=(reverseComplements(num));
+			rep=(min(num, rcnum));
+		}else{
+			num=num.substr(1,anchorSize-1)+read[i+anchorSize];
+			rcnum=revCompChar(read[i+anchorSize])+rcnum.substr(0,anchorSize-1);
+			rep=(min(num,rcnum));
+		}
 		hash=anchorsMPHFstr.lookup(rep);
 		if(hash!=ULLONG_MAX){
-			if(anchorsCheckingstr[hash]==rep){
+			if(vectorMode){
 				if(num==rep){
-					list.push_back({anchorsPosition[hash],i});
+					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
+						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
+							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+							list.push_back({anchorsPositionVector[hash][j],i});
+						}
+					}
 				}else{
-					list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
+						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
+							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+						}
+					}
+				}
+			}else{
+				if(unitigsSelected.count(anchorsPosition[hash].first)==0){
+					unitigsSelected.insert(anchorsPosition[hash].first);
+					if(anchorsCheckingstr[hash]==rep){
+						if(num==rep){
+							list.push_back({anchorsPosition[hash],i});
+						}else{
+							list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+						}
+					}
 				}
 			}
 		}
 		if(list.size()>=n){
+			//~ cout<<"end"<<endl;
 			return list;
 		}
 	}
@@ -918,7 +959,7 @@ void Aligner::indexUnitigsAux(){
 
 
 //TODO MULTITHREAD
-void Aligner::indexUnitigsAuxStr(){
+void Aligner::indexUnitigsAuxStrfull(){
 	string line,beg,end,seq,rcBeg,rcEnd,rcSeq,canon;
 	unitigs.push_back("");
 	unitigsRC.push_back("");
@@ -998,6 +1039,84 @@ void Aligner::indexUnitigsAuxStr(){
 
 
 
+void Aligner::indexUnitigsAuxStrbutanchors(){
+	string line,beg,end,seq,rcBeg,rcEnd,rcSeq,canon;
+	unitigs.push_back("");
+	unitigsRC.push_back("");
+	uint leftsize,rightsize,anchorNumber;
+	vector<string>* leftOver=new vector<string>;
+	vector<string>* rightOver=new vector<string>;
+	vector<kmer>* anchors=new vector<kmer>;
+	while(!unitigFile.eof()){
+		getline(unitigFile,line);
+		getline(unitigFile,line);
+		if(line.size()<k){
+			break;
+		}else{
+			unitigs.push_back(line);
+			unitigsRC.push_back(reverseComplements(line));
+			beg=((line.substr(0,k-1)));
+			rcBeg=(reverseComplements(beg));
+			if(beg<=rcBeg){
+				leftOver->push_back(beg);
+			}else{
+				rightOver->push_back(rcBeg);
+			}
+			end=(line.substr(line.size()-k+1,k-1));
+			rcEnd=(reverseComplements(end));
+			if(end<=rcEnd){
+				rightOver->push_back(end);
+			}else{
+				leftOver->push_back(rcEnd);
+			}
+			if(dogMode){
+				kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
+				anchors->push_back(canon);
+				for(uint j(0);j+anchorSize<line.size();++j){
+					updateK(seq,line[j+anchorSize]);
+					updateRCK(rcSeq,line[j+anchorSize]);
+					canon=(min(seq, rcSeq));
+					anchors->push_back(canon);
+				}
+			}
+		}
+	}
+	sort( leftOver->begin(), leftOver->end() );
+	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
+	sort( rightOver->begin(), rightOver->end() );
+	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
+	auto data_iterator = boomphf::range(static_cast<const string*>(&((*leftOver)[0])), static_cast<const string*>((&(*leftOver)[0])+leftOver->size()));
+	leftMPHFstr= MPHFSTR(leftOver->size(),data_iterator,coreNumber,gammaFactor,false);
+	leftsize=leftOver->size();
+	delete leftOver;
+	auto data_iterator2 = boomphf::range(static_cast<const string*>(&(*rightOver)[0]), static_cast<const string*>((&(*rightOver)[0])+rightOver->size()));
+	rightMPHFstr= MPHFSTR(rightOver->size(),data_iterator2,coreNumber,gammaFactor,false);
+	rightsize=rightOver->size();
+	delete rightOver;
+	if(dogMode){
+		if(vectorMode){
+			//TODO MULTITHREAD
+			sort( anchors->begin(), anchors->end() );
+			anchors->erase( unique( anchors->begin(), anchors->end() ), anchors->end() );
+		}
+		auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
+		anchorsMPHF= MPHF(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
+	}
+	anchorNumber=anchors->size();
+	delete anchors;
+	if(vectorMode){
+		anchorsPositionVector.resize(anchorNumber,{});
+	}else{
+		anchorsPosition.resize(anchorNumber,{0,0});
+	}
+	leftIndicesstr.resize(leftsize,{});
+	rightIndicesstr.resize(rightsize,{});
+	anchorsChecking.resize(anchorNumber,0);
+	fillIndicesstrbutanchors();
+}
+
+
+
 //TODO multihread
 void Aligner::fillIndices(){
 	unitigIndices indices;
@@ -1033,13 +1152,17 @@ void Aligner::fillIndices(){
 				uint64_t hash=anchorsMPHF.lookup(canon);
 				if(canon==seq){
 					if(vectorMode){
+						mutexV[hash%1000].lock();
 						anchorsPositionVector[hash].push_back({i,j+1});
+						mutexV[hash%1000].unlock();
 					}else{
 						anchorsPosition[hash]={i,j+1};
 					}
 				}else{
 					if(vectorMode){
+						mutexV[hash%1000].lock();
 						anchorsPositionVector[hash].push_back({-i,j+1});
+						mutexV[hash%1000].unlock();
 					}else{
 						anchorsPosition[hash]={-i,j+1};
 					}
@@ -1115,7 +1238,7 @@ void Aligner::fillIndices(){
 void Aligner::fillIndicesstr(){
 	unitigIndicesstr indices;
 	uint i;
-	#pragma omp parallel for num_threads(1)
+	#pragma omp parallel for num_threads(coreNumber)
 	for(i=(1);i<unitigs.size();++i){
 		string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
 		line=unitigs[i];
@@ -1126,13 +1249,17 @@ void Aligner::fillIndicesstr(){
 			uint64_t hash=anchorsMPHFstr.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
+					mutexV[hash%1000].lock();
 					anchorsPositionVector[hash].push_back({i,0});
+					mutexV[hash%1000].unlock();
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
+					mutexV[hash%1000].lock();
 					anchorsPositionVector[hash].push_back({-i,0});
+					mutexV[hash%1000].unlock();
 				}else{
 					anchorsPosition[hash]={-i,0};
 				}
@@ -1145,13 +1272,17 @@ void Aligner::fillIndicesstr(){
 				int64_t hash=anchorsMPHFstr.lookup(canon);
 				if(canon==seq){
 					if(vectorMode){
+						mutexV[hash%1000].lock();
 						anchorsPositionVector[hash].push_back({i,j+1});
+						mutexV[hash%1000].unlock();
 					}else{
 						anchorsPosition[hash]={i,j+1};
 					}
 				}else{
 					if(vectorMode){
+						mutexV[hash%1000].lock();
 						anchorsPositionVector[hash].push_back({-i,j+1});
+						mutexV[hash%1000].unlock();
 					}else{
 						anchorsPosition[hash]={-i,j+1};
 					}
@@ -1225,14 +1356,137 @@ void Aligner::fillIndicesstr(){
 }
 
 
+void Aligner::fillIndicesstrbutanchors(){
+	unitigIndicesstr indices;
+	uint i;
+	#pragma omp parallel for num_threads(coreNumber)
+	for(i=(1);i<unitigs.size();++i){
+		string line,seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
+		line=unitigs[i];
+		if(dogMode){
+			kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
+			uint64_t hash=anchorsMPHF.lookup(canon);
+			if(canon==seq){
+				if(vectorMode){
+					mutexV[hash%1000].lock();
+					anchorsPositionVector[hash].push_back({i,0});
+					mutexV[hash%1000].unlock();
+				}else{
+					anchorsPosition[hash]={i,0};
+				}
+			}else{
+				if(vectorMode){
+					mutexV[hash%1000].lock();
+					anchorsPositionVector[hash].push_back({-i,0});
+					mutexV[hash%1000].unlock();
+				}else{
+					anchorsPosition[hash]={-i,0};
+				}
+			}
+			anchorsChecking[hash]=canon;
+			for(uint j(0);j+anchorSize<line.size();++j){
+				updateK(seq,line[j+anchorSize]);
+				updateRCK(rcSeq,line[j+anchorSize]);
+				canon=(min(seq, rcSeq));
+				uint64_t hash=anchorsMPHF.lookup(canon);
+				if(canon==seq){
+					if(vectorMode){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({i,j+1});
+						mutexV[hash%1000].unlock();
+					}else{
+						anchorsPosition[hash]={i,j+1};
+					}
+				}else{
+					if(vectorMode){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({-i,j+1});
+						mutexV[hash%1000].unlock();
+					}else{
+						anchorsPosition[hash]={-i,j+1};
+					}
+				}
+				anchorsChecking[hash]=canon;
+			}
+		}
+	}
+	string line, seq,beg,rcBeg,rcEnd,end,rcSeq,canon;
+	for(i=(1);i<unitigs.size();++i){
+		line=unitigs[i];
+		beg=((line.substr(0,k-1)));
+		rcBeg=(reverseComplements(beg));
+		if(beg<=rcBeg){
+			indices=leftIndicesstr[leftMPHFstr.lookup(beg)];
+			indices.overlap=beg;
+			if(indices.indice1==0){
+				indices.indice1=i;
+			}else if(indices.indice2==0){
+				indices.indice2=i;
+			}else if(indices.indice3==0){
+				indices.indice3=i;
+			}else{
+				indices.indice4=i;
+			}
+			leftIndicesstr[leftMPHFstr.lookup(beg)]=indices;
+		}else{
+			indices=rightIndicesstr[rightMPHFstr.lookup(rcBeg)];
+			indices.overlap=rcBeg;
+			if(indices.indice1==0){
+				indices.indice1=i;
+			}else if(indices.indice2==0){
+				indices.indice2=i;
+			}else if(indices.indice3==0){
+				indices.indice3=i;
+			}else{
+				indices.indice4=i;
+			}
+			rightIndicesstr[rightMPHFstr.lookup(rcBeg)]=indices;
+		}
+		end=((line.substr(line.size()-k+1,k-1)));
+		rcEnd=(reverseComplements(end));
+		if(end<=rcEnd){
+			indices=rightIndicesstr[rightMPHFstr.lookup(end)];
+			indices.overlap=end;
+			if(indices.indice1==0){
+				indices.indice1=i;
+			}else if(indices.indice2==0){
+				indices.indice2=i;
+			}else if(indices.indice3==0){
+				indices.indice3=i;
+			}else{
+				indices.indice4=i;
+			}
+			rightIndicesstr[rightMPHFstr.lookup(end)]=indices;
+		}else{
+			indices=leftIndicesstr[leftMPHFstr.lookup(rcEnd)];
+			indices.overlap=rcEnd;
+			if(indices.indice1==0){
+				indices.indice1=i;
+			}else if(indices.indice2==0){
+				indices.indice2=i;
+			}else if(indices.indice3==0){
+				indices.indice3=i;
+			}else{
+				indices.indice4=i;
+			}
+			leftIndicesstr[leftMPHFstr.lookup(rcEnd)]=indices;
+		}
+	}
+}
 
+
+//TODO THIS WOLE PART COULD BE FACTORIZED
 void Aligner::indexUnitigs(){
 	auto startChrono=chrono::system_clock::now();
 	uint nbThreads(1);
 	vector<thread> threads;
 	for (uint i(0); i<nbThreads; ++i){
 		if(stringMode){
-			threads.push_back(thread(&Aligner::indexUnitigsAuxStr,this));
+			if(stringModeAnchor){
+				threads.push_back(thread(&Aligner::indexUnitigsAuxStrfull,this));
+			}else{
+				threads.push_back(thread(&Aligner::indexUnitigsAuxStrbutanchors,this));
+			}
 		}else{
 			threads.push_back(thread(&Aligner::indexUnitigsAux,this));
 		}

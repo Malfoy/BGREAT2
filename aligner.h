@@ -123,7 +123,7 @@ public:
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB){
 		preciseOutput=preciseB;
@@ -141,6 +141,13 @@ public:
 		}else{
 			stringMode=false;
 		}
+		if(anchorSize>63){
+			stringModeAnchor=true;
+		}else{
+			stringModeAnchor=false;
+			//TODO
+		}
+
 		coreNumber=cores;
 		errorsMax=errorsAllowed;
 		tryNumber=effort;
@@ -249,6 +256,10 @@ public:
 	uint mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors);
 	uint mapOnRightEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors);
 	bool compactVectors( vector<uNumber>& numbers1, vector<uNumber>& numbers2);
+	void indexUnitigsAuxStrbutanchors();
+	void indexUnitigsAuxStrfull();
+	void fillIndicesstrbutanchors();
+	vector<pair<pair<uint,uint>,uint>> getNAnchorsnostr(const string& read, uint n);
 };
 
 
