@@ -595,6 +595,7 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 
 
 bool Aligner::compactVectors( vector<uNumber>& numbers, vector<uNumber>& numbers2){
+	//they overlap
 	for(uint i(0);i<numbers.size();++i){
 		bool overlap(true);
 		uint j(0);
@@ -607,14 +608,45 @@ bool Aligner::compactVectors( vector<uNumber>& numbers, vector<uNumber>& numbers
 		if(overlap){
 			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
 			numbers2={};
+			//~ cout<<1<<endl;;
 			return true;
 		}
 	}
+	//they overlap of k-1
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		numbers2={};
-			return true;
+		//~ cout<<2<<endl;;
+		return true;
 	}
+
+	//a unique unitig between them
+	vector<pair<string,uNumber>> next,prev;
+	string unitig(getUnitig(numbers[numbers.size()-1]));
+	if(stringMode){
+		next=(getBegin((unitig.substr(unitig.size()-k+1))));
+	}else{
+		next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
+	}
+	if(next.size()!=1){
+		return false;
+	}
+	if(stringMode){
+		prev=(getEnd((getUnitig(numbers2[0]).substr(0,k-1))));
+	}else{
+		prev=(getEnd(str2num(getUnitig(numbers2[0]).substr(0,k-1))));
+	}
+
+	if(prev.size()!=1){
+		return false;
+	}
+	if(prev[0].second==next[0].second){
+		numbers.push_back(prev[0].second);
+		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		//~ cout<<3<<endl;;
+		return true;
+	}
+	return false;
 }
 
 
@@ -642,7 +674,6 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 		++superReads;
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
-
 	return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
 }
 
@@ -792,22 +823,28 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 			if(vectorMode){
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
-							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+						if(unitigsSelected.count(unitigNumPos)==0 ){
+							unitigsSelected.insert(unitigNumPos);
 							list.push_back({anchorsPositionVector[hash][j],i});
 						}
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
-							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+						if(unitigsSelected.count(unitigNumPos)==0){
+							unitigsSelected.insert(unitigNumPos);
 							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
 						}
 					}
 				}
 			}else{
-				if(unitigsSelected.count(anchorsPosition[hash].first)==0){
-					unitigsSelected.insert(anchorsPosition[hash].first);
+				int32_t unitigNum(anchorsPosition[hash].first);
+				uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+				if(unitigsSelected.count(unitigNumPos)==0){
+					unitigsSelected.insert(unitigNumPos);
 					if(num==rep){
 						list.push_back({anchorsPosition[hash],i});
 					}else{
@@ -847,22 +884,28 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 			if(vectorMode){
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
-							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+						if(unitigsSelected.count(unitigNumPos)==0){
+							unitigsSelected.insert(unitigNumPos);
 							list.push_back({anchorsPositionVector[hash][j],i});
 						}
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						if(unitigsSelected.count(anchorsPositionVector[hash][j].first)==0){
-							unitigsSelected.insert(anchorsPositionVector[hash][j].first);
+						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+						if(unitigsSelected.count(unitigNumPos)==0){
+							unitigsSelected.insert(unitigNumPos);
 							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
 						}
 					}
 				}
 			}else{
-				if(unitigsSelected.count(anchorsPosition[hash].first)==0){
-					unitigsSelected.insert(anchorsPosition[hash].first);
+				int32_t unitigNum(anchorsPosition[hash].first);
+				uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+				if(unitigsSelected.count(unitigNumPos)==0){
+					unitigsSelected.insert(unitigNumPos);
 					if(anchorsCheckingstr[hash]==rep){
 						if(num==rep){
 							list.push_back({anchorsPosition[hash],i});
@@ -1541,7 +1584,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	cout<<"Reads : "<<readNumber<<endl;
 	cout<<"Not anchored : "<<noOverlapRead<<" Percent : "<<(100*float(noOverlapRead))/readNumber<<endl;
 	cout<<"Anchored and aligned : "<<alignedRead<<" Percent : "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
-	cout<<"Anchored but not aligned : "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
+	cout<<"Not aligned : "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
 	auto end=chrono::system_clock::now();auto waitedFor=end-startChrono;
 	cout<<"Reads/seconds : "<<readNumber/(chrono::duration_cast<chrono::seconds>(waitedFor).count()+1)<<endl;
 	cout<<"Mapping in seconds : "<<(chrono::duration_cast<chrono::seconds>(waitedFor).count())<<endl;

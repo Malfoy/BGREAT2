@@ -66,192 +66,164 @@ vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound,
 
 
 
-vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, bool& overlapFound, uint errorMax, bool& rc, bool& noOverlap){
-	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
-	if(listAnchors.empty()){noOverlap=true; ++noOverlapRead;return {};}
-	overlapFound=false;
+vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor){
 	vector<uNumber> pathBegin,pathEnd;
-	string unitig;
+	string unitig("");
 	bool returned(false);
-	for(uint start(0); start<(uint)listAnchors.size(); ++start){
-		int unitigNumber(listAnchors[start].first.first),positionUnitig(listAnchors[start].first.second),positionRead(listAnchors[start].second);
-		if(unitigNumber>=0){
-			unitig=(unitigs[unitigNumber]);
+	int unitigNumber(anchor.first.first),positionUnitig(anchor.first.second),positionRead(anchor.second);
+	if(unitigNumber>=0){
+		unitig=(unitigs[unitigNumber]);
+	}else{
+		if(rcMode){
+			unitig=(unitigsRC[-unitigNumber]);
 		}else{
-			if(rcMode){
-				unitig=(unitigsRC[-unitigNumber]);
-			}else{
-				unitig=reverseComplements(unitigs[-unitigNumber]);
-			}
-			positionUnitig=unitig.size()-positionUnitig-anchorSize;
-			returned=true;
+			unitig=reverseComplements(unitigs[-unitigNumber]);
 		}
-		if(positionRead>=positionUnitig){
-			if(read.size()-positionRead>=unitig.size()-positionUnitig){
-				//CASE 1 : unitig included in read
-				//~ cout<<"1:"<<endl;
-				uint errors(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
-				if(errors<=errorMax){
-					pathBegin={};
-					uint errorBegin;
-					if(false){//TODO MAKE PARAMETER
-						errorBegin=(checkBeginExhaustive(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-					}else{
-						errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-					}
-					if(errorBegin+errors<=errorMax){
-						pathEnd={(int)unitigNumber};
-						uint errorsEnd;
-						if(false){
-							errorsEnd=(checkEndExhaustive(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors-errorBegin));
-						}else{
-							errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
-						}
-						if(errorBegin+errors+errorsEnd<=errorMax){
-							++alignedRead;
-							reverse(pathBegin.begin(),pathBegin.end());
-							pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
-							return pathBegin;
-						}
-					}
-				}
-			}else{
-				//CASE 2 : unitig overap read
-				//~ cout<<"2:"<<endl;
-				uint errors(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
-				if(errors<=errorMax){
-					pathBegin={};
-					uint errorBegin;
-					if(false){
-						errorBegin=(checkBeginExhaustive(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-					}else{
-						errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-					}
-					if(errorBegin+errors<=errorMax){
+		positionUnitig=unitig.size()-positionUnitig-anchorSize;
+		returned=true;
+	}
+	if(positionRead>=positionUnitig){
+		if(read.size()-positionRead>=unitig.size()-positionUnitig){
+			//CASE 1 : unitig included in read
+			//~ cout<<"1:"<<endl;
+			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
+			if(errors<=errorMax){
+				pathBegin={};
+				uint errorBegin;
+				errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errorBegin+errors<=errorMax){
+					pathEnd={(int)unitigNumber};
+					uint errorsEnd;
+					errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
+					if(errorBegin+errors+errorsEnd<=errorMax){
 						++alignedRead;
 						reverse(pathBegin.begin(),pathBegin.end());
-						pathBegin.push_back((int)unitigNumber);
+						pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 						return pathBegin;
 					}
 				}
 			}
 		}else{
-			if(read.size()-positionRead>=unitig.size()-positionUnitig){
-				//CASE 3 : read overlap unitig
-				//~ cout<<"3:"<<endl;
-				uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
-				if(errors<=errorMax){
-					pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
-					uint errorsEnd;
-					if(false){
-						errorsEnd=(checkEndExhaustive(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors));
-					}else{
-						errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
-					}
-					if(errors+errorsEnd<=errorMax){
-						++alignedRead;
-						return pathEnd;
-					}
-				}
-			}else{
-				//CASE 4 : read included in unitig
-				//~ cout<<"4:"<<endl;
-				uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
-				if(errors<=errorMax){
+			//CASE 2 : unitig overap read
+			//~ cout<<"2:"<<endl;
+			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
+			if(errors<=errorMax){
+				pathBegin={};
+				uint errorBegin;
+				errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errorBegin+errors<=errorMax){
 					++alignedRead;
-					return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
+					reverse(pathBegin.begin(),pathBegin.end());
+					pathBegin.push_back((int)unitigNumber);
+					return pathBegin;
 				}
 			}
 		}
+	}else{
+		if(read.size()-positionRead>=unitig.size()-positionUnitig){
+			//CASE 3 : read overlap unitig
+			//~ cout<<"3:"<<endl;
+			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
+			if(errors<=errorMax){
+				pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
+				uint errorsEnd;
+				errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+				if(errors+errorsEnd<=errorMax){
+					++alignedRead;
+					return pathEnd;
+				}
+			}
+		}else{
+			//CASE 4 : read included in unitig
+			//~ cout<<"4:"<<endl;
+			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
+			if(errors<=errorMax){
+				++alignedRead;
+				return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
+			}
+		}
 	}
-	//~ if(!rc){rc=true;return alignReadGreedyAnchors(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
-	//~ notAligned++;
-	//~ cin.get();
 	return {};
 }
 
 
 
-vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, bool& overlapFound, uint errorMax, bool& rc, bool& noOverlap){
-	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
-	if(listAnchors.empty()){noOverlap=true; ++noOverlapRead;return {};}
-	overlapFound=false;
+vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor){
 	vector<uNumber> pathBegin,pathEnd;
 	string unitig("");
 	bool returned(false);
-	for(uint start(0); start<(uint)listAnchors.size(); ++start){
-		int unitigNumber(listAnchors[start].first.first),positionUnitig(listAnchors[start].first.second),positionRead(listAnchors[start].second);
-		if(unitigNumber>=0){
-			unitig=(unitigs[unitigNumber]);
+	int unitigNumber(anchor.first.first),positionUnitig(anchor.first.second),positionRead(anchor.second);
+	if(unitigNumber>=0){
+		unitig=(unitigs[unitigNumber]);
+	}else{
+		if(rcMode){
+			unitig=(unitigsRC[-unitigNumber]);
 		}else{
-			if(rcMode){
-				unitig=(unitigsRC[-unitigNumber]);
-			}else{
-				unitig=reverseComplements(unitigs[-unitigNumber]);
-			}
-			positionUnitig=unitig.size()-positionUnitig-anchorSize;
-			returned=true;
+			unitig=reverseComplements(unitigs[-unitigNumber]);
 		}
-		if(positionRead>=positionUnitig){
-			if(read.size()-positionRead>=unitig.size()-positionUnitig){
-				//~ cout<<1<<endl;
-				uint errors(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
-				if(errors<=errorMax){
-					pathBegin={};
-					uint errorBegin;
-					errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-					if(errorBegin+errors<=errorMax){
-						pathEnd={(int)unitigNumber};
-						uint errorsEnd;
-						errorsEnd=(checkEndGreedy(read,{(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()-k+1},pathEnd,errorMax-errors-errorBegin));
-						if(errorBegin+errors+errorsEnd<=errorMax){
-							++alignedRead;
-							reverse(pathBegin.begin(),pathBegin.end());
-							pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
-							return pathBegin;
-						}
-					}
-				}
-			}else{
-				//~ cout<<2<<endl;
-				uint errors(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
-				if(errors<=errorMax){
-					pathBegin={};
-					uint errorBegin;
-					errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-					if(errorBegin+errors<=errorMax){
+		positionUnitig=unitig.size()-positionUnitig-anchorSize;
+		returned=true;
+	}
+	if(positionUnitig+k-1>unitig.size() or positionUnitig-k+1<0){
+		return {};
+	}
+	if(positionRead>=positionUnitig){
+		if(read.size()-positionRead>=unitig.size()-positionUnitig){
+			//~ cout<<1<<endl;
+			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
+			if(errors<=errorMax){
+				pathBegin={};
+				uint errorBegin;
+				errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errorBegin+errors<=errorMax){
+					pathEnd={(int)unitigNumber};
+					uint errorsEnd;
+					errorsEnd=(checkEndGreedy(read,{(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
+					if(errorBegin+errors+errorsEnd<=errorMax){
 						++alignedRead;
 						reverse(pathBegin.begin(),pathBegin.end());
-						pathBegin.push_back((int)unitigNumber);
+						pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 						return pathBegin;
 					}
 				}
 			}
 		}else{
-			if(read.size()-positionRead>=unitig.size()-positionUnitig){
-				//~ cout<<3<<endl;
-				uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
-				if(errors<=errorMax){
-					pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
-					uint errorsEnd;
-					errorsEnd=(checkEndGreedy(read,{unitig.substr(unitig.size()-k+1,k-1),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
-					if(errors+errorsEnd<=errorMax){
-						++alignedRead;
-						return pathEnd;
-					}
-				}
-			}else{
-				//~ cout<<4<<endl;
-				uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
-				if(errors<=errorMax){
+			//~ cout<<2<<endl;
+			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
+			if(errors<=errorMax){
+				pathBegin={};
+				uint errorBegin;
+				errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errorBegin+errors<=errorMax){
 					++alignedRead;
-					return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
+					reverse(pathBegin.begin(),pathBegin.end());
+					pathBegin.push_back((int)unitigNumber);
+					return pathBegin;
 				}
 			}
 		}
+	}else{
+		if(read.size()-positionRead>=unitig.size()-positionUnitig){
+			//~ cout<<3<<endl;
+			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
+			if(errors<=errorMax){
+				pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
+				uint errorsEnd;
+				errorsEnd=(checkEndGreedy(read,{unitig.substr(unitig.size()-k+1,k-1),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+				if(errors+errorsEnd<=errorMax){
+					++alignedRead;
+					return pathEnd;
+				}
+			}
+		}else{
+			//~ cout<<4<<endl;
+			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
+			if(errors<=errorMax){
+				++alignedRead;
+				return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
+			}
+		}
 	}
-	//~ if(!rc){rc=true;return alignReadGreedyAnchorsstr(reverseComplements(read), overlapFound,errorMax, rc,noOverlap);}
-	//~ notAligned++;
 	return {};
 }
 
@@ -417,7 +389,6 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 
 
 uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, const pair<string, uint>& overlap , uint errors){
-	//~ cout<<"moreg"<<endl;
 	string unitig,readLeft(read.substr(overlap.second)),nextUnitig;
 	if(readLeft.size()<trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs;
@@ -620,9 +591,9 @@ uint Aligner::checkEndGreedy(const string& read, const pair<kmer, uint>& overlap
 
 
 uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overlap, vector<uNumber>& path, uint errors){
-	//~ cout<<"ceg"<<endl;
 	string readLeft(read.substr(overlap.second)),unitig,nextUnitig;
 	if(readLeft.size()<=trimingBases){return 0;}
+		//~ cout<<readLeft<<endl;
 	vector<pair<string,uNumber>> rangeUnitigs(getBegin(overlap.first));
 	uint minMiss(errors+1),indiceMinMiss(9);
 	bool ended(false);
@@ -665,6 +636,45 @@ uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overl
 
 
 
+void Aligner::alignReadOpti(const string& read, vector<int>& path){
+	path={};
+	vector<int> pathMem;
+	uint errors(0);
+	bool found(false);
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	if(listAnchors.empty()){
+		++noOverlapRead;
+		return;
+	}
+	while(errors<=errorsMax){
+		for(uint i(0);i<listAnchors.size();++i){
+			if(stringMode){
+				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
+			}else{
+				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
+			}
+			if(noMultiMapping){
+				if(path.size()==2){
+					if(found){
+						path={};
+						return;
+					}
+					found=true;
+					pathMem=path;
+				}else{
+					if(not path.empty()){return;}
+				}
+			}else{
+				if(not path.empty()){return;}
+			}
+		}
+		++errors;
+	}
+	path=pathMem;
+}
+
+
+
 void Aligner::alignPartGreedy(uint indiceThread){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
@@ -691,122 +701,45 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				read=multiread[i].second;
 				header2=multiread[i+1].first;
 				read2=multiread[i+1].second;
-				++readNumber;
+				readNumber+=2;
 				bool rc(false), noOverlap(false), overlapFound(false);
-				if(dogMode){
-					bool best(true);//TODO MAKE PARAMETER
-					uint errors(0);
-					if(best){
-						path={};
-						while(path.empty() and errors<=errorsMax and noOverlap==false){
-							rc=overlapFound=false;
-							if(stringMode){
-								path=alignReadGreedyAnchorsstr(read,overlapFound,errors,rc,noOverlap);
-							}else{
-								path=alignReadGreedyAnchors(read2,overlapFound,errors,rc,noOverlap);
-							}
-							++errors;
-						}
-						errors=(0);
-						path2={};
-						while(path2.empty() and errors<=errorsMax and noOverlap==false){
-							rc=overlapFound=false;
-							if(stringMode){
-								path2=alignReadGreedyAnchorsstr(read2,overlapFound,errors,rc,noOverlap);
-							}else{
-								path2=alignReadGreedyAnchors(read2,overlapFound,errors,rc,noOverlap);
-							}
-							++errors;
-						}
-					}else{
-						path=path2={};
-						if(stringMode){
-								path=alignReadGreedyAnchorsstr(read,overlapFound,errorsMax,rc,noOverlap);
-							}else{
-								path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
-							}
-						rc=overlapFound=false;
-						if(stringMode){
-								path2=alignReadGreedyAnchorsstr(read2,overlapFound,errorsMax,rc,noOverlap);
-							}else{
-								path2=alignReadGreedyAnchors(read2,overlapFound,errorsMax,rc,noOverlap);
-							}
-					}
-				}else{
-					path=path2={};
-					path=alignReadGreedy(read,overlapFound,errorsMax,rc);
-					rc=overlapFound=false;
-					path2=alignReadGreedy(read2,overlapFound,errorsMax,rc);
-				}
-				if((not noOverlap) and path.empty()){
-					notAligned++;
-				}
+				alignReadOpti(read,path);
+				alignReadOpti(read2,path2);
+				if(path.empty()){++notAligned;}
+				if(path2.empty()){++notAligned;}
 				superpath=(recoverSuperReadsPairedNoStr(path,path2));
 				if(superpath.first!=""){
-					if(superpath.second==""){
-						header+='\n'+superpath.first+'\n';
-						toWrite+=header;
+					if(superpath.second!=""){
+						toWrite+=header+'\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
 					}else{
-						header+='\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
-						toWrite+=header;
+						toWrite+=header+'\n'+superpath.first+'\n';
 					}
 				}else{
 					if(superpath.second!=""){
-						header2+='\n'+superpath.second+'\n';
-						toWrite+=header;
-					}else{
+						toWrite+=header2+'\n'+superpath.second+'\n';
 					}
 				}
 			}
 		}else{
 			for(uint i(0);i<multiread.size();i++){
+				//~ cout<<"go"<<endl;
 				header=multiread[i].first;
 				read=multiread[i].second;
 				++readNumber;
-				bool rc(false), noOverlap(false), overlapFound(false);
-				if(dogMode){
-					bool best(true);//TODO MAKE PARAMETER
-					if(best){
-						uint errors(0);
-						path={};
-						while(path.empty() and errors<=errorsMax and noOverlap==false){
-							rc=overlapFound=false;
-							if(stringMode){
-								path=alignReadGreedyAnchorsstr(read,overlapFound,errors,rc,noOverlap);
-							}else{
-								path=alignReadGreedyAnchors(read,overlapFound,errors,rc,noOverlap);
-							}
-							++errors;
-						}
-					}else{
-						if(stringMode){
-							path=alignReadGreedyAnchorsstr(read,overlapFound,errorsMax,rc,noOverlap);
-						}else{
-							path=alignReadGreedyAnchors(read,overlapFound,errorsMax,rc,noOverlap);
-						}
-					}
-				}else{
-					path=alignReadGreedy(read,overlapFound,errorsMax,rc);
-				}
-				if((not noOverlap) and path.empty()){
-					notAligned++;
-				}
+				alignReadOpti(read,path);
+				if(path.empty()){++notAligned;}
 				if(correctionMode){
 					if(not path.empty()){
 						uint position(path[0]);
 						path=vector<uNumber>(&path[1],&path[path.size()]);
 						superRead=(recoverSuperReads(path));
 						if(superRead!=""){
-							superRead=superRead.substr(position,read.size());
-							header+='\n'+superRead+'\n';
-							toWrite+=header;
+							toWrite+=header+'\n'+superRead.substr(position,read.size())+'\n';
 						}else{
-							header+='\n'+read+'\n';
-							toWrite+=header;
+							toWrite+=header+'\n'+read+'\n';
 						}
 					}else{
-						header+='\n'+read+'\n';
-						toWrite+=header;
+						toWrite+=header+'\n'+read+'\n';
 					}
 				}else{
 					if(not path.empty()){
@@ -823,25 +756,24 @@ void Aligner::alignPartGreedy(uint indiceThread){
 							path.push_back((int)unitigs[lastUnitigNumber].size()+(int)read.size()-(int)superRead.size());
 							superRead=(recoverSuperReadsNoStr(path));
 							if(superRead!=""){
-								header+='\n'+superRead+'\n';
-								toWrite+=header;
+								toWrite+=header+'\n'+superRead+'\n';
 							}
 						}else{
 							path=vector<uNumber>(&path[1],&path[path.size()]);
 							superRead=(recoverSuperReadsNoStr(path));
 							if(superRead!=""){
-								header+='\n'+superRead+'\n';
-								toWrite+=header;
+								toWrite+=header+'\n'+superRead+'\n';
 							}
 						}
+					}else{
+						//~ cerr<<header<<endl;
+						//~ cerr<<read<<endl;
 					}
 				}
 			}
 		}
 		if(keepOrder){
-			while(threadToPrint!=indiceThread){
-				this_thread::sleep_for (chrono::microseconds(1));
-			}
+			while(threadToPrint!=indiceThread){this_thread::sleep_for (chrono::microseconds(1));}
 			pathMutex.lock();
 			{
 				fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);

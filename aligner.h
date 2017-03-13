@@ -123,14 +123,14 @@ public:
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi){
+		noMultiMapping=multi;
 		preciseOutput=preciseB;
 		anchorSize=anchorsSize;
 		keepOrder=orderKeep;
 		unitigFileName=Unitigs;
-		vectorMode=vectorModeBool;
 		rcMode=rcModeBool;
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
@@ -141,13 +141,16 @@ public:
 		}else{
 			stringMode=false;
 		}
+		if(anchorsSize>=k){
+			anchorSize=k;
+		}else{
+			vectorMode=true;
+		}
 		if(anchorSize>63){
 			stringModeAnchor=true;
 		}else{
 			stringModeAnchor=false;
-			//TODO
 		}
-
 		coreNumber=cores;
 		errorsMax=errorsAllowed;
 		tryNumber=effort;
@@ -260,6 +263,9 @@ public:
 	void indexUnitigsAuxStrfull();
 	void fillIndicesstrbutanchors();
 	vector<pair<pair<uint,uint>,uint>> getNAnchorsnostr(const string& read, uint n);
+	vector<uNumber> alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor);;
+	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor);
+	void alignReadOpti(const string& reads, vector<int>& paths);
 };
 
 
