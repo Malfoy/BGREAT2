@@ -807,7 +807,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 	uint64_t hash;
 	string unitig;
 	kmer num(0),rcnum(0),rep(0);
-	for(uint i(0);i+anchorSize<read.size();++i){
+	for(uint i(0); i+anchorSize<read.size(); ++i){
 		bool returned(false);
 		if(num==0 and rcnum==0){
 			num=(str2num(read.substr(i,anchorSize)));

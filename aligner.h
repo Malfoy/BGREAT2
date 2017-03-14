@@ -266,6 +266,7 @@ public:
 	vector<uNumber> alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor);;
 	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor);
 	void alignReadOpti(const string& reads, vector<int>& paths);
+	vector<int> inclued(vector<int>& v1, vector<int>& v2);
 };
 
 

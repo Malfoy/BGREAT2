@@ -164,9 +164,9 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 		positionUnitig=unitig.size()-positionUnitig-anchorSize;
 		returned=true;
 	}
-	if(positionUnitig+k-1>unitig.size() or positionUnitig-k+1<0){
-		return {};
-	}
+	//~ if(positionUnitig+k-1>unitig.size() or positionUnitig+anchorSize-k+1<0){
+		//~ return {};
+	//~ }
 	if(positionRead>=positionUnitig){
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//~ cout<<1<<endl;
@@ -636,36 +636,70 @@ uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overl
 
 
 
+vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
+	if(v1.size()<v2.size()){
+		for(uint i(1);i<v1.size();++i){
+			bool found (false);
+			for(uint j(1);j<v2.size();++j){
+				if(v1[i]==v2[j] or v1[i]==-v2[j]){
+					found=true;
+					break;
+				}
+			}
+			if(not found){
+				return {};
+			}
+		}
+		return v1;
+	}else{
+		for(uint i(1);i<v2.size();++i){
+			bool found (false);
+			for(uint j(1);j<v1.size();++j){
+				if(v2[i]==v1[j] or v2[i]==-v1[j]){
+					found=true;
+					break;
+				}
+			}
+			if(not found){
+				return {};
+			}
+		}
+		return v2;
+	}
+	return {};
+}
+
+
+
 void Aligner::alignReadOpti(const string& read, vector<int>& path){
 	path={};
 	vector<int> pathMem;
 	uint errors(0);
-	bool found(false);
 	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
 	if(listAnchors.empty()){
 		++noOverlapRead;
 		return;
 	}
 	while(errors<=errorsMax){
+		bool found(false);
 		for(uint i(0);i<listAnchors.size();++i){
 			if(stringMode){
 				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
 			}else{
 				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
 			}
-			if(noMultiMapping){
-				if(path.size()==2){
+			if(not path.empty()){
+				if(noMultiMapping){
 					if(found){
-						path={};
-						return;
+						pathMem=inclued(path,pathMem);
+						if(pathMem.empty()){path={};return;}
+					}else{
+						pathMem=path;
 					}
 					found=true;
-					pathMem=path;
 				}else{
-					if(not path.empty()){return;}
+					return;
 				}
-			}else{
-				if(not path.empty()){return;}
 			}
 		}
 		++errors;
