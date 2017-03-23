@@ -106,6 +106,7 @@ public:
 	ofstream pathFile, noOverlapFile, notMappedFile;
 	FILE * pathFilef;
 	FILE * notMappedFilef;
+	FILE * readFileF;
 	MPHF leftMPHF,rightMPHF,anchorsMPHF;
 	MPHFSTR leftMPHFstr,rightMPHFstr,anchorsMPHFstr;
 	vector<unitigIndices> leftIndices,rightIndices;
@@ -267,6 +268,7 @@ public:
 	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor);
 	void alignReadOpti(const string& reads, vector<int>& paths);
 	vector<int> inclued(vector<int>& v1, vector<int>& v2);
+	void getReads2(vector<pair<string,string>>& reads, uint n);
 };
 
 

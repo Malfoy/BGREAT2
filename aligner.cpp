@@ -46,6 +46,7 @@ using namespace std;
 
 
 //Parse reads
+//TODO faster
 void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 	reads={};
 	string read,header,inter;
@@ -114,6 +115,37 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 					}
 					return;
 				}
+			}
+		}
+	}
+}
+
+
+
+void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
+	reads={};
+	string read,header,inter;
+	uint buffSize(10000);
+	char buff[buffSize];
+	uint pred(0);
+	while (!feof(readFileF)) {
+		fread(buff, 1, buffSize, readFileF);
+		for(uint i(0);i<buffSize;++i){
+			if(buff[i]=='\0'){
+				if(header==""){
+					header=string(buff+pred,i-pred);
+					pred=i;
+				}else{
+					read=string(buff+pred,i-pred);
+					reads.push_back({header,read});
+					if(reads.size()>=n){return;}
+					header=read="";
+					pred=i;
+				}
+			}else{
+				//~ if(not headerMode){
+					//~ read+=buff[i];
+				//~ }
 			}
 		}
 	}
@@ -960,8 +992,10 @@ void Aligner::indexUnitigsAux(){
 				for(uint j(0);j+anchorSize<line.size();++j){
 					updateK(seq,line[j+anchorSize]);
 					updateRCK(rcSeq,line[j+anchorSize]);
-					canon=(min(seq, rcSeq));
-					anchors->push_back(canon);
+					if((j+1)%fracKmer==0){
+						canon=(min(seq, rcSeq));
+						anchors->push_back(canon);
+					}
 				}
 			}
 		}
@@ -1040,8 +1074,10 @@ void Aligner::indexUnitigsAuxStrfull(){
 				for(uint j(0);j+anchorSize<line.size();++j){
 					seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
 					rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
-					canon=(min(seq,rcSeq));
-					anchors->push_back(canon);
+					if((j+1)==0){
+						canon=(min(seq,rcSeq));
+						anchors->push_back(canon);
+					}
 				}
 			}
 		}
@@ -1118,8 +1154,10 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 				for(uint j(0);j+anchorSize<line.size();++j){
 					updateK(seq,line[j+anchorSize]);
 					updateRCK(rcSeq,line[j+anchorSize]);
-					canon=(min(seq, rcSeq));
-					anchors->push_back(canon);
+					if((j+1)%fracKmer==0){
+						canon=(min(seq, rcSeq));
+						anchors->push_back(canon);
+					}
 				}
 			}
 		}
@@ -1191,26 +1229,28 @@ void Aligner::fillIndices(){
 			for(uint j(0);j+anchorSize<line.size();++j){
 				updateK(seq,line[j+anchorSize]);
 				updateRCK(rcSeq,line[j+anchorSize]);
-				canon=(min(seq, rcSeq));
-				uint64_t hash=anchorsMPHF.lookup(canon);
-				if(canon==seq){
-					if(vectorMode){
-						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({i,j+1});
-						mutexV[hash%1000].unlock();
+				if((j+1)%fracKmer==0){
+					canon=(min(seq, rcSeq));
+					uint64_t hash=anchorsMPHF.lookup(canon);
+					if(canon==seq){
+						if(vectorMode){
+							mutexV[hash%1000].lock();
+							anchorsPositionVector[hash].push_back({i,j+1});
+							mutexV[hash%1000].unlock();
+						}else{
+							anchorsPosition[hash]={i,j+1};
+						}
 					}else{
-						anchorsPosition[hash]={i,j+1};
+						if(vectorMode){
+							mutexV[hash%1000].lock();
+							anchorsPositionVector[hash].push_back({-i,j+1});
+							mutexV[hash%1000].unlock();
+						}else{
+							anchorsPosition[hash]={-i,j+1};
+						}
 					}
-				}else{
-					if(vectorMode){
-						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({-i,j+1});
-						mutexV[hash%1000].unlock();
-					}else{
-						anchorsPosition[hash]={-i,j+1};
-					}
+					anchorsChecking[hash]=canon;
 				}
-				anchorsChecking[hash]=canon;
 			}
 		}
 	}
@@ -1311,26 +1351,28 @@ void Aligner::fillIndicesstr(){
 			for(uint j(0);j+anchorSize<line.size();++j){
 				seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
 				rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
-				canon=(min(seq,rcSeq));
-				int64_t hash=anchorsMPHFstr.lookup(canon);
-				if(canon==seq){
-					if(vectorMode){
-						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({i,j+1});
-						mutexV[hash%1000].unlock();
+				if((j+1)%fracKmer==0){
+					canon=(min(seq,rcSeq));
+					int64_t hash=anchorsMPHFstr.lookup(canon);
+					if(canon==seq){
+						if(vectorMode){
+							mutexV[hash%1000].lock();
+							anchorsPositionVector[hash].push_back({i,j+1});
+							mutexV[hash%1000].unlock();
+						}else{
+							anchorsPosition[hash]={i,j+1};
+						}
 					}else{
-						anchorsPosition[hash]={i,j+1};
+						if(vectorMode){
+							mutexV[hash%1000].lock();
+							anchorsPositionVector[hash].push_back({-i,j+1});
+							mutexV[hash%1000].unlock();
+						}else{
+							anchorsPosition[hash]={-i,j+1};
+						}
 					}
-				}else{
-					if(vectorMode){
-						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({-i,j+1});
-						mutexV[hash%1000].unlock();
-					}else{
-						anchorsPosition[hash]={-i,j+1};
-					}
+					anchorsCheckingstr[hash]=canon;
 				}
-				anchorsCheckingstr[hash]=canon;
 			}
 		}
 	}
@@ -1430,26 +1472,28 @@ void Aligner::fillIndicesstrbutanchors(){
 			for(uint j(0);j+anchorSize<line.size();++j){
 				updateK(seq,line[j+anchorSize]);
 				updateRCK(rcSeq,line[j+anchorSize]);
-				canon=(min(seq, rcSeq));
-				uint64_t hash=anchorsMPHF.lookup(canon);
-				if(canon==seq){
-					if(vectorMode){
-						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({i,j+1});
-						mutexV[hash%1000].unlock();
+				if((j+1)%fracKmer==0){
+					canon=(min(seq, rcSeq));
+					uint64_t hash=anchorsMPHF.lookup(canon);
+					if(canon==seq){
+						if(vectorMode){
+							mutexV[hash%1000].lock();
+							anchorsPositionVector[hash].push_back({i,j+1});
+							mutexV[hash%1000].unlock();
+						}else{
+							anchorsPosition[hash]={i,j+1};
+						}
 					}else{
-						anchorsPosition[hash]={i,j+1};
+						if(vectorMode){
+							mutexV[hash%1000].lock();
+							anchorsPositionVector[hash].push_back({-i,j+1});
+							mutexV[hash%1000].unlock();
+						}else{
+							anchorsPosition[hash]={-i,j+1};
+						}
 					}
-				}else{
-					if(vectorMode){
-						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({-i,j+1});
-						mutexV[hash%1000].unlock();
-					}else{
-						anchorsPosition[hash]={-i,j+1};
-					}
+					anchorsChecking[hash]=canon;
 				}
-				anchorsChecking[hash]=canon;
 			}
 		}
 	}
