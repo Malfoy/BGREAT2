@@ -120,6 +120,7 @@ public:
 	kmer offsetUpdateOverlap;
 	kmer offsetUpdateAnchor;
 	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize;
+	double ratioError;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
 	array<mutex,1000> mutexV;
 
@@ -136,6 +137,7 @@ public:
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
 		pathFilef=fopen(paths.c_str(),"wb");
+		ratioError=0.1;
 		k=kValue;
 		if(k>63){
 			stringMode=true;

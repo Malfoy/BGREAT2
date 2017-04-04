@@ -166,12 +166,16 @@ kmer nuc2intrc(char c){
 
 uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n){
 	uint miss(0);
+	//~ return 1000;
 	for(uint i(0); i<seq2.size(); ++i){
 		if(seq2[i]!=seq1[i]){
 			if(++miss>n){
 				return miss;
 			}
 		}
+	}
+	if(((double)miss)/(double)seq2.size()>0.1){
+		return n+2;
 	}
 	return miss;
 }
