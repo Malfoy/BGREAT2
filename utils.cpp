@@ -174,7 +174,7 @@ uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n){
 			}
 		}
 	}
-	if(((double)miss)/(double)seq2.size()>0.1){
+	if(((double)miss)/(double)seq2.size()>0.3){
 		return n+2;
 	}
 	return miss;

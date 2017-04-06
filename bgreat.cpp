@@ -127,7 +127,7 @@ int main(int argc, char ** argv){
 		<<"-e effort put in mapping (2)"<<endl
 		<<"-f path file (paths)"<<endl
 		<<"-q for fastq read file"<<endl
-		<<"-c to output corrected reads"<<endl
+		//~ <<"-c to output corrected reads"<<endl
 		<<"-p to precise output"<<endl
 		<<"-O to keep order of the reads"<<endl;
 		return 0;
