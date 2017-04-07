@@ -82,6 +82,16 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 		positionUnitig=unitig.size()-positionUnitig-anchorSize;
 		returned=true;
 	}
+	if(positionUnitig+anchorSize<=k-1){
+		if(positionUnitig+read.size()-positionRead<=k-1){
+			return{};
+		}
+	}
+	if(positionUnitig>=unitig.size()-k+1){
+		if(positionRead<=positionUnitig){
+			return{};
+		}
+	}
 	if(positionRead>=positionUnitig){
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//CASE 1 : unitig included in read
@@ -164,9 +174,16 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 		positionUnitig=unitig.size()-positionUnitig-anchorSize;
 		returned=true;
 	}
-	//~ if(positionUnitig+k-1>unitig.size() or positionUnitig+anchorSize-k+1<0){
-		//~ return {};
-	//~ }
+	if(positionUnitig+anchorSize<=k-1){
+		if(positionUnitig+read.size()-positionRead<=k-1){
+			return{};
+		}
+	}
+	if(positionUnitig>=unitig.size()-k+1){
+		if(positionRead<=positionUnitig){
+			return{};
+		}
+	}
 	if(positionRead>=positionUnitig){
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//~ cout<<1<<endl;
@@ -680,6 +697,8 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path){
 		++noOverlapRead;
 		return;
 	}
+	//~ vector<vector<int>> possiblepath;
+	random_shuffle ( listAnchors.begin(), listAnchors.end() );
 	while(errors<=errorsMax){
 		bool found(false);
 		for(uint i(0);i<listAnchors.size();++i){
@@ -689,7 +708,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path){
 				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
 			}
 			if(not path.empty()){
-				if(noMultiMapping){
+				if(false){
 					if(found){
 						pathMem=inclued(path,pathMem);
 						if(pathMem.empty()){path={};return;}

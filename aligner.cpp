@@ -856,20 +856,26 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						if(unitigsSelected.count(unitigNumPos)==0 ){
-							unitigsSelected.insert(unitigNumPos);
-							list.push_back({anchorsPositionVector[hash][j],i});
-						}
+						//~ if(i>positionUnitig){
+							if(unitigsSelected.count(unitigNumPos)==0 ){
+								unitigsSelected.insert(unitigNumPos);
+								list.push_back({anchorsPositionVector[hash][j],i});
+							}
+						//~ }
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						if(unitigsSelected.count(unitigNumPos)==0){
-							unitigsSelected.insert(unitigNumPos);
-							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
-						}
+						//~ if((unitigNum<0 and positionUnitig+k-1<unitigs[unitigNumPos].size()) or((unitigNum>0 and positionUnitig>k-1))){
+							if(unitigsSelected.count(unitigNumPos)==0){
+								unitigsSelected.insert(unitigNumPos);
+								list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+							}
+						//~ }
 					}
 				}
 			}else{
@@ -918,19 +924,23 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						if(unitigsSelected.count(unitigNumPos)==0){
-							unitigsSelected.insert(unitigNumPos);
-							list.push_back({anchorsPositionVector[hash][j],i});
-						}
+						//~ if((unitigNum>0 and anchorsPositionVector[hash][j].second<unitigs[unitigNumPos].size()-k+1) or((unitigNum<0 and anchorsPositionVector[hash][j].second>k-1))){
+							if(unitigsSelected.count(unitigNumPos)==0){
+								unitigsSelected.insert(unitigNumPos);
+								list.push_back({anchorsPositionVector[hash][j],i});
+							}
+						//~ }
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						if(unitigsSelected.count(unitigNumPos)==0){
-							unitigsSelected.insert(unitigNumPos);
-							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
-						}
+						//~ if((unitigNum<0 and anchorsPositionVector[hash][j].second<unitigs[unitigNumPos].size()-k+1) or((unitigNum>0 and anchorsPositionVector[hash][j].second>k-1))){
+							if(unitigsSelected.count(unitigNumPos)==0){
+								unitigsSelected.insert(unitigNumPos);
+								list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+							}
+						//~ }
 					}
 				}
 			}else{
