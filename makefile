@@ -1,8 +1,14 @@
-# CC=/usr/bin/g++
 CC=g++
-#~ CC=clang++
-CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp
-LDFLAGS=-flto -lpthread -fopenmp
+OS := $(shell uname)
+ifeq ($(OS),Darwin)
+  # Run MacOS commands
+  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors
+  LDFLAGS=-flto -lpthread
+else
+  # check for Linux and add use of OpenMP
+  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp
+  LDFLAGS=-flto -lpthread -fopenmp
+endif
 
 
 ifeq ($(gprof),1)
