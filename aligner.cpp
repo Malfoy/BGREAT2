@@ -1139,9 +1139,8 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
-		if(line.size()<k){
-			break;
-		}else{
+		//~ cout<<line<<endl;
+		if(line.size()>=k){
 			unitigs.push_back(line);
 			unitigsRC.push_back(reverseComplements(line));
 			beg=((line.substr(0,k-1)));
@@ -1194,6 +1193,7 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 		anchorsMPHF= MPHF(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
 	anchorNumber=anchors->size();
+	//~ cout<<anchorNumber<<endl;
 	delete anchors;
 	if(vectorMode){
 		anchorsPositionVector.resize(anchorNumber,{});

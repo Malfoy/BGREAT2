@@ -120,7 +120,7 @@ int main(int argc, char ** argv){
 		<<"-u read file (unpaired)"<<endl
 		<<"-x read file (paired)"<<endl
 		<<"-k k value (graph) (31)"<<endl
-		//~ <<"-a anchors length (k)"<<endl
+		<<"-a anchors length (k)"<<endl
 		<<"-g unitig file (unitig.fa)"<<endl
 		<<"-m number of missmatch allowed (2)"<<endl
 		<<"-t number of threads (1)"<<endl
