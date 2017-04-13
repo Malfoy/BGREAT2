@@ -137,7 +137,7 @@ public:
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
 		pathFilef=fopen(paths.c_str(),"wb");
-		ratioError=0.1;
+		ratioError=ratioe;
 		k=kValue;
 		if(k>63){
 			stringMode=true;
