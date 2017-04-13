@@ -82,6 +82,7 @@ int main(int argc, char ** argv){
 			break;
 		case 'e':
 			effort=stoi(optarg);
+			break;
 		case 'r':
 			ratioe=stof(optarg);
 			break;
