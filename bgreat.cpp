@@ -59,7 +59,8 @@ int main(int argc, char ** argv){
 	int errors(2), threads(1), ka(31), c, effort(2),dogMode(1);
 	int anchorSize(ka);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:bqcOpM")) != -1){
+	float ratioe(0.3);
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:bqcOpM")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -81,6 +82,8 @@ int main(int argc, char ** argv){
 			break;
 		case 'e':
 			effort=stoi(optarg);
+		case 'r':
+			ratioe=stof(optarg);
 			break;
 		case 'f':
 			pathFile=(optarg);
@@ -132,7 +135,7 @@ int main(int argc, char ** argv){
 		<<"-O to keep order of the reads"<<endl;
 		return 0;
 	}
-	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput,multi);
+	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput,multi,ratioe);
 	supervisor.indexUnitigs();
 	if(reads!=""){
 		supervisor.alignAll(not brute,reads,false);

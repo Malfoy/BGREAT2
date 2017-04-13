@@ -127,7 +127,7 @@ public:
 	string unitigFileName, pathToWrite;
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe){
 		noMultiMapping=multi;
 		preciseOutput=preciseB;
 		anchorSize=anchorsSize;
@@ -271,6 +271,8 @@ public:
 	void alignReadOpti(const string& reads, vector<int>& paths);
 	vector<int> inclued(vector<int>& v1, vector<int>& v2);
 	void getReads2(vector<pair<string,string>>& reads, uint n);
+	uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n);
+
 };
 
 
