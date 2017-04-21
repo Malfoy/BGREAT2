@@ -713,16 +713,20 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path){
 			}else{
 				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
 			}
+			//MAPPING IS FOUND
 			if(not path.empty()){
-				if(false){
+				if(noMultiMapping){
 					if(found){
-						pathMem=inclued(path,pathMem);
-						if(pathMem.empty()){path={};return;}
+						//~ pathMem=inclued(path,pathMem);
+						//~ if(pathMem.empty()){path={};return;}
+						//NONE
+						path={};return;
 					}else{
 						pathMem=path;
 					}
 					found=true;
 				}else{
+					//DONE
 					return;
 				}
 			}
