@@ -998,7 +998,7 @@ void Aligner::indexUnitigsAux(){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
 		if(line.size()<k){
-			break;
+			continue;
 		}else{
 			unitigs.push_back(line);
 			unitigsRC.push_back(reverseComplements(line));
@@ -1157,7 +1157,7 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
-		//~ cout<<line<<endl;
+		cout<<line<<endl;
 		if(line.size()>=k){
 			unitigs.push_back(line);
 			unitigsRC.push_back(reverseComplements(line));
