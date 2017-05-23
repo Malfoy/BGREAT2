@@ -45,6 +45,20 @@ using namespace std;
 
 
 
+uint8_t getHash(const string& str){
+	uint8_t result(0);
+	for(uint i(0);i<4;++i){
+		result+=nuc2int(str[i]);
+	}
+	return result;
+}
+
+
+
+uint8_t getHash(kmer n){
+	return n%256;
+}
+
 //Parse reads
 //TODO faster
 void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
@@ -869,7 +883,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 			rep=(min(num, rcnum));
 		}
 		hash=anchorsMPHF.lookup(rep);
-		if(hash!=ULLONG_MAX and anchorsChecking[hash]==rep){
+		if(hash!=ULLONG_MAX and anchorsChecking[hash]==getHash(rep)){
 			if(vectorMode){
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
@@ -966,7 +980,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 				uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
 				if(unitigsSelected.count(unitigNumPos)==0){
 					unitigsSelected.insert(unitigNumPos);
-					if(anchorsCheckingstr[hash]==rep){
+					if(anchorsChecking[hash]==getHash(rep)){
 						if(num==rep){
 							list.push_back({anchorsPosition[hash],i});
 						}else{
@@ -1140,7 +1154,7 @@ void Aligner::indexUnitigsAuxStrfull(){
 	}
 	leftIndicesstr.resize(leftsize,{});
 	rightIndicesstr.resize(rightsize,{});
-	anchorsCheckingstr.resize(anchorNumber,"");
+	anchorsChecking.resize(anchorNumber,0);
 	fillIndicesstr();
 }
 
@@ -1252,7 +1266,7 @@ void Aligner::fillIndices(){
 					anchorsPosition[hash]={-i,0};
 				}
 			}
-			anchorsChecking[hash]=canon;
+			anchorsChecking[hash]=getHash(canon);
 			for(uint j(0);j+anchorSize<line.size();++j){
 				updateK(seq,line[j+anchorSize]);
 				updateRCK(rcSeq,line[j+anchorSize]);
@@ -1276,7 +1290,7 @@ void Aligner::fillIndices(){
 							anchorsPosition[hash]={-i,j+1};
 						}
 					}
-					anchorsChecking[hash]=canon;
+					anchorsChecking[hash]=getHash(canon);
 				}
 			}
 		}
@@ -1374,7 +1388,7 @@ void Aligner::fillIndicesstr(){
 					anchorsPosition[hash]={-i,0};
 				}
 			}
-			anchorsCheckingstr[hash]=canon;
+			anchorsChecking[hash]=getHash(canon);
 			for(uint j(0);j+anchorSize<line.size();++j){
 				seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
 				rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
@@ -1398,7 +1412,7 @@ void Aligner::fillIndicesstr(){
 							anchorsPosition[hash]={-i,j+1};
 						}
 					}
-					anchorsCheckingstr[hash]=canon;
+					anchorsChecking[hash]=getHash(canon);
 				}
 			}
 		}
@@ -1495,7 +1509,7 @@ void Aligner::fillIndicesstrbutanchors(){
 					anchorsPosition[hash]={-i,0};
 				}
 			}
-			anchorsChecking[hash]=canon;
+			anchorsChecking[hash]=getHash(canon);
 			for(uint j(0);j+anchorSize<line.size();++j){
 				updateK(seq,line[j+anchorSize]);
 				updateRCK(rcSeq,line[j+anchorSize]);
@@ -1519,7 +1533,7 @@ void Aligner::fillIndicesstrbutanchors(){
 							anchorsPosition[hash]={-i,j+1};
 						}
 					}
-					anchorsChecking[hash]=canon;
+					anchorsChecking[hash]=getHash(canon);
 				}
 			}
 		}

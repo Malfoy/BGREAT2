@@ -113,8 +113,8 @@ public:
 	vector<unitigIndicesstr> leftIndicesstr,rightIndicesstr;
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
 	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
-	vector<kmer> anchorsChecking;
-	vector<string> anchorsCheckingstr;
+	vector<uint8_t> anchorsChecking;
+	//~ vector<string> anchorsCheckingstr;
 	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdateOverlap;
