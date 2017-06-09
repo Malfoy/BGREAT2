@@ -603,7 +603,8 @@ vector<uNumber> getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool 
 
 
 bool Aligner::isNeighboor(const uint number1, const uint number2){
-	string unitig1(getUnitig(number1)), unitig2(getUnitig(number2)),inter(compactionEndNoRC(unitig1, unitig2, k-1));
+	string unitig1(getUnitig(number1)), unitig2(getUnitig(number2));
+	string inter(compactionEndNoRC(unitig1, unitig2, k-1));
 	if(inter.empty()){
 		return false;
 	}
@@ -658,57 +659,125 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 
 
 
-bool Aligner::compactVectors( vector<uNumber>& numbers, vector<uNumber>& numbers2){
+string overlapping(const string& str1, const string& str2, uint overlapMin){
+	string suffix(str1.substr(str1.size()-overlapMin));
+	int pos = str2.find(suffix, 0);
+	if(pos !=-1){
+		int temp = str2.find(suffix,pos+1);
+		if(temp !=-1){
+			return "";
+		}
+	}else{
+		return "";
+	}
+	if(overlapMin+pos<str1.size()){
+		if(str2.substr(0,pos)==str1.substr(str1.size()-overlapMin-pos,pos)){
+			return str1+str2.substr((uint)pos+overlapMin);
+		}
+	}
+	return "";
+}
+
+
+
+bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int begin1, int begin2, int length){
+	if(begin1<0 or begin2<0){
+		return false;
+	}
+	for(uint i(0);i<length;++i){
+		//~ cout<<numbers[begin1+i]<<" "<<numbers[begin2+i]<<endl;
+		if(numbers[begin1+i]!=numbers[begin2+i]){
+			return false;
+		}
+	}
+	return true;
+}
+
+
+
+bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2){
 	//they overlap
-	for(uint i(0);i<numbers.size();++i){
-		bool overlap(true);
-		uint j(0);
-		for(;j+i<numbers.size() and j<numbers2.size();++j){
-			if(numbers[i+j]!=numbers2[j]){
-				overlap=false;
-				break;
+	uNumber lastOne(numbers[numbers.size()-1]);
+	for(int i(numbers2.size()-1);i>=0;--i){
+		if(numbers2[i]==lastOne){
+			if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
+				//~ numbers.insert(numbers.end(),numbers2.begin()+i+1,numbers2.end());
+				//~ for(uint i(0); i<numbers.size();++i){
+					//~ cout<<numbers[i]<<" ";
+				//~ }
+				//~ cin.get();
+				numbers2={};
+				return true;
 			}
 		}
-		if(overlap){
-			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+	}
+	//~ for(uint i(0);i<numbers.size();++i){
+		//~ bool overlap(true);
+		//~ uint j(0);
+		//~ for(;j+i<numbers.size() and j<numbers2.size();++j){
+			//~ if(numbers[i+j]!=numbers2[j]){
+				//~ overlap=false;
+				//~ break;
+			//~ }
+		//~ }
+		//~ if(overlap){
+			//~ numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			//~ numbers2={};
+			//~ return true;
+		//~ }
+	//~ }
+	//they overlap of k-1
+	//~ if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
+		//~ numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		//~ numbers2={};
+		//~ return true;
+	//~ }
+
+	string unitig(recoverSuperReads(numbers));
+	string unitig2((recoverSuperReads(numbers2)));
+	//a unique unitig between them
+	//~ vector<pair<string,uNumber>> next,prev;
+	//~ vector<uNumber> next2,prev2,inter;
+	//~ if(stringMode){
+		//~ next=(getBegin((unitig.substr(unitig.size()-k+1))));
+	//~ }else{
+		//~ next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
+	//~ }
+	//~ for(uint i(0);i<next.size();++i){
+		//~ next2.push_back(next[i].second);
+	//~ }
+	//~ sort(next2.begin(),next2.end());
+	//~ if(stringMode){
+		//~ prev=(getEnd(unitig2));
+	//~ }else{
+		//~ prev=(getEnd(unitig2));
+	//~ }
+	//~ for(uint i(0);i<prev.size();++i){
+		//~ prev2.push_back(prev[i].second);
+	//~ }
+	//~ sort(prev2.begin(),prev2.end());
+	//~ auto it=set_intersection (prev2.begin(), prev2.end(), next2.begin(), next2.end(), back_inserter(inter));
+
+	//~ if(inter.size()==1){
+		//~ numbers.push_back(inter[0]);
+		//~ numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		//~ return true;
+	//~ }
+
+	string merge(overlapping(unitig,unitig2,64));
+	if(merge!=""){
+		vector<uNumber> numbers3;
+		alignReadOpti(merge,numbers3,true);
+		if(not numbers3.empty()){
+			numbers=getcleanPaths(numbers3,false,true);
+			//~ if(merge!=recoverSuperReads(numbers)){
+				//~ cout<<"wow"<<endl;
+			//~ }
+			//~ cout<<"ok";
 			numbers2={};
-			//~ cout<<1<<endl;;
 			return true;
 		}
-	}
-	//they overlap of k-1
-	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-		numbers2={};
-		//~ cout<<2<<endl;;
-		return true;
-	}
-
-	//a unique unitig between them
-	vector<pair<string,uNumber>> next,prev;
-	string unitig(getUnitig(numbers[numbers.size()-1]));
-	if(stringMode){
-		next=(getBegin((unitig.substr(unitig.size()-k+1))));
 	}else{
-		next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
-	}
-	if(next.size()!=1){
-		return false;
-	}
-	if(stringMode){
-		prev=(getEnd((getUnitig(numbers2[0]).substr(0,k-1))));
-	}else{
-		prev=(getEnd(str2num(getUnitig(numbers2[0]).substr(0,k-1))));
-	}
-
-	if(prev.size()!=1){
-		return false;
-	}
-	if(prev[0].second==next[0].second){
-		numbers.push_back(prev[0].second);
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-		//~ cout<<3<<endl;;
-		return true;
 	}
 	return false;
 }
@@ -738,6 +807,12 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 		++superReads;
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
+	++notCompatedSR;
+	//~ cout<<recoverSuperReadsNoStr(numbers)<<endl;
+	//~ cout<<recoverSuperReadsNoStr(numbers2)<<endl;
+	//~ cout<<recoverSuperReads(numbers)<<endl;
+	//~ cout<<recoverSuperReads(numbers2)<<endl;
+	//~ cin.get();
 	return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
 }
 
@@ -1666,14 +1741,18 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	for(auto &t : threads){t.join();}
 
 	cout<<"The End"<<endl;
-	cout<<"Reads : "<<readNumber<<endl;
-	cout<<"Not anchored : "<<noOverlapRead<<" Percent : "<<(100*float(noOverlapRead))/readNumber<<endl;
-	cout<<"Anchored and aligned : "<<alignedRead<<" Percent : "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
-	cout<<"Not aligned : "<<notAligned<<" Percent : "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
+	cout<<"Reads: "<<intToString(readNumber)<<endl;
+	cout<<"Not anchored : "<<intToString(noOverlapRead)<<" Percent: "<<(100*float(noOverlapRead))/readNumber<<endl;
+	cout<<"Anchored and aligned : "<<intToString(alignedRead)<<" Percent: "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
+	cout<<"Not aligned: "<<intToString(notAligned)<<" Percent: "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
 	auto end=chrono::system_clock::now();auto waitedFor=end-startChrono;
-	cout<<"Reads/seconds : "<<readNumber/(chrono::duration_cast<chrono::seconds>(waitedFor).count()+1)<<endl;
-	cout<<"Mapping in seconds : "<<(chrono::duration_cast<chrono::seconds>(waitedFor).count())<<endl;
-	cout<<"Super reads : "<<superReads<<endl;
+	cout<<"Reads/seconds: "<<intToString(readNumber/(chrono::duration_cast<chrono::seconds>(waitedFor).count()+1))<<endl;
+	cout<<"Mapping in seconds: "<<intToString(chrono::duration_cast<chrono::seconds>(waitedFor).count())<<endl;
+	if(pairedMode){
+		cout<<"Super reads: "<<intToString(superReads)<<endl;
+		cout<<"Failed super reads compaction: "<<intToString(notCompatedSR)<<endl;
+	}
+	cout<<endl;
 }
 
 

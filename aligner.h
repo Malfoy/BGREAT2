@@ -115,7 +115,8 @@ public:
 	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
 	vector<uint8_t> anchorsChecking;
 	//~ vector<string> anchorsCheckingstr;
-	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads;
+	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads,notCompatedSR;
+;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdateOverlap;
 	kmer offsetUpdateAnchor;
@@ -128,7 +129,7 @@ public:
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe){
-		noMultiMapping=multi;
+		noMultiMapping=true;
 		preciseOutput=preciseB;
 		anchorSize=anchorsSize;
 		keepOrder=orderKeep;
@@ -161,7 +162,7 @@ public:
 		fracKmer=dogModeInt;
 		correctionMode=bcorrectionMode;
 		fastq=bfastq;
-		threadToPrint=superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
+		notCompatedSR=threadToPrint=superReads=alignedRead=readNumber=noOverlapRead=notAligned=unitigNumber=overlaps=0;
 		offsetUpdateOverlap=1;
 		offsetUpdateOverlap<<=(2*(k-1));
 		offsetUpdateAnchor=1;
@@ -268,7 +269,7 @@ public:
 	vector<pair<pair<uint,uint>,uint>> getNAnchorsnostr(const string& read, uint n);
 	vector<uNumber> alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor);;
 	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor);
-	void alignReadOpti(const string& reads, vector<int>& paths);
+	void alignReadOpti(const string& read, vector<int>& path,bool perfect);
 	vector<int> inclued(vector<int>& v1, vector<int>& v2);
 	void getReads2(vector<pair<string,string>>& reads, uint n);
 	uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n);

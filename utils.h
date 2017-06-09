@@ -65,7 +65,7 @@ kmer rcb(kmer min,uint n);
 string reverseComplements(const string& s);
 string getRepresent(const string& s);
 void initRc();
-
+string intToString(uint64_t n);
 
 
 #endif /* defined(__UTILS__) */

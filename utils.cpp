@@ -35,6 +35,22 @@
 
 
 
+string intToString(uint64_t n){
+	if(n<1000){
+		return to_string(n);
+	}
+	string end(to_string(n%1000));
+	if(end.size()==3){
+		return intToString(n/1000)+","+end;
+	}
+	if(end.size()==2){
+		return intToString(n/1000)+",0"+end;
+	}
+	return intToString(n/1000)+",00"+end;
+}
+
+
+
 uint64_t transform_to_size_t(__uint128_t& n){
 	return (uint64_t)n;
 }
