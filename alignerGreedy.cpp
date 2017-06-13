@@ -740,10 +740,8 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 			if(not path.empty()){
 				if(noMultiMapping){
 					if(found){
-						printPath(path);
-						printPath(pathMem);
 						pathMem=inclued(path,pathMem);
-						if(pathMem.empty()){;path={};return;}
+						if(pathMem.empty()){path={};return;}
 					}else{
 						pathMem=path;
 					}
@@ -755,7 +753,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 			}
 		}
 		++errors;
-		if(perfect){
+		if(perfect or found){
 			break;
 		}
 	}
