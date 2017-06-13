@@ -717,10 +717,6 @@ vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
 
 
 void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=false){
-	//~ cout<<"go"<<endl;
-	//~ cout<<"read\n";
-	//~ cout<<read<<'\n';
-	//~ cout<<reverseComplements(read)<<'\n';
 	path={};
 	vector<int> pathMem;
 	uint errors(0);
@@ -732,6 +728,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 	random_shuffle ( listAnchors.begin(), listAnchors.end() );
 	while(errors<=errorsMax){
 		bool found(false);
+		pathMem={};
 		//~ cout<<listAnchors.size();
 		for(uint i(0);i<listAnchors.size();++i){
 			if(stringMode){
