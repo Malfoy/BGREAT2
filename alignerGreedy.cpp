@@ -287,7 +287,10 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read , path, {str2num(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)}, errors);
-			}else if(miss<miniMiss or (miss==miniMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+
+			}else if(miss=miniMiss and noMultiMapping and miniMiss<errors+1){
+				return errors+1;
+			}else if(miss<miniMiss){
 				kmer overlapNum(str2num(unitig.substr(0,k-1)));
 				if(miss<miniMiss){
 					ended=false;
@@ -343,7 +346,9 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read , path, {(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)}, errors);
-			}else if(miss<miniMiss or (miss==miniMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+			}else if(miss=miniMiss and noMultiMapping and miniMiss<errors+1){
+				return errors+1;
+			}else if(miss<miniMiss){
 				if(miss<miniMiss){
 					ended=false;
 					miniMiss=miss;
@@ -394,7 +399,9 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return (mapOnRightEndGreedy(read , path, {str2num(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)}, errors));
-			}else if(miss<miniMiss or (miss==miniMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+			}else if(miss=miniMiss and noMultiMapping and miniMiss<errors+1){
+				return errors+1;
+			}else if(miss<miniMiss){
 				if(miss<miniMiss){
 					ended=false;
 					kmer overlapNum(str2num(unitig.substr(unitig.size()-k+1,k-1)));
@@ -443,7 +450,9 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return (mapOnRightEndGreedy(read , path, {(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)}, errors));
-			}else if(miss<miniMiss or (miss==miniMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+			}else if(miss=miniMiss and noMultiMapping and miniMiss<errors+1){
+				return errors+1;
+			}else if(miss<miniMiss){
 				if(miss<miniMiss){
 					ended=false;
 					miniMiss=miss;
@@ -492,9 +501,11 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<kmer, uint>& overla
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read, path, {str2num(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)},errors);
+			}else if(miss=minMiss and noMultiMapping and minMiss<errors+1){
+				return errors+1;
 			}else if(miss<minMiss){
 				kmer overlapNum(str2num(unitig.substr(0,k-1)));
-				if(miss<minMiss or (miss==minMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+				if(miss<minMiss){
 					ended=false;
 					minMiss=miss;
 					indiceMinMiss=i;
@@ -546,7 +557,9 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<string, uint>& over
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read, path, {(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)},errors);
-			}else if(miss<minMiss or (miss==minMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+			}else if(miss=minMiss and noMultiMapping and minMiss<errors+1){
+				return errors+1;
+			}else if(miss<minMiss){
 				if(miss<minMiss){
 					ended=false;
 					minMiss=miss;
@@ -596,7 +609,9 @@ uint Aligner::checkEndGreedy(const string& read, const pair<kmer, uint>& overlap
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnRightEndGreedy(read, path, {str2num(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)},errors);
-			}else if(miss<minMiss or (miss==minMiss and unitig.size()>nextUnitig.size() and  not noMultiMapping)){
+			}else if(miss=minMiss and noMultiMapping and minMiss<errors+1){
+				return errors+1;
+			}else if(miss<minMiss){
 				if(miss<minMiss){
 					kmer overlapNum(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 					minMiss=miss;
@@ -642,8 +657,10 @@ uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overl
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnRightEndGreedy(read, path, {(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)},errors);
+			}else if(miss=minMiss and noMultiMapping and minMiss<errors+1){
+				return errors+1;
 			}else if(miss<minMiss){
-				if(miss<minMiss or (miss==minMiss and unitig.size()>nextUnitig.size() and not noMultiMapping)){
+				if(miss<minMiss){
 					nextOverlap=((unitig.substr(unitig.size()-k+1,k-1)));
 					minMiss=miss;
 					indiceMinMiss=i;
