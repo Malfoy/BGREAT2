@@ -771,7 +771,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 		}
 		++errors;
 		if(perfect or found){
-			return;
+			break;
 		}
 	}
 	path=pathMem;
