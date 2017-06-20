@@ -52,7 +52,7 @@ vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound,
 			pathEnd={};
 			uint errorsEnd(checkEndGreedy(read,listOverlap[start],pathEnd,errors-errorBegin));
 			if(errorsEnd+errorBegin<=errors){
-				++alignedRead;
+				//~ ++alignedRead;
 				reverse(pathBegin.begin(),pathBegin.end());
 				pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 				return pathBegin;
@@ -60,7 +60,7 @@ vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound,
 		}
 	}
 	//~ if(!rc){rc=true;return alignReadGreedy(reverseComplements(read), overlapFound,errors, rc);}
-	++notAligned;
+	//~ ++notAligned;
 	return {};
 }
 
@@ -108,7 +108,6 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 					uint errorsEnd;
 					errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
 					if(errorBegin+errors+errorsEnd<=errorMax){
-						++alignedRead;
 						reverse(pathBegin.begin(),pathBegin.end());
 						pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 						return pathBegin;
@@ -129,7 +128,6 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 				uint errorBegin;
 				errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
 				if(errorBegin+errors<=errorMax){
-					++alignedRead;
 					reverse(pathBegin.begin(),pathBegin.end());
 					pathBegin.push_back((int)unitigNumber);
 					return pathBegin;
@@ -151,7 +149,6 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 				uint errorsEnd;
 				errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
 				if(errors+errorsEnd<=errorMax){
-					++alignedRead;
 					return pathEnd;
 				}
 			}
@@ -160,7 +157,6 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 			//~ cout<<"4:"<<endl;
 			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
 			if(errors<=errorMax){
-				++alignedRead;
 				return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
 			}
 		}
@@ -200,7 +196,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 					uint errorsEnd;
 					errorsEnd=(checkEndGreedy(read,{(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
 					if(errorBegin+errors+errorsEnd<=errorMax){
-						++alignedRead;
+						//~ ++alignedRead;
 						reverse(pathBegin.begin(),pathBegin.end());
 						pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 						return pathBegin;
@@ -219,7 +215,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 				uint errorBegin;
 				errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
 				if(errorBegin+errors<=errorMax){
-					++alignedRead;
+					//~ ++alignedRead;
 					reverse(pathBegin.begin(),pathBegin.end());
 					pathBegin.push_back((int)unitigNumber);
 					return pathBegin;
@@ -239,7 +235,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 				uint errorsEnd;
 				errorsEnd=(checkEndGreedy(read,{unitig.substr(unitig.size()-k+1,k-1),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
 				if(errors+errorsEnd<=errorMax){
-					++alignedRead;
+					//~ ++alignedRead;
 					return pathEnd;
 				}
 			}
@@ -247,7 +243,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 			//~ cout<<4<<endl;
 			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
 			if(errors<=errorMax){
-				++alignedRead;
+				//~ ++alignedRead;
 				return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
 			}
 		}
@@ -742,11 +738,10 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 		++noOverlapRead;
 		return;
 	}
-	random_shuffle ( listAnchors.begin(), listAnchors.end() );
+	//~ random_shuffle ( listAnchors.begin(), listAnchors.end() );
 	while(errors<=errorsMax){
 		bool found(false);
 		pathMem={};
-		//~ cout<<listAnchors.size();
 		for(uint i(0);i<listAnchors.size();++i){
 			if(stringMode){
 				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
@@ -775,7 +770,29 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 		}
 	}
 	path=pathMem;
+	if(not path.empty()){
+		++alignedRead;
+	}
 }
+
+
+
+void Aligner::alignReadFrom(const string& read, vector<int>& path, int unumber){
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	for(uint i(0);i<listAnchors.size();++i){
+		auto  anchor=listAnchors[i];
+		if(anchor.first.first==unumber or anchor.first.first==-unumber){
+			path={};
+			if(stringMode){
+				path=alignReadGreedyAnchorsstr(read,0,anchor);
+			}else{
+				path=alignReadGreedyAnchors(read,0,anchor);
+			}
+			return;
+		}
+	}
+}
+
 
 
 

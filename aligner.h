@@ -273,7 +273,7 @@ public:
 	vector<int> inclued(vector<int>& v1, vector<int>& v2);
 	void getReads2(vector<pair<string,string>>& reads, uint n);
 	uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n);
-
+	void alignReadFrom(const string& read, vector<int>& path, int unumber);
 };
 
 

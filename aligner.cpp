@@ -701,11 +701,6 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	for(int i(numbers2.size()-1);i>=0;--i){
 		if(numbers2[i]==lastOne){
 			if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
-				//~ numbers.insert(numbers.end(),numbers2.begin()+i+1,numbers2.end());
-				//~ for(uint i(0); i<numbers.size();++i){
-					//~ cout<<numbers[i]<<" ";
-				//~ }
-				//~ cin.get();
 				numbers2={};
 				return true;
 			}
@@ -767,13 +762,9 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	string merge(overlapping(unitig,unitig2,64));
 	if(merge!=""){
 		vector<uNumber> numbers3;
-		alignReadOpti(merge,numbers3,true);
+		alignReadFrom(merge,numbers3,numbers[0]);
 		if(not numbers3.empty()){
 			numbers=getcleanPaths(numbers3,false,true);
-			//~ if(merge!=recoverSuperReads(numbers)){
-				//~ cout<<"wow"<<endl;
-			//~ }
-			//~ cout<<"ok";
 			numbers2={};
 			return true;
 		}
@@ -808,11 +799,6 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
 	++notCompatedSR;
-	//~ cout<<recoverSuperReadsNoStr(numbers)<<endl;
-	//~ cout<<recoverSuperReadsNoStr(numbers2)<<endl;
-	//~ cout<<recoverSuperReads(numbers)<<endl;
-	//~ cout<<recoverSuperReads(numbers2)<<endl;
-	//~ cin.get();
 	return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
 }
 
