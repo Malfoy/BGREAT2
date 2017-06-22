@@ -167,9 +167,8 @@ void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
 
 
 
-uint Aligner::missmatchNumber(const string& seq1, const string& seq2, unsigned int n){
+uint Aligner::missmatchNumber(const string& seq1, const string& seq2, uint n){
 	uint miss(0);
-	//~ return 1000;
 	for(uint i(0); i<seq2.size(); ++i){
 		if(seq2[i]!=seq1[i]){
 			if(++miss>n){

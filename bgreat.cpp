@@ -52,7 +52,10 @@
 using namespace std;
 
 
-
+//~ TODO 3 MODES
+//~ 1) unique optimal mappings
+//~ 2) optimal mappings
+//~ 3) all mappings
 int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
