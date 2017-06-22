@@ -67,6 +67,8 @@ vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound,
 
 
 vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor){
+	//~ cout<<"go"<<endl;
+	//~ cout<<read<<endl;
 	vector<uNumber> pathBegin,pathEnd;
 	string unitig("");
 	bool returned(false);
@@ -123,6 +125,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 			//CASE 3 : read overlap unitig
 			//~ cout<<"3:"<<endl;
 			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
+			//~ cout<<unitig.substr(positionUnitig-positionRead)<<" "<<read.substr(0,unitig.size()+positionRead-positionUnitig)<<endl;
 			if(errors<=errorMax){
 				pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
 				uint errorsEnd;
@@ -717,10 +720,21 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 			}
 			//MAPPING IS FOUND
 			if(not path.empty()){
+				//~ cout<<"mapping"<<endl;
 				if(noMultiMapping){
 					if(found){
-						pathMem=inclued(path,pathMem);
-						if(pathMem.empty()){path={};return;}
+						string superRead=(recoverSuperReadsCor(path,read.size()));
+						string superReadMem=(recoverSuperReadsCor(pathMem,read.size()));
+						if(superRead!=superReadMem){
+							path={};
+							return;
+						}else{
+							if(path.size()<pathMem.size()){
+								pathMem=path;
+							}
+						}
+						//~ pathMem=inclued(path,pathMem);
+						//~ if(pathMem.empty()){path={};return;}
 					}else{
 						pathMem=path;
 					}
@@ -740,6 +754,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 	path=pathMem;
 	if(not path.empty()){
 		++alignedRead;
+	}else{
 	}
 }
 
@@ -822,12 +837,12 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						uint position(path[0]);
 						path=vector<uNumber>(&path[1],&path[path.size()]);
 						superRead=(recoverSuperReads(path));
-						if(superRead.substr(position,read.size())!=read){
-							cout<<superRead.substr(position,read.size())<<endl;
-							cout<<read<<endl;
-							cout<<"NOOOO"<<endl;
-							cin.get();
-						}
+						//~ if(superRead.substr(position,read.size())!=read){
+							//~ cout<<superRead.substr(position,read.size())<<endl;
+							//~ cout<<read<<endl;
+							//~ cout<<"NOOOO"<<endl;
+							//~ cin.get();
+						//~ }
 						if(superRead!=""){
 							toWrite+=header+'\n'+superRead.substr(position,read.size())+'\n';
 						}else{

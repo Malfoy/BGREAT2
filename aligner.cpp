@@ -565,6 +565,26 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 
 
 
+string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSize){
+	if(numbers.size()<2){
+		return "";
+	}
+	string path(getUnitig(numbers[1])),unitig,inter;
+	for(uint i(2); i<numbers.size(); ++i){
+		unitig=(getUnitig(numbers[i]));inter=(compactionEndNoRC(path, unitig, k-1));
+		if(inter.empty()){
+			cout<<i<<endl;
+			cout<<"bug compaction super reads"<<endl;
+			return {};
+		}else{
+			path=inter;
+		}
+	}
+	return path.substr(numbers[0], readSize);
+}
+
+
+
 string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers){
 	string path;
 	if(numbers.size()<1){
@@ -950,7 +970,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
 						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						//~ if(i>positionUnitig){
+						//~ if(positionUnitig<unitigs[unitigNumPos].size()-k+1 and positionUnitig+anchorSize>k-1 ){
 							if(unitigsSelected.count(unitigNumPos)==0 ){
 								unitigsSelected.insert(unitigNumPos);
 								list.push_back({anchorsPositionVector[hash][j],i});
@@ -962,7 +982,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
 						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						//~ if((unitigNum<0 and positionUnitig+k-1<unitigs[unitigNumPos].size()) or((unitigNum>0 and positionUnitig>k-1))){
+						//~ if(positionUnitig<unitigs[unitigNumPos].size()-k+1 and positionUnitig+anchorSize>k-1 ){
 							if(unitigsSelected.count(unitigNumPos)==0){
 								unitigsSelected.insert(unitigNumPos);
 								list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});

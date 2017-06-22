@@ -274,6 +274,7 @@ public:
 	void getReads2(vector<pair<string,string>>& reads, uint n);
 	uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n);
 	void alignReadFrom(const string& read, vector<int>& path, int unumber);
+	string recoverSuperReadsCor(const vector<uNumber>& numbers,uint readSize);
 };
 
 
