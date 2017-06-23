@@ -720,7 +720,6 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 			}
 			//MAPPING IS FOUND
 			if(not path.empty()){
-				//~ cout<<"mapping"<<endl;
 				if(noMultiMapping){
 					if(found){
 						string superRead=(recoverSuperReadsCor(path,read.size()));
@@ -733,8 +732,6 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 								pathMem=path;
 							}
 						}
-						//~ pathMem=inclued(path,pathMem);
-						//~ if(pathMem.empty()){path={};return;}
 					}else{
 						pathMem=path;
 					}
@@ -755,6 +752,63 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 	if(not path.empty()){
 		++alignedRead;
 	}else{
+	}
+}
+
+
+
+
+void Aligner::alignReadAllOpti(const string& read, vector<vector<int>>& pathVector){
+	pathVector={};
+	vector<int> path;
+	uint errors(0);
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	if(listAnchors.empty()){++noOverlapRead;return;}
+	while(errors<=errorsMax){
+		bool found(false);
+		for(uint i(0);i<listAnchors.size();++i){
+			path={};
+			if(stringMode){
+				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
+			}else{
+				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
+			}
+			//MAPPING IS FOUND
+			if(not path.empty()){
+				pathVector.push_back(path);
+				found=true;
+			}
+		}
+		++errors;
+		if(found){
+			++alignedRead;
+			return;
+		}
+	}
+}
+
+
+
+void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
+	pathVector={};
+	vector<int> path;
+	uint errors(0);
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	if(listAnchors.empty()){++noOverlapRead;return;}
+	while(errors<=errorsMax){
+		for(uint i(0);i<listAnchors.size();++i){
+			path={};
+			if(stringMode){
+				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
+			}else{
+				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
+			}
+			//MAPPING IS FOUND
+			if(not path.empty()){
+				pathVector.push_back(path);
+			}
+		}
+		++errors;
 	}
 }
 
@@ -782,6 +836,7 @@ void Aligner::alignReadFrom(const string& read, vector<int>& path, int unumber){
 void Aligner::alignPartGreedy(uint indiceThread){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
+	vector<vector<int>> pathVector;
 	string read,read2,header,header2,corrected,superRead,toWrite;
 	pair<string,string> superpath;
 	while(!readFile.eof()){
@@ -800,6 +855,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 			readMutex.unlock();
 		}
 		if(pairedMode){
+			//PAIRED READS
 			for(uint i(0);i+1<multiread.size();i+=2){
 				header=multiread[i].first;
 				read=multiread[i].second;
@@ -825,59 +881,72 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				}
 			}
 		}else{
+			//UNPAIRED READS
 			for(uint i(0);i<multiread.size();i++){
-				//~ cout<<"go"<<endl;
 				header=multiread[i].first;
 				read=multiread[i].second;
 				++readNumber;
-				alignReadOpti(read,path);
-				if(path.empty()){++notAligned;}
-				if(correctionMode){
-					if(not path.empty()){
-						uint position(path[0]);
-						path=vector<uNumber>(&path[1],&path[path.size()]);
-						superRead=(recoverSuperReads(path));
-						//~ if(superRead.substr(position,read.size())!=read){
-							//~ cout<<superRead.substr(position,read.size())<<endl;
-							//~ cout<<read<<endl;
-							//~ cout<<"NOOOO"<<endl;
-							//~ cin.get();
-						//~ }
-						if(superRead!=""){
-							toWrite+=header+'\n'+superRead.substr(position,read.size())+'\n';
+				if(uniqueOptimalMappingMode){
+					alignReadOpti(read,path);
+					if(path.empty()){++notAligned;}
+					if(correctionMode){
+						//CORRECTION
+						if(not path.empty()){
+							superRead=(recoverSuperReadsCor(path,read.size()));
+							if(superRead!=""){
+								toWrite+=header+'\n'+superRead+'\n';
+							}else{
+								toWrite+=header+'\n'+read+'\n';
+							}
 						}else{
 							toWrite+=header+'\n'+read+'\n';
 						}
 					}else{
-						toWrite+=header+'\n'+read+'\n';
-					}
-				}else{
-					if(not path.empty()){
-						if(preciseOutput){
-							uint position(path[0]);
-							path=vector<uNumber>(&path[1],&path[path.size()]);
-							superRead=(recoverSuperReads(path));
-							superRead=superRead.substr(position);
-							path.push_back(position);
-							int lastUnitigNumber(path[path.size()-2]);
-							if (lastUnitigNumber<0){
-								lastUnitigNumber=-lastUnitigNumber;
-							}
-							path.push_back((int)unitigs[lastUnitigNumber].size()+(int)read.size()-(int)superRead.size());
-							superRead=(recoverSuperReadsNoStr(path));
-							if(superRead!=""){
-								toWrite+=header+'\n'+superRead+'\n';
+						if(not path.empty()){
+							if(preciseOutput){
+								//PRECISE MODE
+								uint position(path[0]);
+								path=vector<uNumber>(&path[1],&path[path.size()]);
+								superRead=(recoverSuperReads(path));
+								superRead=superRead.substr(position);
+								path.push_back(position);
+								int lastUnitigNumber(path[path.size()-2]);
+								if (lastUnitigNumber<0){
+									lastUnitigNumber=-lastUnitigNumber;
+								}
+								path.push_back((int)unitigs[lastUnitigNumber].size()+(int)read.size()-(int)superRead.size());
+								superRead=(recoverSuperReadsNoStr(path,0));
+								if(superRead!=""){
+									toWrite+=header+'\n'+superRead+'\n';
+								}
+							}else{
+								//REGULAR MODE
+								superRead=(recoverSuperReadsNoStr(path,1));
+								if(superRead!=""){
+									toWrite+=header+'\n'+superRead+'\n';
+									if(printAlignment){
+										toWrite+=read+'\n'+recoverSuperReadsCor(path,read.size())+'\n';
+									}
+								}
 							}
 						}else{
-							path=vector<uNumber>(&path[1],&path[path.size()]);
-							superRead=(recoverSuperReadsNoStr(path));
-							if(superRead!=""){
-								toWrite+=header+'\n'+superRead+'\n';
+						}
+					}
+				}else{
+					if(optimalMappingMode){
+						alignReadAllOpti(read,pathVector);
+					}else{
+						alignReadAll(read,pathVector);
+					}
+					if(pathVector.empty()){++notAligned;}
+					for(uint i(0);i<pathVector.size();++i){
+						superRead=(recoverSuperReadsNoStr(path,1));
+						if(superRead!=""){
+							toWrite+=header+'\n'+superRead+'\n';
+							if(printAlignment){
+								toWrite+=read+'\n'+recoverSuperReadsCor(path,read.size())+'\n';
 							}
 						}
-					}else{
-						//~ cerr<<header<<endl;
-						//~ cerr<<read<<endl;
 					}
 				}
 			}

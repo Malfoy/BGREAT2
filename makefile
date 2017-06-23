@@ -29,7 +29,7 @@ all: $(EXEC)
 
 
 
-aligner.o: aligner.cpp aligner.h utils.h alignerGreedy.cpp alignerExhaustive.cpp
+aligner.o: aligner.cpp aligner.h utils.h alignerGreedy.cpp
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 utils.o: utils.cpp utils.h

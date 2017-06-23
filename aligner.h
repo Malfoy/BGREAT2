@@ -126,10 +126,22 @@ public:
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment){
 		noMultiMapping=true;
+		uniqueOptimalMappingMode=true;
+		optimalMappingMode=false;
+		if(ballOptimalMapping){
+			uniqueOptimalMappingMode=false;
+			optimalMappingMode=true;
+		}
+		if(ballMapping){
+			uniqueOptimalMappingMode=false;
+			optimalMappingMode=false;
+		}
+
+		printAlignment=bprintAlignment;
 		preciseOutput=preciseB;
 		anchorSize=anchorsSize;
 		keepOrder=orderKeep;
@@ -245,7 +257,8 @@ public:
 	vector<pair<pair<uint,uint>,uint>> getNAnchors(const string& read,uint n);
 	string recoverSuperReads(const vector<uNumber>& numbers);
 	pair<string,string> recoverSuperReadsPaired( const vector<uNumber>& vec, vector<uNumber>& vec2);
-	string recoverSuperReadsNoStr(const vector<uNumber>& numbers);
+	string recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offset);
+	//~ string recoverSuperReadsNoStr(const vector<uNumber>& numbers);
 	pair<string,string> recoverSuperReadsPairedNoStr( const vector<uNumber>& vec, vector<uNumber>& vec2);
 	bool isNeighboor(const uint number1, const uint number2);
 	void fillIndices();
@@ -275,6 +288,9 @@ public:
 	uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n);
 	void alignReadFrom(const string& read, vector<int>& path, int unumber);
 	string recoverSuperReadsCor(const vector<uNumber>& numbers,uint readSize);
+	void alignReadAllOpti(const string& read, vector<vector<int>>& pathVector);
+	void alignReadAll(const string& read, vector<vector<int>>& pathVector);
+
 };
 
 

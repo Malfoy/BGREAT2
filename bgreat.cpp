@@ -21,6 +21,7 @@
 *****************************************************************************/
 
 
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -52,6 +53,7 @@
 using namespace std;
 
 
+
 //~ TODO 3 MODES
 //~ 1) unique optimal mappings
 //~ 2) optimal mappings
@@ -61,9 +63,9 @@ int main(int argc, char ** argv){
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
 	int errors(2), threads(1), ka(31), c, effort(2),dogMode(1);
 	int anchorSize(ka);
-	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false);
+	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false);
 	float ratioe(0.3);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:bqcOpM")) != -1){
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:bqcOpMPAB")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -117,6 +119,15 @@ int main(int argc, char ** argv){
 		case 'M':
 			multi=true;
 			break;
+		case 'P':
+			printAlignment=true;
+			break;
+		case 'A':
+			allMapping=true;
+			break;
+		case 'B':
+			allOptimalMapping=true;
+			break;
 		}
 	}
 	if(not vectorMode){
@@ -124,6 +135,7 @@ int main(int argc, char ** argv){
 	}
 	if(reads=="" and pairedReads==""){
 		cout
+		<<"Standard options"<<endl
 		<<"-u read file (unpaired)"<<endl
 		<<"-x read file (paired)"<<endl
 		<<"-k k value (graph) (31)"<<endl
@@ -132,14 +144,19 @@ int main(int argc, char ** argv){
 		<<"-m number of missmatch allowed (2)"<<endl
 		<<"-t number of threads (1)"<<endl
 		<<"-e effort put in mapping (2)"<<endl
-		<<"-f path file (paths)"<<endl
+		<<"-f output file (paths)"<<endl
 		<<"-q for fastq read file"<<endl
+		<<"-O to keep order of the reads"<<endl<<endl
+
+		<<"Advanced options"<<endl
 		//~ <<"-c to output corrected reads"<<endl
-		<<"-p to precise output"<<endl
-		<<"-O to keep order of the reads"<<endl;
+		<<"-p to more precise output"<<endl
+		<<"-P to print the alignments"<<endl
+		<<"-A to output all possible mapping"<<endl
+		<<"-B to output all possible optimal mapping mapping"<<endl;
 		return 0;
 	}
-	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput,multi,ratioe);
+	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput,multi,ratioe,allOptimalMapping,allMapping,printAlignment);
 	supervisor.indexUnitigs();
 	if(reads!=""){
 		supervisor.alignAll(not brute,reads,false);

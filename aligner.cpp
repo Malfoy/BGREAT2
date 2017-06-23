@@ -24,7 +24,6 @@
 
 #include "aligner.h"
 #include "utils.h"
-#include "alignerExhaustive.cpp"
 #include "alignerGreedy.cpp"
 #include <thread>
 #include <iostream>
@@ -585,12 +584,12 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 
 
 
-string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers){
+string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offset=0){
 	string path;
-	if(numbers.size()<1){
+	if(numbers.size()<1+offset){
 		return "";
 	}
-	for(uint i(0); i<numbers.size(); ++i){
+	for(uint i(offset); i<numbers.size(); ++i){
 		path+=to_string(numbers[i])+";";
 	}
 	return path;
@@ -1683,6 +1682,7 @@ void Aligner::fillIndicesstrbutanchors(){
 }
 
 
+
 //TODO THIS WOLE PART COULD BE FACTORIZED
 void Aligner::indexUnitigs(){
 	auto startChrono=chrono::system_clock::now();
@@ -1720,11 +1720,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 			unsigned char nbThreads(coreNumber);
 			vector<thread> threads;
 			for (size_t i(0); i<nbThreads; ++i){
-				if(greedy){
-					threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
-				}else{
-					threads.push_back(thread(&Aligner::alignPartExhaustive,this));
-				}
+				threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
 			}
 			for(auto &t : threads){t.join();}
 			last=i+1;
@@ -1737,11 +1733,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	unsigned char nbThreads(coreNumber);
 	vector<thread> threads;
 	for (size_t i(0); i<nbThreads; ++i){
-		if(greedy){
-			threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
-		}else{
-			threads.push_back(thread(&Aligner::alignPartExhaustive,this));
-		}
+		threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
 	}
 	for(auto &t : threads){t.join();}
 
@@ -1765,7 +1757,6 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 string Aligner::printPath(const vector<int32_t>& path){
 	string res;
 	for(uint i(0); i<path.size(); ++i){
-		// *file<<path[i]<<'.';
 		res+=to_string(path[i]);
 		res+='.';
 	}
