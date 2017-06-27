@@ -105,8 +105,8 @@ public:
 	ifstream unitigFile, readFile;
 	ofstream pathFile, noOverlapFile, notMappedFile;
 	FILE * pathFilef;
-	FILE * notMappedFilef;
-	FILE * readFileF;
+	//~ FILE * notMappedFilef;
+	//~ FILE * readFileF;
 	MPHF leftMPHF,rightMPHF,anchorsMPHF;
 	MPHFSTR leftMPHFstr,rightMPHFstr,anchorsMPHFstr;
 	vector<unitigIndices> leftIndices,rightIndices;
@@ -159,6 +159,7 @@ public:
 		}
 		if(anchorsSize>=k){
 			anchorSize=k;
+			vectorMode=false;
 		}else{
 			vectorMode=true;
 		}
@@ -180,6 +181,11 @@ public:
 		offsetUpdateAnchor=1;
 		offsetUpdateAnchor<<=(2*(anchorSize));
 		iter=1;
+	}
+
+	~Aligner(){
+		fclose(pathFilef);
+		unitigFile.close();
 	}
 
 	void indexUnitigs();
@@ -290,6 +296,7 @@ public:
 	string recoverSuperReadsCor(const vector<uNumber>& numbers,uint readSize);
 	void alignReadAllOpti(const string& read, vector<vector<int>>& pathVector);
 	void alignReadAll(const string& read, vector<vector<int>>& pathVector);
+	vector<uNumber> cleanSR(const vector<uNumber>& numbers, uint readSize);
 
 };
 

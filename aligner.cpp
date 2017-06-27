@@ -134,35 +134,32 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 }
 
 
-
-void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
-	reads={};
-	string read,header,inter;
-	uint buffSize(10000);
-	char buff[buffSize];
-	uint pred(0);
-	while (!feof(readFileF)) {
-		fread(buff, 1, buffSize, readFileF);
-		for(uint i(0);i<buffSize;++i){
-			if(buff[i]=='\0'){
-				if(header==""){
-					header=string(buff+pred,i-pred);
-					pred=i;
-				}else{
-					read=string(buff+pred,i-pred);
-					reads.push_back({header,read});
-					if(reads.size()>=n){return;}
-					header=read="";
-					pred=i;
-				}
-			}else{
-				//~ if(not headerMode){
-					//~ read+=buff[i];
+//TODO FA
+//~ void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
+	//~ reads={};
+	//~ string read,header,inter;
+	//~ uint buffSize(10000);
+	//~ char buff[buffSize];
+	//~ uint pred(0);
+	//~ while (!feof(readFileF)) {
+		//~ fread(buff, 1, buffSize, readFileF);
+		//~ for(uint i(0);i<buffSize;++i){
+			//~ if(buff[i]=='\0'){
+				//~ if(header==""){
+					//~ header=string(buff+pred,i-pred);
+					//~ pred=i;
+				//~ }else{
+					//~ read=string(buff+pred,i-pred);
+					//~ reads.push_back({header,read});
+					//~ if(reads.size()>=n){return;}
+					//~ header=read="";
+					//~ pred=i;
 				//~ }
-			}
-		}
-	}
-}
+			//~ }else{
+			//~ }
+		//~ }
+	//~ }
+//~ }
 
 
 
@@ -580,6 +577,40 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 		}
 	}
 	return path.substr(numbers[0], readSize);
+}
+
+
+
+//TODO CHECK END ALSO
+vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
+	vector<uNumber> result;
+	string unitig;
+	uint position(numbers[0]);
+	uint i(1);
+	for(;i<numbers.size();++i){
+		unitig=(getUnitig(numbers[i]));
+		//~ cout<<position<<" "<<unitig.size()<<endl;
+		if(position+k-1<unitig.size()){
+			break;
+		}else{
+			position-=(unitig.size()-k+1);
+			//~ cout<<position<<endl;
+		}
+	}
+	result.push_back(position);
+	for(;i<numbers.size();++i){
+		result.push_back(numbers[i]);
+	}
+	string readCore1(recoverSuperReadsCor(numbers,readSize));
+	string readCore2(recoverSuperReadsCor(result,readSize));
+	if(readCore1!=readCore2){
+		cout<<readCore1<<" "<<readCore2<<endl;
+	}
+	//~ if(result.size()<numbers.size()){
+			//~ cout<<"win";
+	//~ }
+
+	return result;
 }
 
 
@@ -1469,7 +1500,7 @@ void Aligner::fillIndicesstr(){
 			}
 			anchorsChecking[hash]=getHash(canon);
 			for(uint j(0);j+anchorSize<line.size();++j){
-				seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
+				seq=seq.substr(1)+line[j+anchorSize];
 				rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
 				if((j+1)%fracKmer==0){
 					canon=(min(seq,rcSeq));
