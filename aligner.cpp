@@ -613,11 +613,11 @@ vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
 
 	}
 
-	//~ string readCore1(recoverSuperReadsCor(numbers,readSize));
-	//~ string readCore2(recoverSuperReadsCor(result,readSize));
-	//~ if(readCore1!=readCore2){
-		//~ cout<<readCore1<<" and "<<readCore2<<endl;
-	//~ }
+	string readCore1(recoverSuperReadsCor(numbers,readSize));
+	string readCore2(recoverSuperReadsCor(result,readSize));
+	if(readCore1!=readCore2){
+		cout<<readCore1<<" and "<<readCore2<<endl;
+	}
 	//~ if(result.size()<numbers.size()){
 			//~ cout<<"win";
 	//~ }
@@ -758,15 +758,15 @@ bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int b
 
 bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2){
 	//they overlap
-	uNumber lastOne(numbers[numbers.size()-1]);
-	for(int i(numbers2.size()-1);i>=0;--i){
-		if(numbers2[i]==lastOne){
-			if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
-				numbers2={};
-				return true;
-			}
-		}
-	}
+	//~ uNumber lastOne(numbers[numbers.size()-1]);
+	//~ for(int i(numbers2.size()-1);i>=0;--i){
+		//~ if(numbers2[i]==lastOne){
+			//~ if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
+				//~ numbers2={};
+				//~ return true;
+			//~ }
+		//~ }
+	//~ }
 	//~ for(uint i(0);i<numbers.size();++i){
 		//~ bool overlap(true);
 		//~ uint j(0);
