@@ -598,9 +598,19 @@ vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
 			position-=(unitig.size()-k+1);
 		}
 	}
+	int lentgthAlignement(unitig.size()-position);
 	result.push_back(position);
+	result.push_back(numbers[i]);
+	++i;
 	for(;i<numbers.size();++i){
-		result.push_back(numbers[i]);
+		if(lentgthAlignement<readSize){
+			unitig=(getUnitig(numbers[i]));
+			lentgthAlignement+(unitig.size()-k+1);
+			result.push_back(numbers[i]);
+		}else{
+			break;
+		}
+
 	}
 
 	//~ string readCore1(recoverSuperReadsCor(numbers,readSize));
