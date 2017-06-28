@@ -583,6 +583,7 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 
 //TODO CHECK END ALSO
 vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
+	if(numbers.size()<3){return numbers;}
 	vector<uNumber> result;
 	string unitig;
 	uint position(numbers[0]);
