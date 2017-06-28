@@ -758,15 +758,15 @@ bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int b
 
 bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2){
 	//they overlap
-	//~ uNumber lastOne(numbers[numbers.size()-1]);
-	//~ for(int i(numbers2.size()-1);i>=0;--i){
-		//~ if(numbers2[i]==lastOne){
-			//~ if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
-				//~ numbers2={};
-				//~ return true;
-			//~ }
-		//~ }
-	//~ }
+	uNumber lastOne(numbers[numbers.size()-1]);
+	for(int i(numbers2.size()-1);i>=0;--i){
+		if(numbers2[i]==lastOne){
+			if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
+				numbers2={};
+				return true;
+			}
+		}
+	}
 	//~ for(uint i(0);i<numbers.size();++i){
 		//~ bool overlap(true);
 		//~ uint j(0);
@@ -789,8 +789,9 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		//~ return true;
 	//~ }
 
-	string unitig(recoverSuperReads(numbers));
-	string unitig2((recoverSuperReads(numbers2)));
+	//~ string unitig(recoverSuperReads(numbers));
+	//~ string unitig2((recoverSuperReads(numbers2)));
+
 	//a unique unitig between them
 	//~ vector<pair<string,uNumber>> next,prev;
 	//~ vector<uNumber> next2,prev2,inter;
@@ -820,17 +821,17 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		//~ return true;
 	//~ }
 
-	string merge(overlapping(unitig,unitig2,64));
-	if(merge!=""){
-		vector<uNumber> numbers3;
-		alignReadFrom(merge,numbers3,numbers[0]);
-		if(not numbers3.empty()){
-			numbers=getcleanPaths(numbers3,false,true);
-			numbers2={};
-			return true;
-		}
-	}else{
-	}
+	//~ string merge(overlapping(unitig,unitig2,64));
+	//~ if(merge!=""){
+		//~ vector<uNumber> numbers3;
+		//~ alignReadFrom(merge,numbers3,numbers[0]);
+		//~ if(not numbers3.empty()){
+			//~ numbers=getcleanPaths(numbers3,false,true);
+			//~ numbers2={};
+			//~ return true;
+		//~ }
+	//~ }else{
+	//~ }
 	return false;
 }
 
