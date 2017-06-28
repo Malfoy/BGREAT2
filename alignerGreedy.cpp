@@ -850,8 +850,16 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				bool rc(false), noOverlap(false), overlapFound(false);
 				alignReadOpti(read,path);
 				alignReadOpti(read2,path2);
-				if(path.empty()){++notAligned;path=cleanSR(path,read.size());}
-				if(path2.empty()){++notAligned;path2=cleanSR(path2,read2.size());}
+				if(path.empty()){
+					++notAligned;
+				}else{
+					path=cleanSR(path,read.size());
+				}
+				if(path2.empty()){
+					++notAligned;
+				}else{
+					path2=cleanSR(path2,read2.size());
+				}
 				superpath=(recoverSuperReadsPairedNoStr(path,path2));
 				if(superpath.first!=""){
 					if(superpath.second!=""){
