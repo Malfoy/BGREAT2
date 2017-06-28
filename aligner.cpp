@@ -583,30 +583,31 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 
 //TODO CHECK END ALSO
 vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
-	if(numbers.size()<3){return numbers;}
+	//~ if(numbers.size()<3){return numbers;}
 	vector<uNumber> result;
 	string unitig;
 	uint position(numbers[0]);
+	uint lastPosition;
 	uint i(1);
 	for(;i<numbers.size();++i){
 		unitig=(getUnitig(numbers[i]));
-		//~ cout<<position<<" "<<unitig.size()<<endl;
-		if(position+k-1<unitig.size()){
+		if(position+k-1<unitig.size() or position+readSize<=unitig.size()){
 			break;
 		}else{
+			lastPosition=position;
 			position-=(unitig.size()-k+1);
-			//~ cout<<position<<endl;
 		}
 	}
 	result.push_back(position);
 	for(;i<numbers.size();++i){
 		result.push_back(numbers[i]);
 	}
-	string readCore1(recoverSuperReadsCor(numbers,readSize));
-	string readCore2(recoverSuperReadsCor(result,readSize));
-	if(readCore1!=readCore2){
-		cout<<readCore1<<" "<<readCore2<<endl;
-	}
+
+	//~ string readCore1(recoverSuperReadsCor(numbers,readSize));
+	//~ string readCore2(recoverSuperReadsCor(result,readSize));
+	//~ if(readCore1!=readCore2){
+		//~ cout<<readCore1<<" and "<<readCore2<<endl;
+	//~ }
 	//~ if(result.size()<numbers.size()){
 			//~ cout<<"win";
 	//~ }
