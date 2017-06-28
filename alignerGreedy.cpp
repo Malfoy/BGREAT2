@@ -799,11 +799,11 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 
 
 
-void Aligner::alignReadFrom(const string& read, vector<int>& path, int unumber){
-	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	void Aligner::alignReadFrom(const string& read, vector<int>& path, int unumber){
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,1));
 	for(uint i(0);i<listAnchors.size();++i){
 		auto  anchor=listAnchors[i];
-		if(anchor.first.first==unumber or anchor.first.first==-unumber){
+		if((anchor.first.first==unumber or anchor.first.first==-unumber) and anchor.second==0 and anchor.first.second==0){
 			path={};
 			if(stringMode){
 				path=alignReadGreedyAnchorsstr(read,0,anchor);

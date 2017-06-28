@@ -615,9 +615,9 @@ vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
 
 	string readCore1(recoverSuperReadsCor(numbers,readSize));
 	string readCore2(recoverSuperReadsCor(result,readSize));
-	if(readCore1!=readCore2){
-		cout<<readCore1<<" and "<<readCore2<<endl;
-	}
+	//~ if(readCore1!=readCore2){
+		//~ cout<<readCore1<<" and "<<readCore2<<endl;
+	//~ }
 	//~ if(result.size()<numbers.size()){
 			//~ cout<<"win";
 	//~ }
@@ -789,8 +789,8 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		//~ return true;
 	//~ }
 
-	//~ string unitig(recoverSuperReads(numbers));
-	//~ string unitig2((recoverSuperReads(numbers2)));
+	string unitig(recoverSuperReads(numbers));
+	string unitig2((recoverSuperReads(numbers2)));
 
 	//a unique unitig between them
 	//~ vector<pair<string,uNumber>> next,prev;
@@ -821,17 +821,24 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		//~ return true;
 	//~ }
 
-	//~ string merge(overlapping(unitig,unitig2,64));
-	//~ if(merge!=""){
-		//~ vector<uNumber> numbers3;
-		//~ alignReadFrom(merge,numbers3,numbers[0]);
-		//~ if(not numbers3.empty()){
+	string merge(overlapping(unitig,unitig2,100));
+	if(merge!=""){
+		vector<uNumber> numbers3;
+		alignReadFrom(merge,numbers3,numbers[0]);
+		if(not numbers3.empty()){
+			numbers3=getcleanPaths(numbers3,false,true);
+			//~ if(merge!=recoverSuperReads(numbers3)){
+				//~ cout<<merge<<endl;
+				//~ cout<<recoverSuperReads(numbers3)<<endl;
+				//~ cin.get();
+			//~ }
 			//~ numbers=getcleanPaths(numbers3,false,true);
-			//~ numbers2={};
-			//~ return true;
-		//~ }
-	//~ }else{
-	//~ }
+			numbers=numbers3;
+			numbers2={};
+			return true;
+		}
+	}else{
+	}
 	return false;
 }
 
