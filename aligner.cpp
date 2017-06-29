@@ -721,6 +721,7 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 
 
 string overlapping(const string& str1, const string& str2, uint overlapMin){
+	if(overlapMin>str1.size() or overlapMin>str2.size()){return "";}
 	string suffix(str1.substr(str1.size()-overlapMin));
 	int pos = str2.find(suffix, 0);
 	if(pos !=-1){
@@ -820,9 +821,11 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		//~ numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		//~ return true;
 	//~ }
-
-	string merge(overlapping(unitig,unitig2,100));
+	//TODO CAN DO BETTER
+	string merge(overlapping(unitig,unitig2,max(50,(int)(0.01*(unitig.size()+unitig2.size())))));
 	if(merge!=""){
+		//~ cout<<merge<<" "<<unitig<<" "<<unitig2<<endl;
+		//~ cin.get();
 		vector<uNumber> numbers3;
 		alignReadFrom(merge,numbers3,numbers[0]);
 		if(not numbers3.empty()){
