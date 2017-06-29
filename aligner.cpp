@@ -816,7 +816,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	sort(prev2.begin(),prev2.end());
 	auto it=set_intersection (prev2.begin(), prev2.end(), next2.begin(), next2.end(), back_inserter(inter));
 
-	if(inter.size()==1){
+	if(inter.size()==1 and unitig.size()<1000){
 		numbers.push_back(inter[0]);
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		return true;
