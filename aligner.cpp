@@ -822,25 +822,25 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		return true;
 	}
 	//TODO CAN DO BETTER
-	string merge(overlapping(unitig,unitig2,31));
-	if(merge!=""){
-		// cout<<merge<<" "<<unitig<<" "<<unitig2<<endl;
-		// cin.get();
-		vector<uNumber> numbers3;
-		alignReadFrom(merge,numbers3,numbers[0]);
-		if(not numbers3.empty()){
-			numbers3=getcleanPaths(numbers3,false,true);
-			// if(merge!=recoverSuperReads(numbers3)){
-				// cout<<merge<<endl;
-				// cout<<recoverSuperReads(numbers3)<<endl;
-				// cin.get();
-			// }
-			// numbers=getcleanPaths(numbers3,false,true);
-			numbers=numbers3;
-			numbers2={};
-			return true;
-		}
-	}
+	//~ string merge(overlapping(unitig,unitig2,31));
+	//~ if(merge!=""){
+		//~ // cout<<merge<<" "<<unitig<<" "<<unitig2<<endl;
+		//~ // cin.get();
+		//~ vector<uNumber> numbers3;
+		//~ alignReadFrom(merge,numbers3,numbers[0]);
+		//~ if(not numbers3.empty()){
+			//~ numbers3=getcleanPaths(numbers3,false,true);
+			//~ // if(merge!=recoverSuperReads(numbers3)){
+				//~ // cout<<merge<<endl;
+				//~ // cout<<recoverSuperReads(numbers3)<<endl;
+				//~ // cin.get();
+			//~ // }
+			//~ // numbers=getcleanPaths(numbers3,false,true);
+			//~ numbers=numbers3;
+			//~ numbers2={};
+			//~ return true;
+		//~ }
+	//~ }
 	return false;
 }
 
