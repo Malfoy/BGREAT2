@@ -64,7 +64,7 @@ int main(int argc, char ** argv){
 	int errors(2), threads(1), ka(31), c, effort(2),dogMode(1);
 	int anchorSize(ka);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false);
-	float ratioe(0.3);
+	float ratioe(0.5);
 	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:bqcOpMPAB")) != -1){
 	switch(c){
 		case 'u':
