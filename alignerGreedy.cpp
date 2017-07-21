@@ -135,6 +135,9 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 			//CASE 4 : read included in unitig
 			//~ cout<<"4:"<<endl;
 			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
+			//~ cout<<unitig.substr(positionUnitig-positionRead)<<endl;
+			//~ cout<<read<<endl;
+			//~ cout<<unitig<<endl;
 			if(errors<=errorMax){
 				return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
 			}
@@ -881,7 +884,9 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				++readNumber;
 				if(uniqueOptimalMappingMode){
 					alignReadOpti(read,path);
-					if(path.empty()){++notAligned;}
+					if(path.empty()){++notAligned;
+						//~ cout<<header<<"\n"<<read<<endl;
+						}
 					if(correctionMode){
 						//CORRECTION
 						if(not path.empty()){
