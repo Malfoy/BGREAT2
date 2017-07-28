@@ -827,6 +827,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	vector<vector<int>> pathVector;
 	string read,read2,header,header2,corrected,superRead,toWrite;
 	pair<string,string> superpath;
+	uint iterLoop(0);
 	while(!readFile.eof()){
 		toWrite="";
 		if(keepOrder){
@@ -965,6 +966,18 @@ void Aligner::alignPartGreedy(uint indiceThread){
 			}
 			pathMutex.unlock();
 		}
+		if(++iterLoop%100==0){
+			cout<<"Reads: "<<intToString(readNumber)<<endl;
+			cout<<"Not anchored : "<<intToString(noOverlapRead)<<" Percent: "<<(100*float(noOverlapRead))/readNumber<<endl;
+			cout<<"Anchored and aligned : "<<intToString(alignedRead)<<" Percent: "<<(100*float(alignedRead))/(alignedRead+notAligned)<<endl;
+			cout<<"Not aligned: "<<intToString(notAligned)<<" Percent: "<<(100*float(notAligned))/(alignedRead+notAligned)<<endl;
+			if(pairedMode){
+				cout<<"Super reads: "<<intToString(superReads)<<endl;
+				cout<<"Failed super reads compaction: "<<intToString(notCompatedSR)<<endl;
+			}
+			cout<<endl;
+		}
+
 	}
 }
 
