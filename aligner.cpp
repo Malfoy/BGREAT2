@@ -768,64 +768,62 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			}
 		}
 	}
-	//~ for(uint i(0);i<numbers.size();++i){
-		//~ bool overlap(true);
-		//~ uint j(0);
-		//~ for(;j+i<numbers.size() and j<numbers2.size();++j){
-			//~ if(numbers[i+j]!=numbers2[j]){
-				//~ overlap=false;
-				//~ break;
-			//~ }
-		//~ }
-		//~ if(overlap){
-			//~ numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
-			//~ numbers2={};
-			//~ return true;
-		//~ }
-	//~ }
-	//they overlap of k-1
-	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-		numbers2={};
-		return true;
+	for(uint i(0);i<numbers.size();++i){
+		bool overlap(true);
+		uint j(0);
+		for(;j+i<numbers.size() and j<numbers2.size();++j){
+			if(numbers[i+j]!=numbers2[j]){
+				overlap=false;
+				break;
+			}
+		}
+		if(overlap){
+			numbers.insert(numbers.end(),numbers2.begin()+j,numbers2.end());
+			numbers2={};
+			return true;
+		}
 	}
+	//they overlap of k-1
+	//~ if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
+		//~ numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		//~ numbers2={};
+		//~ return true;
+	//~ }
 
-	string unitig(recoverSuperReads(numbers));
-	string unitig2((recoverSuperReads(numbers2)));
+	//~ string unitig(recoverSuperReads(numbers));
+	//~ string unitig2((recoverSuperReads(numbers2)));
 
 	//a unique unitig between them
-	vector<pair<string,uNumber>> next,prev;
-	vector<uNumber> next2,prev2,inter;
-	if(stringMode){
-		next=(getBegin((unitig.substr(unitig.size()-k+1))));
-	}else{
-		next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
-	}
-	for(uint i(0);i<next.size();++i){
-		next2.push_back(next[i].second);
-	}
-	sort(next2.begin(),next2.end());
-	if(stringMode){
-		prev=(getEnd(unitig2));
-	}else{
-		prev=(getEnd(unitig2));
-	}
-	for(uint i(0);i<prev.size();++i){
-		prev2.push_back(prev[i].second);
-	}
-	sort(prev2.begin(),prev2.end());
-	auto it=set_intersection (prev2.begin(), prev2.end(), next2.begin(), next2.end(), back_inserter(inter));
+	//~ vector<pair<string,uNumber>> next,prev;
+	//~ vector<uNumber> next2,prev2,inter;
+	//~ if(stringMode){
+		//~ next=(getBegin((unitig.substr(unitig.size()-k+1))));
+	//~ }else{
+		//~ next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
+	//~ }
+	//~ for(uint i(0);i<next.size();++i){
+		//~ next2.push_back(next[i].second);
+	//~ }
+	//~ sort(next2.begin(),next2.end());
+	//~ if(stringMode){
+		//~ prev=(getEnd(unitig2));
+	//~ }else{
+		//~ prev=(getEnd(unitig2));
+	//~ }
+	//~ for(uint i(0);i<prev.size();++i){
+		//~ prev2.push_back(prev[i].second);
+	//~ }
+	//~ sort(prev2.begin(),prev2.end());
+	//~ auto it=set_intersection (prev2.begin(), prev2.end(), next2.begin(), next2.end(), back_inserter(inter));
 
-	if(inter.size()==1 and unitigs[inter[0]].size()<1000){
-		numbers.push_back(inter[0]);
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-		return true;
-	}
+	//~ if(inter.size()==1 and unitigs[inter[0]].size()<1000){
+		//~ numbers.push_back(inter[0]);
+		//~ numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		//~ return true;
+	//~ }
 	//TODO CAN DO BETTER
-	//~ string merge(overlapping(unitig,unitig2,31));
+	//~ string merge(overlapping(unitig,unitig2,50));
 	//~ if(merge!=""){
-		//~ // cout<<merge<<" "<<unitig<<" "<<unitig2<<endl;
-		//~ // cin.get();
 		//~ vector<uNumber> numbers3;
 		//~ alignReadFrom(merge,numbers3,numbers[0]);
 		//~ if(not numbers3.empty()){
