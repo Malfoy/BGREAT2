@@ -640,10 +640,14 @@ string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offs
 
 
 
-vector<uNumber> getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean){
+vector<uNumber> Aligner::getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean){
 	vector<uNumber> res;
 	if(clean){
-		res=vector<uNumber>(&numbers[1],&numbers[numbers.size()]);
+		if(numbers[0]+k-1> unitigs[abs(numbers[1])].size()){
+			res=vector<uNumber>(&numbers[2],&numbers[numbers.size()]);
+		}else{
+			res=vector<uNumber>(&numbers[1],&numbers[numbers.size()]);
+		}
 	}else{
 		res=vector<uNumber>(&numbers[0],&numbers[numbers.size()]);
 	}
