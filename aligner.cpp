@@ -167,13 +167,11 @@ uint Aligner::missmatchNumber(const string& seq1, const string& seq2, uint n){
 	uint miss(0);
 	for(uint i(0); i<seq2.size(); ++i){
 		if(seq2[i]!=seq1[i]){
-			if(++miss>n){
-				return miss;
-			}
+			++miss;
 		}
 	}
 	if(((double)miss)/(double)seq2.size()>ratioError){
-		return n+2;
+		return 1000;
 	}
 	return miss;
 }
@@ -1003,7 +1001,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 	unordered_map<uint,uint> unitigsSelected;
 	//~ unordered_map<uint,uint> unitigsSelected2;
 	vector<pair<pair<uint,uint>,uint>> list;
-	uint64_t hash;
+	uint64_t hash,anchorAdded(0);
 	string unitig;
 	kmer num(0),rcnum(0),rep(0);
 	for(uint i(0); i+anchorSize<read.size(); ++i){
@@ -1019,34 +1017,43 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 		}
 		hash=anchorsMPHF.lookup(rep);
 		if(hash!=ULLONG_MAX and anchorsChecking[hash]==getHash(rep)){
+			bool addedAnAnchor(false);
 			if(vectorMode){
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
 						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						if(unitigsSelected.count(unitigNumPos)==0){
-							list.push_back({anchorsPositionVector[hash][j],i});
-						}else{
-							if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
+						if(positionUnitig<=unitigs[unitigNumPos].size()-k){
+							if(unitigsSelected.count(unitigNumPos)==0){
 								list.push_back({anchorsPositionVector[hash][j],i});
+								addedAnAnchor=true;
+							}else{
+								//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
+									//~ list.push_back({anchorsPositionVector[hash][j],i});
+								//~ }
 							}
+							unitigsSelected[unitigNumPos]=positionUnitig;
 						}
-						unitigsSelected[unitigNumPos]=positionUnitig;
+
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
 						int32_t unitigNum(anchorsPositionVector[hash][j].first);
 						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						if(unitigsSelected.count(unitigNumPos)==0){
-							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
-						}else{
-							if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
+						if(positionUnitig+anchorSize>=k){
+							if(unitigsSelected.count(unitigNumPos)==0){
 								list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+								addedAnAnchor=true;
+							}else{
+								//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
+									//~ list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+								//~ }
 							}
+							unitigsSelected[unitigNumPos]=positionUnitig;
 						}
-						unitigsSelected[unitigNumPos]=positionUnitig;
+
 					}
 				}
 			}else{
@@ -1070,8 +1077,11 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 				}
 				unitigsSelected[unitigNumPos]=positionUnitig;
 			}
+			if(addedAnAnchor){
+				anchorAdded++;
+			}
 		}
-		if(list.size()>=n){
+		if(anchorAdded>=n){
 			return list;
 		}
 	}

@@ -40,6 +40,7 @@ uint trimingBases(0);
 
 
 
+//TODO, SEARCH FOR FEW ANCHORS, TRY TO MAP, IF NOT MAPPED SEARCH FOR MORE
 vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound, uint errors, bool& rc){
 	vector<pair<kmer,uint>> listOverlap(getNOverlap(read,tryNumber));
 	if(listOverlap.empty()){++noOverlapRead;return {};}
@@ -66,7 +67,7 @@ vector<uNumber> Aligner::alignReadGreedy(const string& read, bool& overlapFound,
 
 
 
-vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor){
+vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor,uint& errors){
 	vector<uNumber> pathBegin,pathEnd;
 	string unitig("");
 	bool returned(false);
@@ -86,16 +87,16 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//CASE 1 : unitig included in read
 			//~ cout<<"1:"<<endl;
-			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
+			errors=(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
 			if(errors<=errorMax){
 				pathBegin={};
-				uint errorBegin;
-				errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-				if(errorBegin+errors<=errorMax){
+				//~ uint errorBegin;
+				errors+=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errors<=errorMax){
 					pathEnd={(int)unitigNumber};
-					uint errorsEnd;
-					errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
-					if(errorBegin+errors+errorsEnd<=errorMax){
+					//~ uint errorsEnd;
+					errors+=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+					if(errors<=errorMax){
 						reverse(pathBegin.begin(),pathBegin.end());
 						pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 						return pathBegin;
@@ -105,12 +106,12 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 		}else{
 			//CASE 2 : unitig overap read
 			//~ cout<<2<<endl;
-			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
+			errors=(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
 			if(errors<=errorMax){
 				pathBegin={};
-				uint errorBegin;
-				errorBegin=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-				if(errorBegin+errors<=errorMax){
+				//~ uint errorBegin;
+				errors+=(checkBeginGreedy(read,{str2num(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errors<=errorMax){
 					reverse(pathBegin.begin(),pathBegin.end());
 					pathBegin.push_back((int)unitigNumber);
 					return pathBegin;
@@ -121,23 +122,19 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//CASE 3 : read overlap unitig
 			//~ cout<<"3:"<<endl;
-			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
-			//~ cout<<unitig.substr(positionUnitig-positionRead)<<" "<<read.substr(0,unitig.size()+positionRead-positionUnitig)<<endl;
+			errors=(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
 			if(errors<=errorMax){
 				pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
-				uint errorsEnd;
-				errorsEnd=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
-				if(errors+errorsEnd<=errorMax){
+				//~ uint errorsEnd;
+				errors+=(checkEndGreedy(read,{str2num(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+				if(errors<=errorMax){
 					return pathEnd;
 				}
 			}
 		}else{
 			//CASE 4 : read included in unitig
 			//~ cout<<"4:"<<endl;
-			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
-			//~ cout<<unitig.substr(positionUnitig-positionRead)<<endl;
-			//~ cout<<read<<endl;
-			//~ cout<<unitig<<endl;
+			errors=(missmatchNumber(unitig.substr(positionUnitig-positionRead,read.size()),read,errorMax));
 			if(errors<=errorMax){
 				return {(int)positionUnitig-(int)positionRead,(int)unitigNumber};
 			}
@@ -148,7 +145,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 
 
 //TODO SEGFAULT HERE
-vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor){
+vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor, uint& errors){
 	vector<uNumber> pathBegin,pathEnd;
 	string unitig("");
 	bool returned(false);
@@ -168,16 +165,14 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 	if(positionRead>=positionUnitig){
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//~ cout<<1<<endl;
-			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
+			errors=(missmatchNumber(read.substr(positionRead-positionUnitig,unitig.size()),unitig,errorMax));
 			if(errors<=errorMax){
 				pathBegin={};
-				uint errorBegin;
-				errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-				if(errorBegin+errors<=errorMax){
+				errors+=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errors<=errorMax){
 					pathEnd={(int)unitigNumber};
-					uint errorsEnd;
-					errorsEnd=(checkEndGreedy(read,{(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors-errorBegin));
-					if(errorBegin+errors+errorsEnd<=errorMax){
+					errors+=(checkEndGreedy(read,{(unitig.substr(unitig.size()-k+1,k-1)),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+					if(errors<=errorMax){
 						reverse(pathBegin.begin(),pathBegin.end());
 						pathBegin.insert(pathBegin.end(), pathEnd.begin(),pathEnd.end());
 						return pathBegin;
@@ -186,12 +181,11 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 			}
 		}else{
 			//~ cout<<2<<endl;
-			uint errors(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
+			errors=(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
 			if(errors<=errorMax){
 				pathBegin={};
-				uint errorBegin;
-				errorBegin=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
-				if(errorBegin+errors<=errorMax){
+				errors+=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				if(errors<=errorMax){
 					reverse(pathBegin.begin(),pathBegin.end());
 					pathBegin.push_back((int)unitigNumber);
 					return pathBegin;
@@ -201,12 +195,11 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 	}else{
 		if(read.size()-positionRead>=unitig.size()-positionUnitig){
 			//~ cout<<3<<endl;
-			uint errors(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
+			errors=(missmatchNumber(unitig.substr(positionUnitig-positionRead),read.substr(0,unitig.size()+positionRead-positionUnitig),errorMax));
 			if(errors<=errorMax){
 				pathEnd={(int)positionUnitig-(int)positionRead,(int)unitigNumber};
-				uint errorsEnd;
-				errorsEnd=(checkEndGreedy(read,{unitig.substr(unitig.size()-k+1,k-1),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
-				if(errors+errorsEnd<=errorMax){
+				errors+=(checkEndGreedy(read,{unitig.substr(unitig.size()-k+1,k-1),positionRead-positionUnitig+unitig.size()},pathEnd,errorMax-errors));
+				if(errors<=errorMax){
 					return pathEnd;
 				}
 			}
@@ -228,8 +221,8 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 	string unitig,readLeft(read.substr(0,overlap.second)),nextUnitig;
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=(getEnd(overlap.first));
-	uint miniMiss(errors+1),miniMissIndice(9);
-	bool ended(false);
+	uint miniMiss(1000),miniMissIndice(9);
+	bool ended(false),equal(false);
 	int offset(0);
 	kmer nextOverlap(0);
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
@@ -241,10 +234,13 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 				path.push_back(rangeUnitigs[i].second);
 				path.push_back(unitig.size()-readLeft.size()-k+1);
 				return 0;
-			}else if(miss<=miniMiss){
+			}else if(miss==miniMiss){
+				equal=true;
+			}else if(miss<miniMiss){
 				miniMiss=miss;
 				miniMissIndice=i;
 				ended=true;
+				equal=false;
 				offset=unitig.size()-readLeft.size()-k+1;
 			}
 		}else{
@@ -254,12 +250,13 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read , path, {str2num(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)}, errors);
 
-			}else if(miss==miniMiss and noMultiMapping and miniMiss<errors+1){
-				return errors+1;
+			}else if(miss==miniMiss){
+				equal=true;
 			}else if(miss<miniMiss){
 				kmer overlapNum(str2num(unitig.substr(0,k-1)));
 				if(miss<miniMiss){
 					ended=false;
+					equal=false;
 					miniMiss=miss;
 					miniMissIndice=i;
 					nextUnitig=unitig;
@@ -269,13 +266,16 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 		}
 	}
 
-	if (miniMiss<=errors){
+	if (miniMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[miniMissIndice].second);
 		if(ended){
 			path.push_back(offset);
 			return miniMiss;
 		}
 		return miniMiss+mapOnLeftEndGreedy(read , path, {nextOverlap,overlap.second-(nextUnitig.size()-k+1)}, errors-miniMiss);
+	}
+	if(equal){
+		return 1000;
 	}
 	return miniMiss;
 }
@@ -287,8 +287,8 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 	string unitig,readLeft(read.substr(0,overlap.second)),nextUnitig;
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=(getEnd(overlap.first));
-	uint miniMiss(errors+1),miniMissIndice(9);
-	bool ended(false);
+	uint miniMiss(1000),miniMissIndice(9);
+	bool ended(false),equal(false);
 	int offset(0);
 	string nextOverlap;
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
@@ -300,10 +300,13 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 				path.push_back(rangeUnitigs[i].second);
 				path.push_back(unitig.size()-readLeft.size()-k+1);
 				return 0;
-			}else if(miss<=miniMiss){
+			}else if(miss==miniMiss){
+				equal=true;
+			}else if(miss<miniMiss){
 				miniMiss=miss;
 				miniMissIndice=i;
 				ended=true;
+				equal=false;
 				offset=unitig.size()-readLeft.size()-k+1;
 			}
 		}else{
@@ -312,10 +315,11 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read , path, {(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)}, errors);
-			}else if(miss==miniMiss and noMultiMapping and miniMiss<errors+1){
-				return errors+1;
+			}else if(miss==miniMiss){
+				equal=true;
 			}else if(miss<miniMiss){
 				ended=false;
+				equal=false;
 				miniMiss=miss;
 				miniMissIndice=i;
 				nextUnitig=unitig;
@@ -323,13 +327,16 @@ uint Aligner::mapOnLeftEndGreedy(const string &read, vector<uNumber>& path, cons
 			}
 		}
 	}
-	if (miniMiss<=errors){
+	if (miniMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[miniMissIndice].second);
 		if(ended){
 			path.push_back(offset);
 			return miniMiss;
 		}
 		return miniMiss+mapOnLeftEndGreedy(read , path, {nextOverlap,overlap.second-(nextUnitig.size()-k+1)}, errors-miniMiss);
+	}
+	if(equal){
+		return 1000;
 	}
 	return miniMiss;
 }
@@ -341,8 +348,8 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 	if(readLeft.size()<trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=getBegin(overlap.first);
-	uint miniMiss(errors+1), miniMissIndice(9);
-	bool ended(false);
+	uint miniMiss(1000), miniMissIndice(9);
+	bool ended(false),equal(false);
 	kmer nextOverlap(0);
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
 		unitig=(rangeUnitigs[i].first);
@@ -352,10 +359,13 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return 0;
-			}else if(miss<=miniMiss){
+			}else if(miss==miniMiss){
+				equal=true;
+			}else if(miss<miniMiss){
 				miniMiss=miss;
 				miniMissIndice=i;
 				ended=true;
+				equal=false;
 			}
 		}else{
 			//case the read is big enough we want to recover a true overlap
@@ -363,10 +373,11 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return (mapOnRightEndGreedy(read , path, {str2num(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)}, errors));
-			}else if(miss==miniMiss and noMultiMapping and miniMiss<errors+1){
-				return errors+1;
+			}else if(miss==miniMiss){
+				equal=true;
 			}else if(miss<miniMiss){
 				ended=false;
+				equal=false;
 				kmer overlapNum(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 				miniMiss=miss;
 				miniMissIndice=i;
@@ -375,10 +386,13 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			}
 		}
 	}
-	if(miniMiss<=errors){
+	if(miniMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[miniMissIndice].second);
 		if(ended){return miniMiss;}
 		return (miniMiss+mapOnRightEndGreedy(read , path, {nextOverlap,overlap.second+(nextUnitig.size()-k+1)}, errors-miniMiss));
+	}
+	if(equal){
+		return 1000;
 	}
 	return miniMiss;
 }
@@ -390,8 +404,8 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 	if(readLeft.size()<trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=getBegin(overlap.first);
-	uint miniMiss(errors+1), miniMissIndice(9);
-	bool ended(false);
+	uint miniMiss(1000), miniMissIndice(9);
+	bool ended(false),equal(false);
 	string nextOverlap;
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
 		unitig=(rangeUnitigs[i].first);
@@ -401,10 +415,13 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return 0;
-			}else if(miss<=miniMiss){
+			}else if(miss==miniMiss){
+				equal=true;
+			}else if(miss<miniMiss){
 				miniMiss=miss;
 				miniMissIndice=i;
 				ended=true;
+				equal=false;
 			}
 		}else{
 			//case the read is big enough we want to recover a true overlap
@@ -412,10 +429,11 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return (mapOnRightEndGreedy(read , path, {(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)}, errors));
-			}else if(miss==miniMiss and noMultiMapping and miniMiss<errors+1){
-				return errors+1;
+			}else if(miss==miniMiss){
+				equal=true;
 			}else if(miss<miniMiss){
 				ended=false;
+				equal=false;
 				miniMiss=miss;
 				miniMissIndice=i;
 				nextUnitig=unitig;
@@ -423,10 +441,13 @@ uint Aligner::mapOnRightEndGreedy(const string &read, vector<uNumber>& path, con
 			}
 		}
 	}
-	if(miniMiss<=errors){
+	if(miniMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[miniMissIndice].second);
 		if(ended){return miniMiss;}
 		return (miniMiss+mapOnRightEndGreedy(read , path, {nextOverlap,overlap.second+(nextUnitig.size()-k+1)}, errors-miniMiss));
+	}
+	if(equal){
+		return 1000;
 	}
 	return miniMiss;
 }
@@ -438,8 +459,8 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<kmer, uint>& overla
 	string readLeft(read.substr(0,overlap.second)),unitig,nextUnitig;
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=(getEnd(overlap.first));
-	uint minMiss(errors+1),indiceMinMiss(9);
-	bool ended(false);
+	uint minMiss(1000),indiceMinMiss(9);
+	bool ended(false),equal(false);
 	int offset(0);
 	kmer nextOverlap(0);
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
@@ -450,10 +471,13 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<kmer, uint>& overla
 				path.push_back(rangeUnitigs[i].second);
 				path.push_back(unitig.size()-readLeft.size()-k+1);
 				return 0;
-			}else if(miss<=minMiss){
+			}else if(miss==minMiss){
+				equal=true;
+			}else if(miss<minMiss){
 				minMiss=miss;
 				indiceMinMiss=i;
 				ended=true;
+				equal=false;
 				offset=unitig.size()-readLeft.size()-k+1;
 			}
 		}else{
@@ -461,11 +485,12 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<kmer, uint>& overla
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read, path, {str2num(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)},errors);
-			}else if(miss==minMiss and noMultiMapping and minMiss<errors+1){
-				return errors+1;
+			}else if(miss==minMiss){
+				equal=true;
 			}else if(miss<minMiss){
 				kmer overlapNum(str2num(unitig.substr(0,k-1)));
 				ended=false;
+				equal=false;
 				minMiss=miss;
 				indiceMinMiss=i;
 				nextUnitig=unitig;
@@ -474,13 +499,16 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<kmer, uint>& overla
 
 		}
 	}
-	if(minMiss<=errors){
+	if(minMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[indiceMinMiss].second);
 		if(ended){
 			path.push_back(offset);
 			return minMiss;
 		}
 		return minMiss+mapOnLeftEndGreedy(read, path, {nextOverlap,overlap.second-(nextUnitig.size()-k+1)},errors-minMiss);
+	}
+	if(equal){
+		return 1000;
 	}
 	return minMiss;
 }
@@ -492,8 +520,8 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<string, uint>& over
 	string readLeft(read.substr(0,overlap.second)),unitig,nextUnitig;
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=(getEnd(overlap.first));
-	uint minMiss(errors+1),indiceMinMiss(9);
-	bool ended(false);
+	uint minMiss(1000),indiceMinMiss(9);
+	bool ended(false),equal(false);
 	int offset(0);
 	string nextOverlap;
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
@@ -504,10 +532,13 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<string, uint>& over
 				path.push_back(rangeUnitigs[i].second);
 				path.push_back(unitig.size()-readLeft.size()-k+1);
 				return 0;
-			}else if(miss<=minMiss){
+			}else if(miss==minMiss){
+				equal=true;
+			}else if(miss<minMiss){
 				minMiss=miss;
 				indiceMinMiss=i;
 				ended=true;
+				equal=false;
 				offset=unitig.size()-readLeft.size()-k+1;
 			}
 		}else{
@@ -515,10 +546,11 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<string, uint>& over
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnLeftEndGreedy(read, path, {(unitig.substr(0,k-1)),overlap.second-(unitig.size()-k+1)},errors);
-			}else if(miss==minMiss and noMultiMapping and minMiss<errors+1){
-				return errors+1;
+			}else if(miss==minMiss){
+				equal=true;
 			}else if(miss<minMiss){
 				ended=false;
+				equal=false;
 				minMiss=miss;
 				indiceMinMiss=i;
 				nextUnitig=unitig;
@@ -527,13 +559,16 @@ uint Aligner::checkBeginGreedy(const string& read,const pair<string, uint>& over
 
 		}
 	}
-	if(minMiss<=errors){
+	if(minMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[indiceMinMiss].second);
 		if(ended){
 			path.push_back(offset);
 			return minMiss;
 		}
 		return minMiss+mapOnLeftEndGreedy(read, path, {nextOverlap,overlap.second-(nextUnitig.size()-k+1)},errors-minMiss);
+	}
+	if(equal){
+		return 1000;
 	}
 	return minMiss;
 }
@@ -545,8 +580,8 @@ uint Aligner::checkEndGreedy(const string& read, const pair<kmer, uint>& overlap
 	if(readLeft.size()<=trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs;
 	rangeUnitigs=(getBegin(overlap.first));
-	uint minMiss(errors+1),indiceMinMiss(9);
-	bool ended(false);
+	uint minMiss(1000),indiceMinMiss(9);
+	bool ended(false),equal(false);
 	kmer nextOverlap(0);
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
 		unitig=rangeUnitigs[i].first;
@@ -555,18 +590,21 @@ uint Aligner::checkEndGreedy(const string& read, const pair<kmer, uint>& overlap
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return 0;
-			}else if(miss<=minMiss){
+			}else if(miss==minMiss){
+				equal=true;
+			}else if(miss<minMiss){
 				minMiss=miss;
 				indiceMinMiss=i;
 				ended=true;
+				equal=false;
 			}
 		}else{
 			uint miss(missmatchNumber(unitig.substr(k-1),readLeft.substr(0,unitig.size()-k+1), errors));
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnRightEndGreedy(read, path, {str2num(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)},errors);
-			}else if(miss==minMiss and noMultiMapping and minMiss<errors+1){
-				return errors+1;
+			}else if(miss==minMiss){
+				equal=true;
 			}else if(miss<minMiss){
 				kmer overlapNum(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 				minMiss=miss;
@@ -574,13 +612,17 @@ uint Aligner::checkEndGreedy(const string& read, const pair<kmer, uint>& overlap
 				nextOverlap=overlapNum;
 				nextUnitig=unitig;
 				ended=false;
+				equal=false;
 			}
 		}
 	}
-	if(minMiss<=errors){
+	if(minMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[indiceMinMiss].second);
 		if(ended){return minMiss;}
 		return minMiss+mapOnRightEndGreedy(read, path, {nextOverlap,overlap.second+(nextUnitig.size()-k+1)},errors-minMiss);
+	}
+	if(equal){
+		return 1000;
 	}
 	return minMiss;
 }
@@ -591,8 +633,8 @@ uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overl
 	string readLeft(read.substr(overlap.second)),unitig,nextUnitig;
 	if(readLeft.size()<=trimingBases){return 0;}
 	vector<pair<string,uNumber>> rangeUnitigs(getBegin(overlap.first));
-	uint minMiss(errors+1),indiceMinMiss(9);
-	bool ended(false);
+	uint minMiss(1000),indiceMinMiss(9);
+	bool ended(false),equal(false);
 	string nextOverlap;
 	for(uint i(0); i<rangeUnitigs.size(); ++i){
 		unitig=rangeUnitigs[i].first;
@@ -601,31 +643,38 @@ uint Aligner::checkEndGreedy(const string& read, const pair<string, uint>& overl
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return 0;
-			}else if(miss<=minMiss){
+			}
+			else if(miss==minMiss){
+				equal=true;
+			}else if(miss<minMiss){
 				minMiss=miss;
 				indiceMinMiss=i;
 				ended=true;
+				equal=false;
 			}
 		}else{
 			uint miss(missmatchNumber(unitig.substr(k-1),readLeft.substr(0,unitig.size()-k+1), errors));
 			if(miss==0){
 				path.push_back(rangeUnitigs[i].second);
 				return mapOnRightEndGreedy(read, path, {(unitig.substr(unitig.size()-k+1,k-1)),overlap.second+(unitig.size()-k+1)},errors);
-			}else if(miss==minMiss and noMultiMapping and minMiss<errors+1){
-				return errors+1;
+			}else if(miss==minMiss){
+				equal=true;
 			}else if(miss<minMiss){
 				nextOverlap=((unitig.substr(unitig.size()-k+1,k-1)));
 				minMiss=miss;
 				indiceMinMiss=i;
 				nextUnitig=unitig;
-				ended=false;
+				equal=ended=false;
 			}
 		}
 	}
-	if(minMiss<=errors){
+	if(minMiss<=errors and not equal){
 		path.push_back(rangeUnitigs[indiceMinMiss].second);
 		if(ended){return minMiss;}
 		return minMiss+mapOnRightEndGreedy(read, path, {nextOverlap,overlap.second+(nextUnitig.size()-k+1)},errors-minMiss);
+	}
+	if(equal){
+		return 1000;
 	}
 	return minMiss;
 }
@@ -691,49 +740,62 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 	vector<int> pathMem;
 	uint errors(0);
 	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	vector<int> errorsFromPreviousMapping(listAnchors.size(),-1);
 	if(listAnchors.empty()){
 		++noOverlapRead;
 		return;
 	}
+	string superRead,superReadMem;
 	//~ random_shuffle ( listAnchors.begin(), listAnchors.end() );
 	while(errors<=errorsMax){
 		bool found(false);
 		pathMem={};
+		uint errorInMapping(0);
 		for(uint i(0);i<listAnchors.size();++i){
 			path={};
-			if(stringMode){
-				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
-			}else{
-				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
-			}
-			//MAPPING IS FOUND
-			if(not path.empty()){
-				if(noMultiMapping){
-					if(found){
-						string superRead=(recoverSuperReadsCor(path,read.size()));
-						string superReadMem=(recoverSuperReadsCor(pathMem,read.size()));
-						if(superRead!=superReadMem){
-							path={};
-							return;
-						}else{
-							if(path.size()<pathMem.size()){
-								pathMem=path;
-							}
-						}
-					}else{
-						pathMem=path;
-					}
-					found=true;
+			errorInMapping=0;
+			if(errorsFromPreviousMapping[i]<=(int)errors){
+				if(stringMode){
+					path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i],errorInMapping);
 				}else{
-					//DONE
-					++alignedRead;
-					return;
+					path=alignReadGreedyAnchors(read,errors,listAnchors[i],errorInMapping);
 				}
+				errorsFromPreviousMapping[i]=errorInMapping;
+				//MAPPING IS FOUND
+				if(not path.empty()){
+					if(noMultiMapping){
+						if(found){
+							superRead=(recoverSuperReadsCor(path,read.size()));
+							superReadMem=(recoverSuperReadsCor(pathMem,read.size()));
+							if(superRead!=superReadMem){
+								//~ cout<<superRead<<endl;
+								//~ cout<<superReadMem<<endl;
+								//~ cin.get();
+								path={};
+								return;
+							}else{
+								if(path.size()<pathMem.size()){
+									pathMem=path;
+								}
+							}
+						}else{
+							pathMem=path;
+						}
+						found=true;
+					}else{
+						//DONE
+						++alignedRead;
+						return;
+					}
+				}
+			}else{
 			}
 		}
 		++errors;
 		if(perfect or found){
-			break;
+			path=pathMem;
+			++alignedRead;
+			return;
 		}
 	}
 	path=pathMem;
@@ -754,12 +816,13 @@ void Aligner::alignReadAllOpti(const string& read, vector<vector<int>>& pathVect
 	if(listAnchors.empty()){++noOverlapRead;return;}
 	while(errors<=errorsMax){
 		bool found(false);
+		uint errorInMapping(0);
 		for(uint i(0);i<listAnchors.size();++i){
 			path={};
 			if(stringMode){
-				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
+				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i],errorInMapping);
 			}else{
-				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
+				path=alignReadGreedyAnchors(read,errors,listAnchors[i],errorInMapping);
 			}
 			//MAPPING IS FOUND
 			if(not path.empty()){
@@ -786,10 +849,11 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 	while(errors<=errorsMax){
 		for(uint i(0);i<listAnchors.size();++i){
 			path={};
+			uint errorInMapping(0);
 			if(stringMode){
-				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i]);
+				path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i],errorInMapping);
 			}else{
-				path=alignReadGreedyAnchors(read,errors,listAnchors[i]);
+				path=alignReadGreedyAnchors(read,errors,listAnchors[i],errorInMapping);
 			}
 			//MAPPING IS FOUND
 			if(not path.empty()){
@@ -808,10 +872,11 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 		auto  anchor=listAnchors[i];
 		if((anchor.first.first==unumber or anchor.first.first==-unumber) and anchor.second==0 and anchor.first.second==0){
 			path={};
+			uint errorInMapping(0);
 			if(stringMode){
-				path=alignReadGreedyAnchorsstr(read,0,anchor);
+				path=alignReadGreedyAnchorsstr(read,0,anchor,errorInMapping);
 			}else{
-				path=alignReadGreedyAnchors(read,0,anchor);
+				path=alignReadGreedyAnchors(read,0,anchor,errorInMapping);
 			}
 			return;
 		}
@@ -939,9 +1004,12 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						alignReadAll(read,pathVector);
 					}
 					if(pathVector.empty()){++notAligned;}
+					sort(pathVector.begin(), pathVector.end());
+					pathVector.erase(unique(pathVector.begin(), pathVector.end()), pathVector.end());
 					for(uint i(0);i<pathVector.size();++i){
 						superRead=(recoverSuperReadsNoStr(path,1));
 						if(superRead!=""){
+							cout<<"wut"<<endl;
 							toWrite+=header+'\n'+superRead+'\n';
 							if(printAlignment){
 								toWrite+=read+'\n'+recoverSuperReadsCor(path,read.size())+'\n';

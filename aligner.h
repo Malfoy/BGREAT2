@@ -129,6 +129,7 @@ public:
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment){
+		//TODO OPTION -C where multiple mapping  is OK
 		noMultiMapping=true;
 		uniqueOptimalMappingMode=true;
 		optimalMappingMode=false;
@@ -286,8 +287,8 @@ public:
 	void indexUnitigsAuxStrfull();
 	void fillIndicesstrbutanchors();
 	vector<pair<pair<uint,uint>,uint>> getNAnchorsnostr(const string& read, uint n);
-	vector<uNumber> alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor);;
-	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor);
+	vector<uNumber> alignReadGreedyAnchors(const string& read, uint errorMax,const pair<pair<uint,uint>,uint>& anchor, uint& error);;
+	vector<uNumber> alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor,uint& error);
 	void alignReadOpti(const string& read, vector<int>& path,bool perfect);
 	vector<int> inclued(vector<int>& v1, vector<int>& v2);
 	void getReads2(vector<pair<string,string>>& reads, uint n);
