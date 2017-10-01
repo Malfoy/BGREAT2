@@ -894,6 +894,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	pair<string,string> superpath;
 	uint iterLoop(0);
 	while(!readFile.eof()){
+	//~ while(not feof(readFileF)){
 		toWrite="";
 		if(keepOrder){
 			while(threadToRead!=indiceThread){
@@ -932,13 +933,25 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				superpath=(recoverSuperReadsPairedNoStr(path,path2));
 				if(superpath.first!=""){
 					if(superpath.second!=""){
-						toWrite+=header+'\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
+						if(headerNeeded){
+							toWrite+=header+'\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
+						}else{
+							toWrite+=superpath.first+'\n'+superpath.second+'\n';
+						}
 					}else{
-						toWrite+=header+'\n'+superpath.first+'\n';
+						if(headerNeeded){
+							toWrite+=header+'\n'+superpath.first+'\n';
+						}else{
+							toWrite+=superpath.first+'\n';
+						}
 					}
 				}else{
 					if(superpath.second!=""){
-						toWrite+=header2+'\n'+superpath.second+'\n';
+						if(headerNeeded){
+							toWrite+=header2+'\n'+superpath.second+'\n';
+						}else{
+							toWrite+=superpath.second+'\n';
+						}
 					}
 				}
 			}
@@ -988,9 +1001,15 @@ void Aligner::alignPartGreedy(uint indiceThread){
 								path=cleanSR(path,read.size());
 								superRead=(recoverSuperReadsNoStr(path,1));
 								if(superRead!=""){
-									toWrite+=header+'\n'+superRead+'\n';
 									if(printAlignment){
+										toWrite+=header+'\n'+superRead+'\n';
 										toWrite+=read+'\n'+recoverSuperReadsCor(path,read.size())+'\n';
+									}else{
+										if(headerNeeded){
+											toWrite+=superRead+'\n';
+										}else{
+											toWrite+=header+'\n'+superRead+'\n';
+										}
 									}
 								}
 							}
@@ -1023,14 +1042,23 @@ void Aligner::alignPartGreedy(uint indiceThread){
 			while(threadToPrint!=indiceThread){this_thread::sleep_for (chrono::microseconds(1));}
 			pathMutex.lock();
 			{
-				fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+				//~ fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+				if(compression){
+					pathCompressed->write(toWrite.c_str(),toWrite.size());
+				}else{
+					fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+				}
 				threadToPrint=(threadToPrint+1)%coreNumber;
 			}
 			pathMutex.unlock();
 		}else{
 			pathMutex.lock();
 			{
-				fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+				if(compression){
+					pathCompressed->write(toWrite.c_str(),toWrite.size());
+				}else{
+					fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+				}
 			}
 			pathMutex.unlock();
 		}

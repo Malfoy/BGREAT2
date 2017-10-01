@@ -2,12 +2,12 @@ CC=g++
 OS := $(shell uname)
 ifeq ($(OS),Darwin)
   # Run MacOS commands
-  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors
-  LDFLAGS=-flto -lpthread
+  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -lz
+  LDFLAGS=-flto -lpthread -lz
 else
   # check for Linux and add use of OpenMP
-  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp
-  LDFLAGS=-flto -lpthread -fopenmp
+  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp -lz
+  LDFLAGS=-flto -lpthread -fopenmp -lz
 endif
 
 

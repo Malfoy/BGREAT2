@@ -135,31 +135,50 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 
 
 //TODO FA
-//~ void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
-	//~ reads={};
-	//~ string read,header,inter;
-	//~ uint buffSize(10000);
-	//~ char buff[buffSize];
-	//~ uint pred(0);
-	//~ while (!feof(readFileF)) {
-		//~ fread(buff, 1, buffSize, readFileF);
-		//~ for(uint i(0);i<buffSize;++i){
-			//~ if(buff[i]=='\0'){
-				//~ if(header==""){
-					//~ header=string(buff+pred,i-pred);
-					//~ pred=i;
-				//~ }else{
-					//~ read=string(buff+pred,i-pred);
-					//~ reads.push_back({header,read});
-					//~ if(reads.size()>=n){return;}
-					//~ header=read="";
-					//~ pred=i;
-				//~ }
-			//~ }else{
-			//~ }
-		//~ }
-	//~ }
-//~ }
+void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
+	reads={};
+	string read,header,inter;
+	int buffSize(1000000);
+	char buff[buffSize];
+	int realPred(-1),pred(-1);
+	while (not feof(readFileF)){
+		//~ cout<<"go"<<endl;
+		pred=-1;
+		int res=fread(buff, 1, buffSize, readFileF);
+		//~ cout<<1<<endl;
+		//~ cout<<res<<endl;
+		for(uint i(0);i<res;++i){
+			//~ cout<<2<<endl;
+			if(buff[i]=='\n'){
+				//~ cout<<2<<endl;
+				if(header==""){
+					header=string(buff+pred+1,i-pred-1);
+					pred=i;
+				}else{
+					//~ cout<<"go"<<endl;
+					read=string(buff+pred+1,i-pred-1);
+					reads.push_back({header,read});
+					//~ cout<<""<<header<<"\n"<<read<<"\n"<<endl;
+					//~ cin.get();
+
+					header=read="";
+					realPred=pred=i;
+					if(reads.size()>=n){
+						fseek(readFileF,realPred-res,SEEK_CUR);
+						return;
+					}
+				}
+			}else{
+			}
+
+		}
+		//~ cout<<-res+pred+1<<endl;
+		if(-res+pred+1<0){
+			fseek(readFileF,-res+pred+1,SEEK_CUR);
+		}else{
+		}
+	}
+}
 
 
 
@@ -1799,6 +1818,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 			file=reads.substr(last,i-last);
 			readFile.close();
 			readFile.open(file);
+			//~ readFileF=fopen(file.c_str(),"r");
 			cout<<file<<endl;
 			unsigned char nbThreads(coreNumber);
 			vector<thread> threads;
@@ -1812,6 +1832,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	file=reads.substr(last);
 	readFile.close();
 	readFile.open(file);
+	//~ readFileF=fopen(file.c_str(),"r");
 	cout<<file<<endl;
 	unsigned char nbThreads(coreNumber);
 	vector<thread> threads;

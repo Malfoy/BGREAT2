@@ -35,6 +35,7 @@
 #include <unordered_map>
 #include "utils.h"
 #include "BooPHF.h"
+#include "zstr.hpp"
 
 
 
@@ -105,6 +106,8 @@ public:
 	ifstream unitigFile, readFile;
 	ofstream pathFile, noOverlapFile, notMappedFile;
 	FILE * pathFilef;
+	FILE * readFileF;
+	ostream* pathCompressed;
 	//~ FILE * notMappedFilef;
 	//~ FILE * readFileF;
 	MPHF leftMPHF,rightMPHF,anchorsMPHF;
@@ -126,13 +129,23 @@ public:
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment,headerNeeded,compression, anyOptimalMapping;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment){
-		//TODO OPTION -C where multiple mapping  is OK
-		noMultiMapping=true;
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any){
+		if(any){
+			noMultiMapping=false;
+		}else{
+			noMultiMapping=true;
+		}
+		compression=compressOutput;
+		headerNeeded=false;
 		uniqueOptimalMappingMode=true;
 		optimalMappingMode=false;
+		if(compression){
+			pathCompressed= (new zstr::ofstream((paths+".gz").c_str()));
+		}else{
+			pathFilef=fopen(paths.c_str(),"wb");
+		}
 		if(ballOptimalMapping){
 			uniqueOptimalMappingMode=false;
 			optimalMappingMode=true;
@@ -150,7 +163,7 @@ public:
 		rcMode=rcModeBool;
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
-		pathFilef=fopen(paths.c_str(),"wb");
+
 		ratioError=ratioe;
 		k=kValue;
 		if(k>63){
@@ -185,8 +198,13 @@ public:
 	}
 
 	~Aligner(){
-		fclose(pathFilef);
+		if(compression){
+			delete(pathCompressed);
+		}else{
+			fclose(pathFilef);
+		}
 		unitigFile.close();
+
 	}
 
 	void indexUnitigs();
