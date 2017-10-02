@@ -1036,7 +1036,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 		}
 		hash=anchorsMPHF.lookup(rep);
 		if(hash!=ULLONG_MAX and anchorsChecking[hash]==getHash(rep)){
-			bool addedAnAnchor(false);
+			bool addedAnAnchor(true);
 			if(vectorMode){
 				if(num==rep){
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
@@ -1046,7 +1046,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 						if(positionUnitig<=unitigs[unitigNumPos].size()-k){
 							if(unitigsSelected.count(unitigNumPos)==0){
 								list.push_back({anchorsPositionVector[hash][j],i});
-								addedAnAnchor=true;
+								//~ addedAnAnchor=true;
 							}else{
 								//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
 									//~ list.push_back({anchorsPositionVector[hash][j],i});
@@ -1064,7 +1064,7 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 						if(positionUnitig+anchorSize>=k){
 							if(unitigsSelected.count(unitigNumPos)==0){
 								list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
-								addedAnAnchor=true;
+								//~ addedAnAnchor=true;
 							}else{
 								//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
 									//~ list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
