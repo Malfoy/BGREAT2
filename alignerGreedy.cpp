@@ -847,6 +847,7 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
 	if(listAnchors.empty()){++noOverlapRead;return;}
 	while(errors<=errorsMax){
+		//~ cout<<errors<<endl;
 		for(uint i(0);i<listAnchors.size();++i){
 			path={};
 			uint errorInMapping(0);
@@ -857,6 +858,7 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 			}
 			//MAPPING IS FOUND
 			if(not path.empty()){
+				//~ cout<<"oui"<<endl;
 				pathVector.push_back(path);
 			}
 		}
@@ -1022,17 +1024,18 @@ void Aligner::alignPartGreedy(uint indiceThread){
 					}else{
 						alignReadAll(read,pathVector);
 					}
-					if(pathVector.empty()){++notAligned;}
+					if(pathVector.empty()){++notAligned;}else{++alignedRead;}
 					sort(pathVector.begin(), pathVector.end());
 					pathVector.erase(unique(pathVector.begin(), pathVector.end()), pathVector.end());
 					for(uint i(0);i<pathVector.size();++i){
-						superRead=(recoverSuperReadsNoStr(path,1));
+						superRead=(recoverSuperReadsNoStr(pathVector[i],1));
 						if(superRead!=""){
-							cout<<"wut"<<endl;
 							toWrite+=header+'\n'+superRead+'\n';
 							if(printAlignment){
-								toWrite+=read+'\n'+recoverSuperReadsCor(path,read.size())+'\n';
+								toWrite+=read+'\n'+recoverSuperReadsCor(pathVector[i],read.size())+'\n';
 							}
+						}else{
+							cout<<"wut"<<endl;
 						}
 					}
 				}
