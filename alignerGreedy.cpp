@@ -893,20 +893,20 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	string read,read2,header,header2,corrected,superRead,toWrite;
 	pair<string,string> superpath;
 	uint iterLoop(0);
-	while(!readFile.eof()){
-	//~ while(not feof(readFileF)){
+	//~ while(!readFile.eof()){
+	while(not feof(readFileF)){
 		toWrite="";
 		if(keepOrder){
 			while(threadToRead!=indiceThread){
 				this_thread::sleep_for (chrono::microseconds(1));
 			}
 			readMutex.lock();
-			getReads(multiread,10000);
+			getReads2(multiread,100000);
 			threadToRead=(threadToRead+1)%coreNumber;
 			readMutex.unlock();
 		}else{
 			readMutex.lock();
-			getReads(multiread,10000);
+			getReads2(multiread,100000);
 			readMutex.unlock();
 		}
 		if(pairedMode){

@@ -123,7 +123,7 @@ public:
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdateOverlap;
 	kmer offsetUpdateAnchor;
-	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize;
+	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize,maxPositionAnchors;
 	double ratioError;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
 	array<mutex,1000> mutexV;
@@ -137,6 +137,7 @@ public:
 		}else{
 			noMultiMapping=true;
 		}
+		maxPositionAnchors=8;
 		compression=compressOutput;
 		headerNeeded=false;
 		uniqueOptimalMappingMode=true;

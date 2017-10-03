@@ -142,25 +142,16 @@ void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
 	char buff[buffSize];
 	int realPred(-1),pred(-1);
 	while (not feof(readFileF)){
-		//~ cout<<"go"<<endl;
 		pred=-1;
 		int res=fread(buff, 1, buffSize, readFileF);
-		//~ cout<<1<<endl;
-		//~ cout<<res<<endl;
 		for(uint i(0);i<res;++i){
-			//~ cout<<2<<endl;
 			if(buff[i]=='\n'){
-				//~ cout<<2<<endl;
 				if(header==""){
 					header=string(buff+pred+1,i-pred-1);
 					pred=i;
 				}else{
-					//~ cout<<"go"<<endl;
 					read=string(buff+pred+1,i-pred-1);
 					reads.push_back({header,read});
-					//~ cout<<""<<header<<"\n"<<read<<"\n"<<endl;
-					//~ cin.get();
-
 					header=read="";
 					realPred=pred=i;
 					if(reads.size()>=n){
@@ -172,7 +163,6 @@ void Aligner::getReads2(vector<pair<string,string>>& reads, uint n){
 			}
 
 		}
-		//~ cout<<-res+pred+1<<endl;
 		if(-res+pred+1<0){
 			fseek(readFileF,-res+pred+1,SEEK_CUR);
 		}else{
@@ -1189,6 +1179,7 @@ void Aligner::indexUnitigsAux(){
 	vector<kmer>* leftOver=new vector<kmer>;
 	vector<kmer>* rightOver=new vector<kmer>;
 	vector<kmer>* anchors=new vector<kmer>;
+	cout<<"Reading unitigs"<<endl;
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
@@ -1223,10 +1214,12 @@ void Aligner::indexUnitigsAux(){
 			}
 		}
 	}
+	cout<<"Sorting anchors"<<endl;
 	sort( leftOver->begin(), leftOver->end() );
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
+	cout<<"Creating MPHF"<<endl;
 	auto data_iterator = boomphf::range(static_cast<const kmer*>(&((*leftOver)[0])), static_cast<const kmer*>((&(*leftOver)[0])+leftOver->size()));
 	leftMPHF= boomphf::mphf<kmer,hasher>(leftOver->size(),data_iterator,coreNumber,gammaFactor,false);
 	leftsize=leftOver->size();
@@ -1254,6 +1247,7 @@ void Aligner::indexUnitigsAux(){
 	anchorsChecking.resize(anchorNumber,0);
 	leftIndices.resize(leftsize,{});
 	rightIndices.resize(rightsize,{});
+	cout<<"Filling index"<<endl;
 	fillIndices();
 }
 
@@ -1349,6 +1343,7 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
 	vector<kmer>* anchors=new vector<kmer>;
+	cout<<"Reading Unitigs"<<endl;
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
@@ -1383,10 +1378,12 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 			}
 		}
 	}
+	cout<<"Sorting anchors"<<endl;
 	sort( leftOver->begin(), leftOver->end() );
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
+	cout<<"Creating MPHF"<<endl;
 	auto data_iterator = boomphf::range(static_cast<const string*>(&((*leftOver)[0])), static_cast<const string*>((&(*leftOver)[0])+leftOver->size()));
 	leftMPHFstr= MPHFSTR(leftOver->size(),data_iterator,coreNumber,gammaFactor,false);
 	leftsize=leftOver->size();
@@ -1405,13 +1402,13 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 		anchorsMPHF= MPHF(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
 	anchorNumber=anchors->size();
-	//~ cout<<anchorNumber<<endl;
 	delete anchors;
 	if(vectorMode){
 		anchorsPositionVector.resize(anchorNumber,{});
 	}else{
 		anchorsPosition.resize(anchorNumber,{0,0});
 	}
+	cout<<"Filling index"<<endl;
 	leftIndicesstr.resize(leftsize,{});
 	rightIndicesstr.resize(rightsize,{});
 	anchorsChecking.resize(anchorNumber,0);
@@ -1675,17 +1672,21 @@ void Aligner::fillIndicesstrbutanchors(){
 			uint64_t hash=anchorsMPHF.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
-					mutexV[hash%1000].lock();
-					anchorsPositionVector[hash].push_back({i,0});
-					mutexV[hash%1000].unlock();
+					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({i,0});
+						mutexV[hash%1000].unlock();
+					}
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
-					mutexV[hash%1000].lock();
-					anchorsPositionVector[hash].push_back({-i,0});
-					mutexV[hash%1000].unlock();
+					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({-i,0});
+						mutexV[hash%1000].unlock();
+					}
 				}else{
 					anchorsPosition[hash]={-i,0};
 				}
@@ -1699,17 +1700,21 @@ void Aligner::fillIndicesstrbutanchors(){
 					uint64_t hash=anchorsMPHF.lookup(canon);
 					if(canon==seq){
 						if(vectorMode){
-							mutexV[hash%1000].lock();
-							anchorsPositionVector[hash].push_back({i,j+1});
-							mutexV[hash%1000].unlock();
+							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+								mutexV[hash%1000].lock();
+								anchorsPositionVector[hash].push_back({i,j+1});
+								mutexV[hash%1000].unlock();
+							}
 						}else{
 							anchorsPosition[hash]={i,j+1};
 						}
 					}else{
 						if(vectorMode){
-							mutexV[hash%1000].lock();
-							anchorsPositionVector[hash].push_back({-i,j+1});
-							mutexV[hash%1000].unlock();
+							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+								mutexV[hash%1000].lock();
+								anchorsPositionVector[hash].push_back({-i,j+1});
+								mutexV[hash%1000].unlock();
+							}
 						}else{
 							anchorsPosition[hash]={-i,j+1};
 						}
@@ -1816,9 +1821,9 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	for(uint i(0);i<reads.size();++i){
 		if(reads[i]==','){
 			file=reads.substr(last,i-last);
-			readFile.close();
-			readFile.open(file);
-			//~ readFileF=fopen(file.c_str(),"r");
+			//~ readFile.close();
+			//~ readFile.open(file);
+			readFileF=fopen(file.c_str(),"r");
 			cout<<file<<endl;
 			unsigned char nbThreads(coreNumber);
 			vector<thread> threads;
@@ -1830,9 +1835,9 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		}
 	}
 	file=reads.substr(last);
-	readFile.close();
-	readFile.open(file);
-	//~ readFileF=fopen(file.c_str(),"r");
+	//~ readFile.close();
+	//~ readFile.open(file);
+	readFileF=fopen(file.c_str(),"r");
 	cout<<file<<endl;
 	unsigned char nbThreads(coreNumber);
 	vector<thread> threads;
