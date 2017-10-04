@@ -1821,9 +1821,9 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	for(uint i(0);i<reads.size();++i){
 		if(reads[i]==','){
 			file=reads.substr(last,i-last);
-			//~ readFile.close();
-			//~ readFile.open(file);
-			readFileF=fopen(file.c_str(),"r");
+			readFile.close();
+			readFile.open(file);
+			//~ readFileF=fopen(file.c_str(),"r");
 			cout<<file<<endl;
 			unsigned char nbThreads(coreNumber);
 			vector<thread> threads;
@@ -1835,9 +1835,9 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		}
 	}
 	file=reads.substr(last);
-	//~ readFile.close();
-	//~ readFile.open(file);
-	readFileF=fopen(file.c_str(),"r");
+	readFile.close();
+	readFile.open(file);
+	//~ readFileF=fopen(file.c_str(),"r");
 	cout<<file<<endl;
 	unsigned char nbThreads(coreNumber);
 	vector<thread> threads;
