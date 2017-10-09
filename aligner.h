@@ -123,15 +123,16 @@ public:
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdateOverlap;
 	kmer offsetUpdateAnchor;
-	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize,maxPositionAnchors;
+	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize,maxPositionAnchors, iterLoop;
 	double ratioError;
-	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex;
+	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex, progressMutex;
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment,headerNeeded,compression, anyOptimalMapping;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any){
+		iterLoop=0;
 		if(any){
 			noMultiMapping=false;
 		}else{

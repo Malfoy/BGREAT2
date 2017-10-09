@@ -41,6 +41,7 @@
 
 
 using namespace std;
+using namespace chrono;
 
 
 
@@ -1179,7 +1180,7 @@ void Aligner::indexUnitigsAux(){
 	vector<kmer>* leftOver=new vector<kmer>;
 	vector<kmer>* rightOver=new vector<kmer>;
 	vector<kmer>* anchors=new vector<kmer>;
-	cout<<"Reading unitigs"<<endl;
+	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
@@ -1214,12 +1215,16 @@ void Aligner::indexUnitigsAux(){
 			}
 		}
 	}
-	cout<<"Sorting anchors"<<endl;
+	auto end1=system_clock::now();auto waitedFor1=end1-start1;cout<<"Duration "<<duration_cast<seconds>(waitedFor1).count()<<" seconds"<<endl;
+
+	cout<<"Sorting anchors: "<<flush;auto start2=system_clock::now();
 	sort( leftOver->begin(), leftOver->end() );
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
-	cout<<"Creating MPHF"<<endl;
+	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
+
+	cout<<"Creating MPHF: "<<flush;auto start3=system_clock::now();
 	auto data_iterator = boomphf::range(static_cast<const kmer*>(&((*leftOver)[0])), static_cast<const kmer*>((&(*leftOver)[0])+leftOver->size()));
 	leftMPHF= boomphf::mphf<kmer,hasher>(leftOver->size(),data_iterator,coreNumber,gammaFactor,false);
 	leftsize=leftOver->size();
@@ -1247,8 +1252,11 @@ void Aligner::indexUnitigsAux(){
 	anchorsChecking.resize(anchorNumber,0);
 	leftIndices.resize(leftsize,{});
 	rightIndices.resize(rightsize,{});
-	cout<<"Filling index"<<endl;
+	auto end3=system_clock::now();auto waitedFor3=end3-start3;cout<<"Duration "<<duration_cast<seconds>(waitedFor3).count()<<" seconds"<<endl;
+
+	cout<<"Filling index: "<<flush;auto start4=system_clock::now();
 	fillIndices();
+	auto end4=system_clock::now();auto waitedFor4=end4-start4;cout<<"Duration "<<duration_cast<seconds>(waitedFor4).count()<<" seconds"<<endl;
 }
 
 
@@ -1343,7 +1351,7 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
 	vector<kmer>* anchors=new vector<kmer>;
-	cout<<"Reading Unitigs"<<endl;
+	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
@@ -1378,12 +1386,16 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 			}
 		}
 	}
-	cout<<"Sorting anchors"<<endl;
+	auto end1=system_clock::now();auto waitedFor1=end1-start1;cout<<"Duration "<<duration_cast<seconds>(waitedFor1).count()<<" seconds"<<endl;
+
+	cout<<"Sorting anchors: "<<flush;auto start2=system_clock::now();
 	sort( leftOver->begin(), leftOver->end() );
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
-	cout<<"Creating MPHF"<<endl;
+	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
+
+	cout<<"Creating MPHF: "<<flush;auto start3=system_clock::now();
 	auto data_iterator = boomphf::range(static_cast<const string*>(&((*leftOver)[0])), static_cast<const string*>((&(*leftOver)[0])+leftOver->size()));
 	leftMPHFstr= MPHFSTR(leftOver->size(),data_iterator,coreNumber,gammaFactor,false);
 	leftsize=leftOver->size();
@@ -1408,11 +1420,14 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	}else{
 		anchorsPosition.resize(anchorNumber,{0,0});
 	}
-	cout<<"Filling index"<<endl;
+	auto end3=system_clock::now();auto waitedFor3=end3-start3;cout<<"Duration "<<duration_cast<seconds>(waitedFor3).count()<<" seconds"<<endl;
+
+	cout<<"Filling index: "<<flush;auto start4=system_clock::now();
 	leftIndicesstr.resize(leftsize,{});
 	rightIndicesstr.resize(rightsize,{});
 	anchorsChecking.resize(anchorNumber,0);
 	fillIndicesstrbutanchors();
+	auto end4=system_clock::now();auto waitedFor4=end4-start4;cout<<"Duration "<<duration_cast<seconds>(waitedFor4).count()<<" seconds"<<endl;
 }
 
 
