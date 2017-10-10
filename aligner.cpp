@@ -1192,13 +1192,15 @@ void Aligner::indexUnitigsAux(){
 			kmer beg(str2num(line.substr(0,k-1))),rcBeg(rcb(beg,k-1));
 			if(beg<=rcBeg){
 				leftOver->push_back(beg);
-			}else{
+			}
+			if(beg>=rcBeg){
 				rightOver->push_back(rcBeg);
 			}
 			kmer end(str2num(line.substr(line.size()-k+1,k-1))),rcEnd(rcb(end,k-1));
 			if(end<=rcEnd){
 				rightOver->push_back(end);
-			}else{
+			}
+			if(end>=rcEnd){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
@@ -1281,14 +1283,16 @@ void Aligner::indexUnitigsAuxStrfull(){
 			rcBeg=(reverseComplements(beg));
 			if(beg<=rcBeg){
 				leftOver->push_back(beg);
-			}else{
+			}
+			if(beg>=rcBeg){
 				rightOver->push_back(rcBeg);
 			}
 			end=(line.substr(line.size()-k+1,k-1));
 			rcEnd=(reverseComplements(end));
 			if(end<=rcEnd){
 				rightOver->push_back(end);
-			}else{
+			}
+			if(end>=rcEnd){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
@@ -1362,14 +1366,16 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 			rcBeg=(reverseComplements(beg));
 			if(beg<=rcBeg){
 				leftOver->push_back(beg);
-			}else{
+			}
+			if(beg>=rcBeg){
 				rightOver->push_back(rcBeg);
 			}
 			end=(line.substr(line.size()-k+1,k-1));
 			rcEnd=(reverseComplements(end));
 			if(end<=rcEnd){
 				rightOver->push_back(end);
-			}else{
+			}
+			if(end>=rcEnd){
 				leftOver->push_back(rcEnd);
 			}
 			if(dogMode){
@@ -1505,7 +1511,8 @@ void Aligner::fillIndices(){
 				indices.indice4=i;
 			}
 			leftIndices[leftMPHF.lookup(beg)]=indices;
-		}else{
+		}
+		if(beg>=rcBeg){
 			indices=rightIndices[rightMPHF.lookup(rcBeg)];
 			indices.overlap=rcBeg;
 			if(indices.indice1==0){
@@ -1533,7 +1540,8 @@ void Aligner::fillIndices(){
 				indices.indice4=i;
 			}
 			rightIndices[rightMPHF.lookup(end)]=indices;
-		}else{
+		}
+		if(end>=rcEnd){
 			indices=leftIndices[leftMPHF.lookup(rcEnd)];
 			indices.overlap=rcEnd;
 			if(indices.indice1==0){
@@ -1628,7 +1636,8 @@ void Aligner::fillIndicesstr(){
 				indices.indice4=i;
 			}
 			leftIndicesstr[leftMPHFstr.lookup(beg)]=indices;
-		}else{
+		}
+		if(beg>=rcBeg){
 			indices=rightIndicesstr[rightMPHFstr.lookup(rcBeg)];
 			indices.overlap=rcBeg;
 			if(indices.indice1==0){
@@ -1657,7 +1666,8 @@ void Aligner::fillIndicesstr(){
 				indices.indice4=i;
 			}
 			rightIndicesstr[rightMPHFstr.lookup(end)]=indices;
-		}else{
+		}
+		if(end>=rcEnd){
 			indices=leftIndicesstr[leftMPHFstr.lookup(rcEnd)];
 			indices.overlap=rcEnd;
 			if(indices.indice1==0){
@@ -1757,7 +1767,8 @@ void Aligner::fillIndicesstrbutanchors(){
 				indices.indice4=i;
 			}
 			leftIndicesstr[leftMPHFstr.lookup(beg)]=indices;
-		}else{
+		}
+		if(beg>=rcBeg){
 			indices=rightIndicesstr[rightMPHFstr.lookup(rcBeg)];
 			indices.overlap=rcBeg;
 			if(indices.indice1==0){
@@ -1786,7 +1797,8 @@ void Aligner::fillIndicesstrbutanchors(){
 				indices.indice4=i;
 			}
 			rightIndicesstr[rightMPHFstr.lookup(end)]=indices;
-		}else{
+		}
+		if(end>=rcEnd){
 			indices=leftIndicesstr[leftMPHFstr.lookup(rcEnd)];
 			indices.overlap=rcEnd;
 			if(indices.indice1==0){
