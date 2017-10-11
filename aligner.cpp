@@ -303,9 +303,9 @@ vector<pair<string,uNumber>> Aligner::getEnd(string bin){
 	unitigIndicesstr indices;
 	uNumber num;
 	bool go(false);
-	if(bin<rc){
+	if(bin<=rc){
 		uint64_t hash=rightMPHFstr.lookup(bin);
-		if(hash!=ULLONG_MAX){
+		if(hash<rightIndicesstr.size()){
 			indices=rightIndicesstr[hash];
 			if(indices.overlap==bin){
 				go=true;
@@ -313,7 +313,7 @@ vector<pair<string,uNumber>> Aligner::getEnd(string bin){
 		}
 	}else{
 		uint64_t hash=leftMPHFstr.lookup(rc);
-		if(hash!=ULLONG_MAX){
+		if(hash<leftIndicesstr.size()){
 			indices=leftIndicesstr[hash];
 			if(indices.overlap==rc){
 				go=true;
@@ -1180,6 +1180,8 @@ void Aligner::indexUnitigsAux(){
 	vector<kmer>* leftOver=new vector<kmer>;
 	vector<kmer>* rightOver=new vector<kmer>;
 	vector<kmer>* anchors=new vector<kmer>;
+	rightOver->push_back(0);
+	leftOver->push_back(0);
 	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
@@ -1355,6 +1357,8 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
 	vector<kmer>* anchors=new vector<kmer>;
+	leftOver->push_back("");
+	rightOver->push_back("");
 	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
 	while(!unitigFile.eof()){
 		getline(unitigFile,line);
