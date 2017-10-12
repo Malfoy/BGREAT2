@@ -1045,7 +1045,6 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 							}
 							unitigsSelected[unitigNumPos]=positionUnitig;
 						}
-
 					}
 				}else{
 					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
@@ -1063,7 +1062,6 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 							}
 							unitigsSelected[unitigNumPos]=positionUnitig;
 						}
-
 					}
 				}
 			}else{
@@ -1077,13 +1075,13 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 							list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
 						}
 				}else{
-					if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
-						if(num==rep){
-							list.push_back({anchorsPosition[hash],i});
-						}else{
-							list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
-						}
-					}
+					//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
+						//~ if(num==rep){
+							//~ list.push_back({anchorsPosition[hash],i});
+						//~ }else{
+							//~ list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+						//~ }
+					//~ }
 				}
 				unitigsSelected[unitigNumPos]=positionUnitig;
 			}
@@ -1095,7 +1093,6 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 			return list;
 		}
 	}
-
 	return list;
 }
 
@@ -1104,69 +1101,69 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,uint n){
 	unordered_map<uint,uint> unitigsSelected;
 	vector<pair<pair<uint,uint>,uint>> list;
-	//~ uint64_t hash;
-	//~ string unitig,num,rcnum,rep;
-	//~ uint positionUnitig;
-	//~ for(uint i(0);i+anchorSize<read.size();++i){
-		//~ bool returned(false);
-		//~ if(num.empty()){
-			//~ num=((read.substr(i,anchorSize)));
-			//~ rcnum=(reverseComplements(num));
-			//~ rep=(min(num, rcnum));
-		//~ }else{
-			//~ num=num.substr(1,anchorSize-1)+read[i+anchorSize];
-			//~ rcnum=revCompChar(read[i+anchorSize])+rcnum.substr(0,anchorSize-1);
-			//~ rep=(min(num,rcnum));
-		//~ }
-		//~ hash=anchorsMPHFstr.lookup(rep);
-		//~ if(hash!=ULLONG_MAX){
-			//~ if(vectorMode){
-				//~ if(num==rep){
-					//~ for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						//~ int32_t unitigNum(anchorsPositionVector[hash][j].first);
-						//~ uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						//~ if(unitigsSelected.count(unitigNumPos)==0){
-							//~ list.push_back({anchorsPositionVector[hash][j],i});
-						//~ }else{
+	uint64_t hash;
+	string unitig,num,rcnum,rep;
+	uint positionUnitig;
+	uint anchorAdded(0);
+	for(uint i(0);i+anchorSize<read.size();++i){
+		bool returned(false);
+		if(num.empty()){
+			num=((read.substr(i,anchorSize)));
+			rcnum=(reverseComplements(num));
+			rep=(min(num, rcnum));
+		}else{
+			num=num.substr(1,anchorSize-1)+read[i+anchorSize];
+			rcnum=revCompChar(read[i+anchorSize])+rcnum.substr(0,anchorSize-1);
+			rep=(min(num,rcnum));
+		}
+		hash=anchorsMPHFstr.lookup(rep);
+		if(hash!=ULLONG_MAX and anchorsChecking[hash]==getHash(rep)){
+			anchorAdded++;
+			if(vectorMode){
+				if(num==rep){
+					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
+						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+						if(unitigsSelected.count(unitigNumPos)==0){
+							list.push_back({anchorsPositionVector[hash][j],i});
+						}else{
 							//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
 								//~ list.push_back({anchorsPositionVector[hash][j],i});
 							//~ }
-						//~ }
-						//~ unitigsSelected[unitigNumPos]=positionUnitig;
-					//~ }
-				//~ }else{
-					//~ for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						//~ int32_t unitigNum(anchorsPositionVector[hash][j].first);
-						//~ uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-						//~ if(unitigsSelected.count(unitigNumPos)==0){
-							//~ list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
-						//~ }else{
+						}
+						unitigsSelected[unitigNumPos]=positionUnitig;
+					}
+				}else{
+					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
+						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+						if(unitigsSelected.count(unitigNumPos)==0){
+							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+						}else{
 							//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
 								//~ list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
 							//~ }
-						//~ }
-						//~ unitigsSelected[unitigNumPos]=positionUnitig;
-					//~ }
-				//~ }
-			//~ }else{
-				//~ int32_t unitigNum(anchorsPosition[hash].first);
-				//~ uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
-				//~ if(unitigsSelected.count(unitigNumPos)==0){
-					//~ unitigsSelected.insert(unitigNumPos);
-					//~ if(anchorsChecking[hash]==getHash(rep)){
-						//~ if(num==rep){
-							//~ list.push_back({anchorsPosition[hash],i});
-						//~ }else{
-							//~ list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
-						//~ }
-					//~ }
-				//~ }
-			//~ }
-		//~ }
-		//~ if(list.size()>=n){
-			//~ return list;
-		//~ }
-	//~ }
+						}
+						unitigsSelected[unitigNumPos]=positionUnitig;
+					}
+				}
+			}else{
+				int32_t unitigNum(anchorsPosition[hash].first);
+				uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
+				if(unitigsSelected.count(unitigNumPos)==0){
+					unitigsSelected[unitigNumPos]=positionUnitig;
+					if(num==rep){
+						list.push_back({anchorsPosition[hash],i});
+					}else{
+						list.push_back({{-anchorsPosition[hash].first,anchorsPosition[hash].second},i});
+					}
+				}
+			}
+		}
+		if(anchorAdded>=n){
+			return list;
+		}
+	}
 	return list;
 }
 
@@ -1305,7 +1302,7 @@ void Aligner::indexUnitigsAuxStrfull(){
 				for(uint j(0);j+anchorSize<line.size();++j){
 					seq=seq.substr(1,anchorSize-1)+line[j+anchorSize];
 					rcSeq=revCompChar(line[j+anchorSize])+rcSeq.substr(0,anchorSize-1);
-					if((j+1)==0){
+					if((j+1)%fracKmer==0){
 						canon=(min(seq,rcSeq));
 						anchors->push_back(canon);
 					}
@@ -1454,17 +1451,21 @@ void Aligner::fillIndices(){
 			uint64_t hash=anchorsMPHF.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
-					mutexV[hash%1000].lock();
-					anchorsPositionVector[hash].push_back({i,0});
-					mutexV[hash%1000].unlock();
+					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({i,0});
+						mutexV[hash%1000].unlock();
+					}
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
-					mutexV[hash%1000].lock();
-					anchorsPositionVector[hash].push_back({-i,0});
-					mutexV[hash%1000].unlock();
+					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({-i,0});
+						mutexV[hash%1000].unlock();
+					}
 				}else{
 					anchorsPosition[hash]={-i,0};
 				}
@@ -1478,17 +1479,21 @@ void Aligner::fillIndices(){
 					uint64_t hash=anchorsMPHF.lookup(canon);
 					if(canon==seq){
 						if(vectorMode){
-							mutexV[hash%1000].lock();
-							anchorsPositionVector[hash].push_back({i,j+1});
-							mutexV[hash%1000].unlock();
+							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+								mutexV[hash%1000].lock();
+								anchorsPositionVector[hash].push_back({i,j+1});
+								mutexV[hash%1000].unlock();
+							}
 						}else{
 							anchorsPosition[hash]={i,j+1};
 						}
 					}else{
 						if(vectorMode){
-							mutexV[hash%1000].lock();
-							anchorsPositionVector[hash].push_back({-i,j+1});
-							mutexV[hash%1000].unlock();
+							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+								mutexV[hash%1000].lock();
+								anchorsPositionVector[hash].push_back({-i,j+1});
+								mutexV[hash%1000].unlock();
+							}
 						}else{
 							anchorsPosition[hash]={-i,j+1};
 						}
@@ -1578,17 +1583,21 @@ void Aligner::fillIndicesstr(){
 			uint64_t hash=anchorsMPHFstr.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
-					mutexV[hash%1000].lock();
-					anchorsPositionVector[hash].push_back({i,0});
-					mutexV[hash%1000].unlock();
+					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({i,0});
+						mutexV[hash%1000].unlock();
+					}
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
-					mutexV[hash%1000].lock();
-					anchorsPositionVector[hash].push_back({-i,0});
-					mutexV[hash%1000].unlock();
+					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+						mutexV[hash%1000].lock();
+						anchorsPositionVector[hash].push_back({-i,0});
+						mutexV[hash%1000].unlock();
+					}
 				}else{
 					anchorsPosition[hash]={-i,0};
 				}
@@ -1602,17 +1611,21 @@ void Aligner::fillIndicesstr(){
 					int64_t hash=anchorsMPHFstr.lookup(canon);
 					if(canon==seq){
 						if(vectorMode){
-							mutexV[hash%1000].lock();
-							anchorsPositionVector[hash].push_back({i,j+1});
-							mutexV[hash%1000].unlock();
+							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+								mutexV[hash%1000].lock();
+								anchorsPositionVector[hash].push_back({i,j+1});
+								mutexV[hash%1000].unlock();
+							}
 						}else{
 							anchorsPosition[hash]={i,j+1};
 						}
 					}else{
 						if(vectorMode){
-							mutexV[hash%1000].lock();
-							anchorsPositionVector[hash].push_back({-i,j+1});
-							mutexV[hash%1000].unlock();
+							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+								mutexV[hash%1000].lock();
+								anchorsPositionVector[hash].push_back({-i,j+1});
+								mutexV[hash%1000].unlock();
+							}
 						}else{
 							anchorsPosition[hash]={-i,j+1};
 						}
@@ -1823,6 +1836,10 @@ void Aligner::fillIndicesstrbutanchors(){
 
 //TODO THIS WOLE PART COULD BE FACTORIZED
 void Aligner::indexUnitigs(){
+	if(not unitigFile.good()){
+		cout<<"Problem with unitigs file"<<endl;
+		exit(0);
+	}
 	auto startChrono=chrono::system_clock::now();
 	uint nbThreads(1);
 	vector<thread> threads;
@@ -1856,6 +1873,9 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 			readFile.open(file);
 			//~ readFileF=fopen(file.c_str(),"r");
 			cout<<file<<endl;
+			if(not readFile.good()){
+				cout<<"A probleme with file: "<<file<<endl;
+			}
 			unsigned char nbThreads(coreNumber);
 			vector<thread> threads;
 			for (size_t i(0); i<nbThreads; ++i){
@@ -1868,6 +1888,10 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	file=reads.substr(last);
 	readFile.close();
 	readFile.open(file);
+	if(not readFile.good()){
+		cout<<"A probleme with file: "<<file<<endl;
+		return;
+	}
 	//~ readFileF=fopen(file.c_str(),"r");
 	cout<<file<<endl;
 	unsigned char nbThreads(coreNumber);

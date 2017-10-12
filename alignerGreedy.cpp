@@ -150,6 +150,7 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 
 //TODO SEGFAULT HERE
 vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor, uint& errors){
+	//~ cout<<"go"<<endl;
 	vector<uNumber> pathBegin,pathEnd;
 	string unitig("");
 	bool returned(false);
@@ -861,7 +862,6 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
 	if(listAnchors.empty()){++noOverlapRead;return;}
 	while(errors<=errorsMax){
-		//~ cout<<errors<<endl;
 		for(uint i(0);i<listAnchors.size();++i){
 			path={};
 			uint errorInMapping(0);
@@ -872,7 +872,6 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 			}
 			//MAPPING IS FOUND
 			if(not path.empty()){
-				//~ cout<<"oui"<<endl;
 				pathVector.push_back(path);
 			}
 		}

@@ -166,6 +166,7 @@ public:
 		dogMode=fullMemory=true;
 		unitigFile.open(unitigFileName);
 
+
 		ratioError=ratioe;
 		k=kValue;
 		if(k>63){
@@ -206,7 +207,6 @@ public:
 			fclose(pathFilef);
 		}
 		unitigFile.close();
-
 	}
 
 	void indexUnitigs();
@@ -319,8 +319,6 @@ public:
 	void alignReadAll(const string& read, vector<vector<int>>& pathVector);
 	vector<uNumber> cleanSR(const vector<uNumber>& numbers, uint readSize);
 	vector<uNumber> getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean);
-
-
 };
 
 
