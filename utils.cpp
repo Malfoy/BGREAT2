@@ -179,6 +179,17 @@ kmer nuc2intrc(char c){
 }
 
 
+string codeMiss(const string& read, const string& ref){
+	string res;
+	for(uint i(0);i<read.size();++i){
+		if(read[i]!=ref[i]){
+			res+=to_string(i)+"."+ref[i];
+		}
+	}
+	return res;
+}
+
+
 
 uint missmatchNumberRaw(const string& seq1, const string& seq2, unsigned int n){
 	uint miss(0);

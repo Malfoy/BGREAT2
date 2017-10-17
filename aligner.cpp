@@ -218,76 +218,28 @@ string Aligner::num2str(kmer num){
 
 //TODO replace vector by struct
 vector<pair<string,uNumber>> Aligner::getEnd(kmer bin){
+	//~ cout<<"ge"<<endl;
 	vector<pair<string,uNumber>> result;
 	kmer rc(rcb(bin,k-1));
 	string unitig;
 	unitigIndices indices;
 	uNumber num;
 	bool go(false);
-	if(bin<rc){
+	if(bin<=rc){
 		uint64_t hash=rightMPHF.lookup(bin);
 		if(hash!=ULLONG_MAX){
 			indices=rightIndices[hash];
 			if(indices.overlap==bin){
-				go=true;
+				addIndicesEnd(indices,bin,result);
 			}
 		}
-	}else{
+	}
+	if(bin>=rc){
 		uint64_t hash=leftMPHF.lookup(rc);
 		if(hash!=ULLONG_MAX){
 			indices=leftIndices[hash];
 			if(indices.overlap==rc){
-				go=true;
-			}
-		}
-	}
-	if(go){
-		if(indices.indice1!=0){
-			unitig=unitigs[indices.indice1];
-			if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
-				result.push_back({unitig,indices.indice1});
-			}else{
-				if(rcMode){
-					result.push_back({unitigsRC[indices.indice1],-indices.indice1});
-				}else{
-					result.push_back({reverseComplements(unitig),-indices.indice1});
-				}
-			}
-			if(indices.indice2!=0){
-				unitig=unitigs[indices.indice2];
-				if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
-					result.push_back({unitig,indices.indice2});
-				}else{
-					if(rcMode){
-						result.push_back({unitigsRC[indices.indice2],-indices.indice2});
-					}else{
-						result.push_back({reverseComplements(unitig),-indices.indice2});
-					}
-				}
-				if(indices.indice3!=0){
-					unitig=unitigs[indices.indice3];
-					if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
-						result.push_back({unitig,indices.indice3});
-					}else{
-						if(rcMode){
-							result.push_back({unitigsRC[indices.indice3],-indices.indice3});
-						}else{
-							result.push_back({reverseComplements(unitig),-indices.indice3});
-						}
-					}
-					if(indices.indice4!=0){
-						unitig=unitigs[indices.indice4];
-						if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
-							result.push_back({unitig,indices.indice4});
-						}else{
-							if(rcMode){
-								result.push_back({unitigsRC[indices.indice4],-indices.indice4});
-							}else{
-								result.push_back({reverseComplements(unitig),-indices.indice4});
-							}
-						}
-					}
-				}
+				addIndicesEnd(indices,bin,result);
 			}
 		}
 	}
@@ -305,73 +257,254 @@ vector<pair<string,uNumber>> Aligner::getEnd(string bin){
 	bool go(false);
 	if(bin<=rc){
 		uint64_t hash=rightMPHFstr.lookup(bin);
-		if(hash<rightIndicesstr.size()){
+		if(hash!=ULLONG_MAX){
 			indices=rightIndicesstr[hash];
 			if(indices.overlap==bin){
-				go=true;
+				addIndicesEndStr(indices,bin,result);
 			}
 		}
 	}else{
 		uint64_t hash=leftMPHFstr.lookup(rc);
-		if(hash<leftIndicesstr.size()){
+		if(hash!=ULLONG_MAX){
 			indices=leftIndicesstr[hash];
 			if(indices.overlap==rc){
-				go=true;
-			}
-		}
-	}
-	if(go){
-		if(indices.indice1!=0){
-			unitig=unitigs[indices.indice1];
-			if((unitig.substr(unitig.size()-k+1,k-1))==bin){
-				result.push_back({unitig,indices.indice1});
-			}else{
-				if(rcMode){
-					result.push_back({unitigsRC[indices.indice1],-indices.indice1});
-				}else{
-					result.push_back({reverseComplements(unitig),-indices.indice1});
-				}
-			}
-			if(indices.indice2!=0){
-				unitig=unitigs[indices.indice2];
-				if((unitig.substr(unitig.size()-k+1,k-1))==bin){
-					result.push_back({unitig,indices.indice2});
-				}else{
-					if(rcMode){
-						result.push_back({unitigsRC[indices.indice2],-indices.indice2});
-					}else{
-						result.push_back({reverseComplements(unitig),-indices.indice2});
-					}
-				}
-				if(indices.indice3!=0){
-					unitig=unitigs[indices.indice3];
-					if((unitig.substr(unitig.size()-k+1,k-1))==bin){
-						result.push_back({unitig,indices.indice3});
-					}else{
-						if(rcMode){
-							result.push_back({unitigsRC[indices.indice3],-indices.indice3});
-						}else{
-							result.push_back({reverseComplements(unitig),-indices.indice3});
-						}
-					}
-					if(indices.indice4!=0){
-						unitig=unitigs[indices.indice4];
-						if((unitig.substr(unitig.size()-k+1,k-1))==bin){
-							result.push_back({unitig,indices.indice4});
-						}else{
-							if(rcMode){
-								result.push_back({unitigsRC[indices.indice4],-indices.indice4});
-							}else{
-								result.push_back({reverseComplements(unitig),-indices.indice4});
-							}
-						}
-					}
-				}
+				addIndicesEndStr(indices,bin,result);
 			}
 		}
 	}
 	return result;
 }
+
+
+
+void Aligner::addIndicesBegin(unitigIndices& indices, kmer bin,vector<pair<string,uNumber>>& result){
+	kmer rc(rcb(bin,k-1));
+	if(indices.indice1!=0){
+		string unitig=unitigs[indices.indice1];
+		if(str2num(unitig.substr(0,k-1))==bin){
+			result.push_back({unitig,indices.indice1});
+		}
+		if(str2num(unitig.substr(unitig.size()-k+1))==rc){
+			if(rcMode){
+				result.push_back({unitigsRC[indices.indice1],-indices.indice1});
+			}else{
+				result.push_back({reverseComplements(unitig),-indices.indice1});
+			}
+		}
+		if(indices.indice2!=0){
+			unitig=unitigs[indices.indice2];
+			if(str2num(unitig.substr(0,k-1))==bin){
+				result.push_back({unitig,indices.indice2});
+			}
+			if(str2num(unitig.substr(unitig.size()-k+1))==rc){
+				if(rcMode){
+					result.push_back({unitigsRC[indices.indice2],-indices.indice2});
+				}else{
+					result.push_back({reverseComplements(unitig),-indices.indice2});
+				}
+			}
+			if(indices.indice3!=0){
+				unitig=unitigs[indices.indice3];
+				if(str2num(unitig.substr(0,k-1))==bin){
+					result.push_back({unitig,indices.indice3});
+				}
+				if(str2num(unitig.substr(unitig.size()-k+1))==rc){
+					if(rcMode){
+						result.push_back({unitigsRC[indices.indice3],-indices.indice3});
+					}else{
+						result.push_back({reverseComplements(unitig),-indices.indice3});
+					}
+				}
+				if(indices.indice4!=0){
+					unitig=unitigs[indices.indice4];
+					if(str2num(unitig.substr(0,k-1))==bin){
+						result.push_back({unitig,indices.indice4});
+					}
+					if(str2num(unitig.substr(unitig.size()-k+1))==rc){
+						if(rcMode){
+							result.push_back({unitigsRC[indices.indice4],-indices.indice4});
+						}else{
+							result.push_back({reverseComplements(unitig),-indices.indice4});
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void Aligner::addIndicesBeginStr(unitigIndicesstr& indices, string bin,vector<pair<string,uNumber>>& result){
+	string rc(reverseComplements(bin));
+	if(indices.indice1!=0){
+		string unitig=unitigs[indices.indice1];
+		if((unitig.substr(0,k-1))==bin){
+			result.push_back({unitig,indices.indice1});
+		}
+		if((unitig.substr(unitig.size()-k+1))==rc){
+			if(rcMode){
+				result.push_back({unitigsRC[indices.indice1],-indices.indice1});
+			}else{
+				result.push_back({reverseComplements(unitig),-indices.indice1});
+			}
+		}
+		if(indices.indice2!=0){
+			unitig=unitigs[indices.indice2];
+			if((unitig.substr(0,k-1))==bin){
+				result.push_back({unitig,indices.indice2});
+			}
+			if((unitig.substr(unitig.size()-k+1))==rc){
+				if(rcMode){
+					result.push_back({unitigsRC[indices.indice2],-indices.indice2});
+				}else{
+					result.push_back({reverseComplements(unitig),-indices.indice2});
+				}
+			}
+			if(indices.indice3!=0){
+				unitig=unitigs[indices.indice3];
+				if((unitig.substr(0,k-1))==bin){
+					result.push_back({unitig,indices.indice3});
+				}
+				if((unitig.substr(unitig.size()-k+1))==rc){
+					if(rcMode){
+						result.push_back({unitigsRC[indices.indice3],-indices.indice3});
+					}else{
+						result.push_back({reverseComplements(unitig),-indices.indice3});
+					}
+				}
+				if(indices.indice4!=0){
+					unitig=unitigs[indices.indice4];
+					if((unitig.substr(0,k-1))==bin){
+						result.push_back({unitig,indices.indice4});
+					}
+					if((unitig.substr(unitig.size()-k+1))==rc){
+						if(rcMode){
+							result.push_back({unitigsRC[indices.indice4],-indices.indice4});
+						}else{
+							result.push_back({reverseComplements(unitig),-indices.indice4});
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void Aligner::addIndicesEnd(unitigIndices& indices, kmer bin,vector<pair<string,uNumber>>& result){
+	kmer rc(rcb(bin,k-1));
+	if(indices.indice1!=0){
+		string unitig=unitigs[indices.indice1];
+		if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
+			result.push_back({unitig,indices.indice1});
+		}
+		if(str2num(unitig.substr(0,k-1))==rc){
+			if(rcMode){
+				result.push_back({unitigsRC[indices.indice1],-indices.indice1});
+			}else{
+				result.push_back({reverseComplements(unitig),-indices.indice1});
+			}
+		}
+		if(indices.indice2!=0){
+			unitig=unitigs[indices.indice2];
+			if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
+				result.push_back({unitig,indices.indice2});
+			}
+			if(str2num(unitig.substr(0,k-1))==rc){
+				if(rcMode){
+					result.push_back({unitigsRC[indices.indice2],-indices.indice2});
+				}else{
+					result.push_back({reverseComplements(unitig),-indices.indice2});
+				}
+			}
+			if(indices.indice3!=0){
+				unitig=unitigs[indices.indice3];
+				if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
+					result.push_back({unitig,indices.indice3});
+				}
+				if(str2num(unitig.substr(0,k-1))==rc){
+					if(rcMode){
+						result.push_back({unitigsRC[indices.indice3],-indices.indice3});
+					}else{
+						result.push_back({reverseComplements(unitig),-indices.indice3});
+					}
+				}
+				if(indices.indice4!=0){
+					unitig=unitigs[indices.indice4];
+					if(str2num(unitig.substr(unitig.size()-k+1,k-1))==bin){
+						result.push_back({unitig,indices.indice4});
+					}
+					if(str2num(unitig.substr(0,k-1))==rc){
+						if(rcMode){
+							result.push_back({unitigsRC[indices.indice4],-indices.indice4});
+						}else{
+							result.push_back({reverseComplements(unitig),-indices.indice4});
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+void Aligner::addIndicesEndStr(unitigIndicesstr& indices, string bin,vector<pair<string,uNumber>>& result){
+	string rc(reverseComplements(bin));
+	if(indices.indice1!=0){
+		string unitig=unitigs[indices.indice1];
+		if((unitig.substr(unitig.size()-k+1,k-1))==bin){
+			result.push_back({unitig,indices.indice1});
+		}
+		if((unitig.substr(0,k-1))==rc){
+			if(rcMode){
+				result.push_back({unitigsRC[indices.indice1],-indices.indice1});
+			}else{
+				result.push_back({reverseComplements(unitig),-indices.indice1});
+			}
+		}
+		if(indices.indice2!=0){
+			unitig=unitigs[indices.indice2];
+			if((unitig.substr(unitig.size()-k+1,k-1))==bin){
+				result.push_back({unitig,indices.indice2});
+			}
+			if((unitig.substr(0,k-1))==rc){
+				if(rcMode){
+					result.push_back({unitigsRC[indices.indice2],-indices.indice2});
+				}else{
+					result.push_back({reverseComplements(unitig),-indices.indice2});
+				}
+			}
+			if(indices.indice3!=0){
+				unitig=unitigs[indices.indice3];
+				if((unitig.substr(unitig.size()-k+1,k-1))==bin){
+					result.push_back({unitig,indices.indice3});
+				}
+				if((unitig.substr(0,k-1))==rc){
+					if(rcMode){
+						result.push_back({unitigsRC[indices.indice3],-indices.indice3});
+					}else{
+						result.push_back({reverseComplements(unitig),-indices.indice3});
+					}
+				}
+				if(indices.indice4!=0){
+					unitig=unitigs[indices.indice4];
+					if((unitig.substr(unitig.size()-k+1,k-1))==bin){
+						result.push_back({unitig,indices.indice4});
+					}
+					if((unitig.substr(0,k-1))==rc){
+						if(rcMode){
+							result.push_back({unitigsRC[indices.indice4],-indices.indice4});
+						}else{
+							result.push_back({reverseComplements(unitig),-indices.indice4});
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 
 
 
@@ -381,70 +514,21 @@ vector<pair<string,uNumber>> Aligner::getBegin(kmer bin){
 	string unitig;
 	unitigIndices indices;
 	bool go(false);
-	if(bin<rc){
+	if(bin<=rc){
 		uint64_t hash=leftMPHF.lookup(bin);
 		if(hash!=ULLONG_MAX){
 			indices=leftIndices[hash];
 			if(indices.overlap==bin){
-				go=true;
+				addIndicesBegin(indices,bin,result);
 			}
 		}
-	}else{
+	}
+	if(bin>=rc){
 		uint64_t hash=rightMPHF.lookup(rc);
 		if(hash!=ULLONG_MAX){
 			indices=rightIndices[hash];
 			if(indices.overlap==rc){
-				go=true;
-			}
-		}
-	}
-	if(go){
-		if(indices.indice1!=0){
-			unitig=unitigs[indices.indice1];
-			if(str2num(unitig.substr(0,k-1))==bin){
-				result.push_back({unitig,indices.indice1});
-			}else{
-				if(rcMode){
-					result.push_back({unitigsRC[indices.indice1],-indices.indice1});
-				}else{
-					result.push_back({reverseComplements(unitig),-indices.indice1});
-				}
-			}
-			if(indices.indice2!=0){
-				unitig=unitigs[indices.indice2];
-				if(str2num(unitig.substr(0,k-1))==bin){
-					result.push_back({unitig,indices.indice2});
-				}else{
-					if(rcMode){
-						result.push_back({unitigsRC[indices.indice2],-indices.indice2});
-					}else{
-						result.push_back({reverseComplements(unitig),-indices.indice2});
-					}
-				}
-				if(indices.indice3!=0){
-					unitig=unitigs[indices.indice3];
-					if(str2num(unitig.substr(0,k-1))==bin){
-						result.push_back({unitig,indices.indice3});
-					}else{
-						if(rcMode){
-							result.push_back({unitigsRC[indices.indice3],-indices.indice3});
-						}else{
-							result.push_back({reverseComplements(unitig),-indices.indice3});
-						}
-					}
-					if(indices.indice4!=0){
-						unitig=unitigs[indices.indice4];
-						if(str2num(unitig.substr(0,k-1))==bin){
-							result.push_back({unitig,indices.indice4});
-						}else{
-							if(rcMode){
-								result.push_back({unitigsRC[indices.indice4],-indices.indice4});
-							}else{
-								result.push_back({reverseComplements(unitig),-indices.indice4});
-							}
-						}
-					}
-				}
+				addIndicesBegin(indices,bin,result);
 			}
 		}
 	}
@@ -459,70 +543,21 @@ vector<pair<string,uNumber>> Aligner::getBegin(string bin){
 	string unitig;
 	unitigIndicesstr indices;
 	bool go(false);
-	if(bin<rc){
+	if(bin<=rc){
 		uint64_t hash=leftMPHFstr.lookup(bin);
 		if(hash!=ULLONG_MAX){
 			indices=leftIndicesstr[hash];
 			if(indices.overlap==bin){
-				go=true;
+				addIndicesBeginStr(indices,bin,result);
 			}
 		}
-	}else{
+	}
+	if(bin>=rc){
 		uint64_t hash=rightMPHFstr.lookup(rc);
 		if(hash!=ULLONG_MAX){
 			indices=rightIndicesstr[hash];
 			if(indices.overlap==rc){
-				go=true;
-			}
-		}
-	}
-	if(go){
-		if(indices.indice1!=0){
-			unitig=unitigs[indices.indice1];
-			if((unitig.substr(0,k-1))==bin){
-				result.push_back({unitig,indices.indice1});
-			}else{
-				if(rcMode){
-					result.push_back({unitigsRC[indices.indice1],-indices.indice1});
-				}else{
-					result.push_back({reverseComplements(unitig),-indices.indice1});
-				}
-			}
-			if(indices.indice2!=0){
-				unitig=unitigs[indices.indice2];
-				if((unitig.substr(0,k-1))==bin){
-					result.push_back({unitig,indices.indice2});
-				}else{
-					if(rcMode){
-						result.push_back({unitigsRC[indices.indice2],-indices.indice2});
-					}else{
-						result.push_back({reverseComplements(unitig),-indices.indice2});
-					}
-				}
-				if(indices.indice3!=0){
-					unitig=unitigs[indices.indice3];
-					if((unitig.substr(0,k-1))==bin){
-						result.push_back({unitig,indices.indice3});
-					}else{
-						if(rcMode){
-							result.push_back({unitigsRC[indices.indice3],-indices.indice3});
-						}else{
-							result.push_back({reverseComplements(unitig),-indices.indice3});
-						}
-					}
-					if(indices.indice4!=0){
-						unitig=unitigs[indices.indice4];
-						if((unitig.substr(0,k-1))==bin){
-							result.push_back({unitig,indices.indice4});
-						}else{
-							if(rcMode){
-								result.push_back({unitigsRC[indices.indice4],-indices.indice4});
-							}else{
-								result.push_back({reverseComplements(unitig),-indices.indice4});
-							}
-						}
-					}
-				}
+				addIndicesBeginStr(indices,bin,result);
 			}
 		}
 	}
@@ -1927,3 +1962,34 @@ string Aligner::printPath(const vector<int32_t>& path){
 	res+='\n';
 	return res;
 }
+
+
+string Aligner::path2nuc(const vector<int32_t>& path){
+	string res;
+	res+=to_string(path[1])+":";//ANCHOR
+	for(int i(2);i<path.size();++i){
+		if(path[i]>0){
+			res+=unitigs[path[i]][0];
+		}else{
+			res+=(((unitigsRC[-path[i]]))[0]);
+		}
+	}
+	res+=":";
+	return res;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

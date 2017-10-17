@@ -129,9 +129,10 @@ public:
 	array<mutex,1000> mutexV;
 
 	string unitigFileName, pathToWrite;
-	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment,headerNeeded,compression, anyOptimalMapping;
+	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment,headerNeeded,compression, anyOptimalMapping,compressionMode;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any,bool compressionM){
+		compressionMode=compressionM;
 		iterLoop=0;
 		if(any){
 			noMultiMapping=false;
@@ -319,6 +320,12 @@ public:
 	void alignReadAll(const string& read, vector<vector<int>>& pathVector);
 	vector<uNumber> cleanSR(const vector<uNumber>& numbers, uint readSize);
 	vector<uNumber> getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean);
+	void addIndicesEnd(unitigIndices& indices, kmer bin,vector<pair<string,uNumber>>& result);
+	void addIndicesBegin(unitigIndices& indices, kmer bin,vector<pair<string,uNumber>>& result);
+	void addIndicesEndStr(unitigIndicesstr& indices, string bin,vector<pair<string,uNumber>>& result);
+	void addIndicesBeginStr(unitigIndicesstr& indices, string bin,vector<pair<string,uNumber>>& result);
+	string path2nuc(const vector<int32_t>& path);
+
 };
 
 

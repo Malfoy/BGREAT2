@@ -66,6 +66,7 @@ string reverseComplements(const string& s);
 string getRepresent(const string& s);
 void initRc();
 string intToString(uint64_t n);
+string codeMiss(const string& read, const string& ref);
 
 
 #endif /* defined(__UTILS__) */
