@@ -65,7 +65,7 @@ int main(int argc, char ** argv){
 	int anchorSize(ka);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false);
 	float ratioe(0.5);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:bqcOpMPABCz")) != -1){
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:bqcOpMPABCFz")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -128,6 +128,9 @@ int main(int argc, char ** argv){
 		case 'B':
 			allOptimalMapping=true;
 			break;
+		case 'F':
+			anyOptimalMapping=true;
+			break;
 		case 'C':
 			compressionMode=true;
 			break;
@@ -160,7 +163,8 @@ int main(int argc, char ** argv){
 		<<"-p to more precise output"<<endl
 		<<"-P to print the alignments"<<endl
 		<<"-A to output all possible mapping"<<endl
-		<<"-B to output all possible optimal mapping"<<endl;
+		<<"-B to output all possible optimal mapping"<<endl
+		<<"-F to output any optimal mapping"<<endl;
 		//~ <<"-C to output any optimal mapping"<<endl;
 		return 0;
 	}
