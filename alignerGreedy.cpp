@@ -982,7 +982,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				++readNumber;
 				if(uniqueOptimalMappingMode){
 					alignReadOpti(read,path);
-					if(path.empty()){++notAligned;break;}
+					if(path.empty()){++notAligned;continue;}
 					if(correctionMode){
 						//CORRECTION
 						if(not path.empty()){
