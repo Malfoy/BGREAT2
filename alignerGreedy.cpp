@@ -982,14 +982,13 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				++readNumber;
 				if(uniqueOptimalMappingMode){
 					alignReadOpti(read,path);
-
 					if(path.empty()){
 						if(correctionMode){
 							toWrite+=header+'\n'+read+'\n';
 						}
 						++notAligned;
 						continue;
-						}
+					}
 					if(correctionMode){
 						//CORRECTION
 						if(not path.empty()){
@@ -1000,7 +999,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 								toWrite+=header+'\n'+read+'\n';
 							}
 						}else{
-							toWrite+=header+'\n'+read+'\n';
+							//~ toWrite+=header+'\n'+read+'\n';
 						}
 					}else if(preciseOutput){
 						//PRECISE MODE

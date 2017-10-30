@@ -69,7 +69,7 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 		for(uint i(0);i<n;++i){
 			getline(readFile,header);
 			getline(readFile,read);
-			if(read.size()>2){
+			if(read.size()>0){
 				bool fail(false);
 				for(uint j(0);(j)<read.size();++j){
 					if(read[j]!='A' and read[j]!='C' and read[j]!='T' and read[j]!='G' and read[j]!='N'){
@@ -92,7 +92,7 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 		point:
 			c=readFile.peek();
 			if(c=='>'){
-				if(read.size()>2){
+				if(read.size()>0){
 					bool fail(false);
 					for(uint j(0);(j)<read.size();++j){
 						if(read[j]!='A' and read[j]!='C' and read[j]!='T' and read[j]!='G' and read[j]!='N'){
@@ -113,7 +113,7 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 					read+=inter;
 					goto point;
 				}else{
-					if(read.size()>2){
+					if(read.size()>0){
 						bool fail(false);
 						for(uint j(0);(j)<read.size();++j){
 							if(read[j]!='A' and read[j]!='C' and read[j]!='T' and read[j]!='G' and read[j]!='N'){
