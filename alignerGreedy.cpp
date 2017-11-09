@@ -886,11 +886,11 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 
 
 
-	void Aligner::alignReadFrom(const string& read, vector<int>& path, int unumber){
-	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,1));
+void Aligner::alignReadFrom(const string& read, vector<int>& path, int unumber){
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
 	for(uint i(0);i<listAnchors.size();++i){
 		auto  anchor=listAnchors[i];
-		if((anchor.first.first==unumber or anchor.first.first==-unumber) and anchor.second==0 and anchor.first.second==0){
+		//~ if((anchor.first.first==unumber or anchor.first.first==-unumber) and anchor.second==0 and anchor.first.second==0){
 			path={};
 			uint errorInMapping(0);
 			if(stringMode){
@@ -898,8 +898,11 @@ void Aligner::alignReadAll(const string& read, vector<vector<int>>& pathVector){
 			}else{
 				path=alignReadGreedyAnchors(read,0,anchor,errorInMapping);
 			}
-			return;
-		}
+			if(not path.empty()){
+				return;
+			}
+
+		//~ }
 	}
 }
 
@@ -911,6 +914,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	vector<uNumber> path,path2;
 	vector<vector<int>> pathVector;
 	string read,read2,header,header2,corrected,superRead,toWrite;
+	vector<string> toWriteComp(nbBuckets);
 	pair<string,string> superpath;
 	while(not readFile.eof()){
 	//~ while(not feof(readFileF)){
@@ -942,12 +946,12 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				if(path.empty()){
 					++notAligned;
 				}else{
-					path=cleanSR(path,read.size());
+					//~ path=cleanSR(path,read.size());
 				}
 				if(path2.empty()){
 					++notAligned;
 				}else{
-					path2=cleanSR(path2,read2.size());
+					//~ path2=cleanSR(path2,read2.size());
 				}
 				superpath=(recoverSuperReadsPairedNoStr(path,path2));
 				if(superpath.first!=""){
@@ -1018,11 +1022,22 @@ void Aligner::alignPartGreedy(uint indiceThread){
 							toWrite+=header+'\n'+superRead+'\n';
 						}
 					}else if(compressionMode){
-						toWrite+=path2nuc(path);//WRITE ANCHORS AND NUCLEOTIDE TO MAKE THE PATH
-						toWrite+=to_string(path[0])+":"+to_string(read.size())+":";//Read position
-						superRead=(recoverSuperReadsCor(path,read.size()));
-						toWrite+=codeMiss(read, superRead);//ENCODE THE MISSMATCHES
+						//~ cout<<"test"<<endl;
+						//~ cout<<path[1]<<endl;
+						//~ cout<<sizeBuckets<<endl;
+						int goodBucket(path[1]);
+						if(goodBucket<0){goodBucket=-goodBucket;}
+						goodBucket/=sizeBuckets;
+						//~ cout<<goodBucket<<endl;
 
+						//~ cout<<goodBucket<<endl;
+						toWriteComp[goodBucket]+=path2nuc(path);//WRITE ANCHORS AND NUCLEOTIDE TO MAKE THE PATH
+						//~ toWriteComp[goodBucket]+=to_string(path[0])+":"+to_string(read.size())+":";//Read position and size
+						toWriteComp[goodBucket]+=to_string(path[0])+":";//Read position
+						//~ superRead=(recoverSuperReadsCor(path,read.size()));
+						//~ toWriteComp[goodBucket]+=codeMiss(read, superRead);//ENCODE THE MISSMATCHES
+						toWriteComp[goodBucket]+="\n";
+						//~ cout<<"end"<<endl;
 					}else{
 						//REGULAR MODE
 						path=cleanSR(path,read.size());
@@ -1077,15 +1092,26 @@ void Aligner::alignPartGreedy(uint indiceThread){
 			}
 			pathMutex.unlock();
 		}else{
-			pathMutex.lock();
-			{
-				if(compression){
-					pathCompressed->write(toWrite.c_str(),toWrite.size());
-				}else{
-					fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+			if(not compressionMode){
+				pathMutex.lock();
+				{
+					if(compression){
+						pathCompressed->write(toWrite.c_str(),toWrite.size());
+					}else{
+						fwrite((toWrite).c_str(), sizeof(char), toWrite.size(), pathFilef);
+					}
+				}
+				pathMutex.unlock();
+			}else{
+				for(uint i(0);i<nbBuckets;++i){
+					pathMutexComp[i].lock();
+					{
+						fwrite((toWriteComp[i]).c_str(), sizeof(char), toWriteComp[i].size(), pathFileComp[i]);
+						toWriteComp[i]="";
+					}
+					pathMutexComp[i].unlock();
 				}
 			}
-			pathMutex.unlock();
 		}
 		progressMutex.lock();
 		if(++iterLoop%100==0){

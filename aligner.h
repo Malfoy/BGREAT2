@@ -107,6 +107,7 @@ public:
 	ofstream pathFile, noOverlapFile, notMappedFile;
 	FILE * pathFilef;
 	FILE * readFileF;
+	vector<FILE *> pathFileComp;
 	ostream* pathCompressed;
 	//~ FILE * notMappedFilef;
 	//~ FILE * readFileF;
@@ -118,20 +119,21 @@ public:
 	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
 	vector<uint8_t> anchorsChecking;
 	//~ vector<string> anchorsCheckingstr;
-	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads,notCompatedSR;
-;
+	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads,notCompatedSR, overlappingPath,overlappingStr,singleMiddle,neighbor,includedPath;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdateOverlap;
 	kmer offsetUpdateAnchor;
-	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize,maxPositionAnchors, iterLoop;
+	uint coreNumber, gammaFactor, errorsMax, tryNumber, fracKmer,k,threadToPrint,threadToRead,anchorSize,maxPositionAnchors, iterLoop, nbBuckets,sizeBuckets;
 	double ratioError;
 	mutex unitigMutex, unitigMutex2, readMutex, indexMutex, pathMutex, noOverlapMutex, notMappedMutex, progressMutex;
 	array<mutex,1000> mutexV;
+	array<mutex,1024> pathMutexComp;
 
 	string unitigFileName, pathToWrite;
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment,headerNeeded,compression, anyOptimalMapping,compressionMode;
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any,bool compressionM){
+		nbBuckets=2;
 		compressionMode=compressionM;
 		iterLoop=0;
 		if(any){
@@ -158,6 +160,11 @@ public:
 			optimalMappingMode=false;
 		}
 
+		if(compressionMode){
+			for(uint i(0);i<nbBuckets;++i){
+				pathFileComp.push_back(fopen((paths+to_string(i)).c_str(),"wb"));
+			}
+		}
 		printAlignment=bprintAlignment;
 		preciseOutput=preciseB;
 		anchorSize=anchorsSize;
