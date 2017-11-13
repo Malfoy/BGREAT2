@@ -23,11 +23,15 @@ endif
 
 
 
-EXEC=bgreat numbersToSequences
+EXEC=bgreat numbersToSequences sortPaths
 
 all: $(EXEC)
 
+sortPaths: sortPaths.o
+	$(CC) -o $@ $^ $(LDFLAGS)
 
+sortPaths.o: sortPaths.cpp
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 aligner.o: aligner.cpp aligner.h utils.h alignerGreedy.cpp
 	$(CC) -o $@ -c $< $(CFLAGS)

@@ -882,7 +882,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	if(stringMode){
 		prev=(getEnd(unitig2.substr(0,k-1)));
 	}else{
-		prev=(getEnd(unitig2));
+		prev=(getEnd(str2num(unitig2.substr(0,k-1))));
 	}
 	for(uint i(0);i<prev.size();++i){
 		prev2.push_back(prev[i].second);

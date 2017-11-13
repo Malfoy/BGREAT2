@@ -178,12 +178,12 @@ kmer nuc2intrc(char c){
 	return 0;
 }
 
-
+//TODO ENCODE THE NUC
 string codeMiss(const string& read, const string& ref){
 	string res;
 	for(uint i(0);i<read.size();++i){
 		if(read[i]!=ref[i]){
-			res+=to_string(i)+"."+ref[i];
+			res+=(char)i;
 		}
 	}
 	return res;

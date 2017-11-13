@@ -1034,9 +1034,9 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						toWriteComp[goodBucket]+=path2nuc(path);//WRITE ANCHORS AND NUCLEOTIDE TO MAKE THE PATH
 						//~ toWriteComp[goodBucket]+=to_string(path[0])+":"+to_string(read.size())+":";//Read position and size
 						toWriteComp[goodBucket]+=to_string(path[0])+":";//Read position
-						//~ superRead=(recoverSuperReadsCor(path,read.size()));
+						superRead=(recoverSuperReadsCor(path,read.size()));
 						//~ toWriteComp[goodBucket]+=codeMiss(read, superRead);//ENCODE THE MISSMATCHES
-						toWriteComp[goodBucket]+="\n";
+						toWriteComp[goodBucket]+=(char)255;
 						//~ cout<<"end"<<endl;
 					}else{
 						//REGULAR MODE
