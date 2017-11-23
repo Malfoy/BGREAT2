@@ -219,9 +219,11 @@ string compactionEnd(const string& seq1,const string& seq2, uint k){
 
 
 string compactionEndNoRC(const string& seq1,const string& seq2, uint k){
+	//~ cout<<"compaction"<<endl;
 	uint s1(seq1.size()),s2(seq2.size());
-	if(s1==0 or s2==0){return "";}
+	if(s1==0 or s2==0 or s1<=k	or s2<=k){return "";}
 	string end1(seq1.substr(s1-k,k)), beg2(seq2.substr(0,k));
+	//~ cout<<"ole"<<endl;
 	if(end1==beg2){return seq1+(seq2.substr(k));}
 	//~ string begrc2(rc2.substr(0,k));
 	//~ if(end1==begrc2){return seq1+(rc2.substr(k));}

@@ -685,6 +685,9 @@ string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offs
 
 vector<uNumber> Aligner::getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean){
 	vector<uNumber> res;
+	if(numbers.empty()){
+		return res;
+	}
 	if(clean){
 		if(numbers[0]+k-1> unitigs[abs(numbers[1])].size()){
 			res=vector<uNumber>(&numbers[2],&numbers[numbers.size()]);
@@ -711,7 +714,9 @@ vector<uNumber> Aligner::getcleanPaths(const vector<uNumber>& numbers, bool reve
 
 
 bool Aligner::isNeighboor(const uint number1, const uint number2){
+	//~ cout<<"euuuuuh"<<endl;
 	string unitig1(getUnitig(number1)), unitig2(getUnitig(number2));
+	//~ cout<<"gocompaction"<<endl;
 	string inter(compactionEndNoRC(unitig1, unitig2, k-1));
 	if(inter.empty()){
 		return false;
@@ -821,6 +826,7 @@ bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int b
 
 
 bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2){
+	//~ cout<<"go"<<endl;
 	//TODO WTF IS THAT
 		//they overlap
 	//~ uNumber lastOne(numbers[numbers.size()-1]);
@@ -833,6 +839,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			//~ }
 		//~ }
 	//~ }
+	//~ cout<<numbers.size()<<endl;
 	for(uint i(0);i<numbers.size();++i){
 		bool overlap(true);
 		uint j(0);
@@ -855,13 +862,18 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
+	//~ cout<<"go1"<<endl;
 	//~ //they overlap of k-1
+	//~ cout<<"wtf"<<endl;
+	//~ cout<<numbers.size()<<" "<<numbers2.size()<<endl;
+	//~ cout<<(numbers[numbers.size()-1])<<" "<<numbers2[0]<<endl;
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		numbers2={};
 		neighbor++;
 		return true;
 	}
+	//~ cout<<"go2"<<endl;
 
 	string unitig(recoverSuperReads(numbers));
 	string unitig2((recoverSuperReads(numbers2)));
@@ -900,6 +912,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
+	//~ cout<<"go3"<<endl;
 	//~ //TODO CAN DO BETTER
 	string merge(overlapping(unitig,unitig2,50));
 	if(merge!=""){
@@ -930,22 +943,22 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 
 pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>& vec, vector<uNumber>& vec2){
 	//If one is empty return one read
-	if(vec.size()<=0){
-		if(vec2.size()<=0){
+	vector<uNumber> numbers(getcleanPaths(vec,false,true));
+	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
+	//~ cout<<"clean"<<endl;
+	if(numbers.size()<=0){
+		if(numbers2.size()<=0){
 			return {"",""};
 		}else{
-			vector<uNumber> numbers2(getcleanPaths(vec2,false,true));
 			return{recoverSuperReadsNoStr(numbers2),""};
 		}
 	}else{
-		if(vec2.size()<=0){
-			vector<uNumber> numbers(getcleanPaths(vec,false,true));
+		if(numbers2.size()<=0){
 			return{recoverSuperReadsNoStr(numbers),""};
 		}
 	}
+	//~ cout<<vec.size()<<endl;
 
-	vector<uNumber> numbers(getcleanPaths(vec,false,true));
-	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
 	//if they overlap
 	if(compactVectors(numbers,numbers2)){
 		++superReads;

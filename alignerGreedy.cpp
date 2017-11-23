@@ -189,10 +189,13 @@ vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint erro
 			errors=(missmatchNumber(read.substr(positionRead-positionUnitig),unitig.substr(0,read.size()-positionRead+positionUnitig),errorMax));
 			if(errors<=errorMax){
 				pathBegin={};
+				//~ cout<<"2B"<<endl;
 				errors+=(checkBeginGreedy(read,{(unitig.substr(0,k-1)),positionRead-positionUnitig},pathBegin,errorMax-errors));
+				//~ cout<<"endecbg"<<endl;
 				if(errors<=errorMax){
 					reverse(pathBegin.begin(),pathBegin.end());
 					pathBegin.push_back((int)unitigNumber);
+					//~ cout<<"end"<<endl;
 					return pathBegin;
 				}
 			}
@@ -755,6 +758,7 @@ vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
 
 
 void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=false){
+	//~ cout<<"go"<<endl;
 	path={};
 	vector<int> pathMem;
 	uint errors(0);
@@ -771,6 +775,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 		pathMem={};
 		uint errorInMapping(0);
 		for(uint i(0);i<listAnchors.size();++i){
+			//~ cout<<"anchor"<<endl;
 			path={};
 			errorInMapping=0;
 			if(errorsFromPreviousMapping[i]<=(int)errors){
@@ -780,6 +785,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 					path=alignReadGreedyAnchors(read,errors,listAnchors[i],errorInMapping);
 				}
 				errorsFromPreviousMapping[i]=errorInMapping;
+				//~ cout<<"?"<<endl;
 				//MAPPING IS FOUND
 				if(not path.empty()){
 					if(noMultiMapping){
@@ -809,13 +815,17 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 				}
 			}else{
 			}
+			//~ cout<<"anchorebd"<<endl;
 		}
+		//~ cout<<"endwhile1"<<endl;
 		++errors;
 		if(perfect or found){
+			//~ cout<<"wow"<<endl;
 			path=pathMem;
 			++alignedRead;
 			return;
 		}
+		//~ cout<<"endwhile"<<endl;
 	}
 	path=pathMem;
 	if(not path.empty()){
@@ -946,14 +956,16 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				if(path.empty()){
 					++notAligned;
 				}else{
-					//~ path=cleanSR(path,read.size());
+					//~ path=cleanSR(	path,read.size());
 				}
 				if(path2.empty()){
 					++notAligned;
 				}else{
 					//~ path2=cleanSR(path2,read2.size());
 				}
+				//~ cout<<"recover?"<<endl;
 				superpath=(recoverSuperReadsPairedNoStr(path,path2));
+				//~ cout<<"recover"<<endl;
 				if(superpath.first!=""){
 					if(superpath.second!=""){
 						if(headerNeeded){
