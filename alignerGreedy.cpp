@@ -938,7 +938,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
 	vector<vector<int>> pathVector;
-	string read,read2,header,header2,corrected,superRead,toWrite;
+	string read,read2,header,header2,corrected,superRead,toWrite,align;
 	vector<string> toWriteComp(nbBuckets);
 	pair<string,string> superpath;
 	while(not readFile->eof()){
@@ -1092,6 +1092,9 @@ void Aligner::alignPartGreedy(uint indiceThread){
 					sort(pathVector.begin(), pathVector.end());
 					pathVector.erase(unique(pathVector.begin(), pathVector.end()), pathVector.end());
 					for(uint i(0);i<pathVector.size();++i){
+						if(printAlignment){
+								align=read+'\n'+recoverSuperReadsCor(pathVector[i],read.size())+'\n';
+							}
 						if(preciseOutput){
 							//PRECISE MODE
 							uint position(pathVector[i][0]);
@@ -1112,7 +1115,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						if(superRead!=""){
 							toWrite+=header+'\n'+superRead+'\n';
 							if(printAlignment){
-								toWrite+=read+'\n'+recoverSuperReadsCor(pathVector[i],read.size())+'\n';
+								toWrite+=align;
 							}
 						}else{
 							cout<<"wut"<<endl;
