@@ -1092,7 +1092,23 @@ void Aligner::alignPartGreedy(uint indiceThread){
 					sort(pathVector.begin(), pathVector.end());
 					pathVector.erase(unique(pathVector.begin(), pathVector.end()), pathVector.end());
 					for(uint i(0);i<pathVector.size();++i){
-						superRead=(recoverSuperReadsNoStr(pathVector[i],1));
+						if(preciseOutput){
+							//PRECISE MODE
+							uint position(pathVector[i][0]);
+							pathVector[i]=vector<uNumber>(&pathVector[i][1],&pathVector[i][pathVector[i].size()]);
+							superRead=(recoverSuperReads(pathVector[i]));
+							superRead=superRead.substr(position);
+							pathVector[i].push_back(position);
+							int lastUnitigNumber(pathVector[i][pathVector[i].size()-2]);
+							if (lastUnitigNumber<0){
+								lastUnitigNumber=-lastUnitigNumber;
+							}
+							pathVector[i].push_back((int)unitigs[lastUnitigNumber].size()+(int)read.size()-(int)superRead.size());
+							superRead=(recoverSuperReadsNoStr(pathVector[i],0));
+						}else{
+							superRead=(recoverSuperReadsNoStr(pathVector[i],1));
+						}
+
 						if(superRead!=""){
 							toWrite+=header+'\n'+superRead+'\n';
 							if(printAlignment){
