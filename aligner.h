@@ -103,7 +103,8 @@ struct unitigIndicesVector{
 
 class Aligner{
 public:
-	ifstream unitigFile, readFile;
+	ifstream unitigFile;
+	istream* readFile;
 	ofstream pathFile, noOverlapFile, notMappedFile;
 	FILE * pathFilef;
 	FILE * readFileF;
@@ -146,6 +147,7 @@ public:
 		headerNeeded=false;
 		uniqueOptimalMappingMode=true;
 		optimalMappingMode=false;
+
 		if(compression){
 			pathCompressed= (new zstr::ofstream((paths+".gz").c_str()));
 		}else{

@@ -67,8 +67,8 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 	char c;
 	if(fastq){
 		for(uint i(0);i<n;++i){
-			getline(readFile,header);
-			getline(readFile,read);
+			getline(*readFile,header);
+			getline(*readFile,read);
 			if(read.size()>0){
 				bool fail(false);
 				for(uint j(0);(j)<read.size();++j){
@@ -81,16 +81,16 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 					reads.push_back({header,read});
 				}
 			}
-			getline(readFile,header);
-			getline(readFile,header);
-			if(readFile.eof()){return;}
+			getline(*readFile,header);
+			getline(*readFile,header);
+			if(readFile->eof()){return;}
 		}
 	}else{
 		for(uint i(0);i<n;++i){
-			getline(readFile,header);
-			getline(readFile,read);
+			getline(*readFile,header);
+			getline(*readFile,read);
 		point:
-			c=readFile.peek();
+			c=readFile->peek();
 			if(c=='>'){
 				if(read.size()>0){
 					bool fail(false);
@@ -108,8 +108,8 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 				}
 				read="";
 			}else{
-				if(!readFile.eof()){
-					getline(readFile,inter);
+				if(!readFile->eof()){
+					getline(*readFile,inter);
 					read+=inter;
 					goto point;
 				}else{
@@ -1964,11 +1964,12 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	for(uint i(0);i<reads.size();++i){
 		if(reads[i]==','){
 			file=reads.substr(last,i-last);
-			readFile.close();
-			readFile.open(file);
+			delete(readFile);
+			//~ readFile.open(file);
+			readFile=new zstr::ifstream(file);
 			//~ readFileF=fopen(file.c_str(),"r");
 			cout<<file<<endl;
-			if(not readFile.good()){
+			if(not readFile->good()){
 				cout<<"A probleme with file: "<<file<<endl;
 			}
 			unsigned char nbThreads(coreNumber);
@@ -1981,9 +1982,10 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		}
 	}
 	file=reads.substr(last);
-	readFile.close();
-	readFile.open(file);
-	if(not readFile.good()){
+	delete(readFile);
+	readFile=new zstr::ifstream(file);
+	//~ readFile.open(file);
+	if(not readFile->good()){
 		cout<<"A probleme with file: "<<file<<endl;
 		return;
 	}

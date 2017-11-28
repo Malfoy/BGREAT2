@@ -769,7 +769,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 		return;
 	}
 	string superRead,superReadMem;
-	//~ random_shuffle ( listAnchors.begin(), listAnchors.end() );
+	random_shuffle ( listAnchors.begin(), listAnchors.end() );
 	while(errors<=errorsMax){
 		bool found(false);
 		pathMem={};
@@ -809,8 +809,23 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 						found=true;
 					}else{
 						//DONE
-						++alignedRead;
-						return;
+						if(path[1]>0){
+							if(path[0]+k-1 < unitigs[abs(path[1])].size()){
+								++alignedRead;
+								return;
+								//~ path=vector<uNumber>(&path[1],&path[path.size()]);
+								//TODO BETTER
+							}else{
+								//~ path=vector<uNumber>(&path[0],&path[path.size()]);
+
+							}
+						}else{
+							//~ if(path[0] > k+1){
+								//~ ++alignedRead;
+								//~ return;
+							//~ }
+						}
+
 					}
 				}
 			}else{
@@ -926,7 +941,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	string read,read2,header,header2,corrected,superRead,toWrite;
 	vector<string> toWriteComp(nbBuckets);
 	pair<string,string> superpath;
-	while(not readFile.eof()){
+	while(not readFile->eof()){
 	//~ while(not feof(readFileF)){
 		toWrite="";
 		if(keepOrder){
