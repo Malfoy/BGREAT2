@@ -1968,7 +1968,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 			//~ readFile.open(file);
 			readFile=new zstr::ifstream(file);
 			//~ readFileF=fopen(file.c_str(),"r");
-			cout<<file<<endl;
+			cout<<"Mapping: "<<file<<" on "<<unitigFileName<<endl;
 			if(not readFile->good()){
 				cout<<"A probleme with file: "<<file<<endl;
 			}
@@ -1990,7 +1990,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		return;
 	}
 	//~ readFileF=fopen(file.c_str(),"r");
-	cout<<file<<endl;
+	cout<<"Mapping: "<<file<<" on "<<unitigFileName<<endl;
 	unsigned char nbThreads(coreNumber);
 	vector<thread> threads;
 	for (size_t i(0); i<nbThreads; ++i){
@@ -2010,7 +2010,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		cout<<"Super reads: "<<intToString(superReads)<<endl;
 		cout<<"Failed super reads compaction: "<<intToString(notCompatedSR)<<endl;
 		cout<<"Percentage paired: "<<(float(100)*superReads/(superReads+notCompatedSR))<<endl;
-		cout<<includedPath<<" "<<overlappingPath<<" "<<overlappingStr<<" "<<singleMiddle<<" "<<neighbor<<endl;
+		cout<<"Included path: "<<includedPath<<" Overlapping path: "<<overlappingPath<<" Overlapping Str: "<<overlappingStr<<"  Single unitig "<<singleMiddle<<" Neighbors "<<neighbor<<endl;
 
 	}
 	cout<<endl;
