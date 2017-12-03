@@ -623,6 +623,36 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 }
 
 
+vector<uNumber> Aligner::path_clean(const vector<uNumber>& numbers, uint readSize){
+	vector<uNumber> res;
+	if(numbers.size()<2 or 	numbers[0]+k+1 >= unitigs[abs(numbers[1])].size() ){//TODO update the vector instead or say nay
+		return res;
+	}
+	res.push_back(numbers[0]);
+	res.push_back(numbers[1]);
+	string path(getUnitig(numbers[1])),unitig,inter;
+	if(path.size()-numbers[0]>=readSize){
+		return res;
+	}
+	for(uint i(2); i<numbers.size(); ++i){
+		unitig=(getUnitig(numbers[i]));
+		inter=(compactionEndNoRC(path, unitig, k-1));
+		res.push_back(numbers[i]);
+		if(inter.empty()){
+			cout<<i<<endl;
+			cout<<"bug compaction super reads"<<endl;
+			return {};
+		}else{
+			if(inter.size()-numbers[0]>=readSize){
+				return res;
+			}
+			path=inter;
+		}
+	}
+	return res;
+}
+
+
 
 //TODO CHECK END ALSO
 vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){

@@ -787,19 +787,24 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 				errorsFromPreviousMapping[i]=errorInMapping;
 				//~ cout<<"?"<<endl;
 				//MAPPING IS FOUND
+				path=path_clean(path,read.size());
 				if(not path.empty()){
 					if(noMultiMapping){
 						if(found){
 							superRead=(recoverSuperReadsCor(path,read.size()));
 							superReadMem=(recoverSuperReadsCor(pathMem,read.size()));
 							if(superRead!=superReadMem){
-								//~ cout<<superRead<<endl;
-								//~ cout<<superReadMem<<endl;
-								//~ cin.get();
 								path={};
 								return;
 							}else{
 								if(path.size()<pathMem.size()){
+									for(uint i(0);i< path.size();++i){
+										cout<<path[i]<<";";
+									}
+									cout<<endl;
+									for(uint i(0);i< pathMem.size();++i){
+										cout<<pathMem[i]<<";";
+									}
 									pathMem=path;
 								}
 							}
@@ -808,24 +813,8 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 						}
 						found=true;
 					}else{
-						//DONE
-						if(path[1]>0){
-							if(path[0]+k-1 < unitigs[abs(path[1])].size()){
-								++alignedRead;
-								return;
-								//~ path=vector<uNumber>(&path[1],&path[path.size()]);
-								//TODO BETTER
-							}else{
-								//~ path=vector<uNumber>(&path[0],&path[path.size()]);
-
-							}
-						}else{
-							//~ if(path[0] > k+1){
-								//~ ++alignedRead;
-								//~ return;
-							//~ }
-						}
-
+						alignedRead++;
+						return;
 					}
 				}
 			}else{
