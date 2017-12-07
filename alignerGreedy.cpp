@@ -775,7 +775,6 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 		pathMem={};
 		uint errorInMapping(0);
 		for(uint i(0);i<listAnchors.size();++i){
-			//~ cout<<"anchor"<<endl;
 			path={};
 			errorInMapping=0;
 			if(errorsFromPreviousMapping[i]<=(int)errors){
@@ -785,7 +784,6 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 					path=alignReadGreedyAnchors(read,errors,listAnchors[i],errorInMapping);
 				}
 				errorsFromPreviousMapping[i]=errorInMapping;
-				//~ cout<<"?"<<endl;
 				//MAPPING IS FOUND
 				path=path_clean(path,read.size());
 				if(not path.empty()){
@@ -819,23 +817,18 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 				}
 			}else{
 			}
-			//~ cout<<"anchorebd"<<endl;
 		}
-		//~ cout<<"endwhile1"<<endl;
 		++errors;
 		if(perfect or found){
-			//~ cout<<"wow"<<endl;
 			path=pathMem;
 			++alignedRead;
 			return;
 		}
-		//~ cout<<"endwhile"<<endl;
 	}
 	path=pathMem;
 	if(not path.empty()){
 		++alignedRead;
 	}else{
-		//~ cout<<">1"<<"\n"<<read<<endl;
 	}
 }
 
@@ -967,9 +960,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				}else{
 					//~ path2=cleanSR(path2,read2.size());
 				}
-				//~ cout<<"recover?"<<endl;
 				superpath=(recoverSuperReadsPairedNoStr(path,path2));
-				//~ cout<<"recover"<<endl;
 				if(superpath.first!=""){
 					if(superpath.second!=""){
 						if(headerNeeded){

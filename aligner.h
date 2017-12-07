@@ -120,7 +120,7 @@ public:
 	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
 	vector<uint8_t> anchorsChecking;
 	//~ vector<string> anchorsCheckingstr;
-	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads,notCompatedSR, overlappingPath,overlappingStr,singleMiddle,neighbor,includedPath;
+	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads,notCompatedSR, overlappingPath,overlappingStr,singleMiddle,neighbor,includedPath,failed_pair;
 	vector<string> unitigs, unitigsRC;
 	kmer offsetUpdateOverlap;
 	kmer offsetUpdateAnchor;

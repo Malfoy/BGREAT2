@@ -892,18 +892,13 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
-	//~ cout<<"go1"<<endl;
-	//~ //they overlap of k-1
-	//~ cout<<"wtf"<<endl;
-	//~ cout<<numbers.size()<<" "<<numbers2.size()<<endl;
-	//~ cout<<(numbers[numbers.size()-1])<<" "<<numbers2[0]<<endl;
+	//they overlap of k-1
 	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		numbers2={};
 		neighbor++;
 		return true;
 	}
-	//~ cout<<"go2"<<endl;
 
 	string unitig(recoverSuperReads(numbers));
 	string unitig2((recoverSuperReads(numbers2)));
@@ -914,7 +909,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 
 	vector<pair<string,uNumber>> next,prev;
 	vector<uNumber> next2,prev2,inter;
-	//~ inter=uniquePath(unitig,unitig2);
+	//inter=uniquePath(unitig,unitig2);
 	if(stringMode){
 		next=(getBegin((unitig.substr(unitig.size()-k+1))));
 	}else{
@@ -942,7 +937,6 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
-	//~ cout<<"go3"<<endl;
 	//~ //TODO CAN DO BETTER
 	string merge(overlapping(unitig,unitig2,50));
 	if(merge!=""){
@@ -962,10 +956,10 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 
 			return true;
 		}
-		//~ cout<<"failnadine"<<endl;cin.get();
-
+		//~ //cout<<"failnadine"<<endl;cin.get();
 	}
-	//~ cout<<"failcuisine"<<endl;cin.get();
+	//~ //cout<<"failcuisine"<<endl;cin.get();
+	failed_pair++;
 	return false;
 }
 
@@ -2040,7 +2034,8 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		cout<<"Super reads: "<<intToString(superReads)<<endl;
 		cout<<"Failed super reads compaction: "<<intToString(notCompatedSR)<<endl;
 		cout<<"Percentage paired: "<<(float(100)*superReads/(superReads+notCompatedSR))<<endl;
-		cout<<"Included path: "<<includedPath<<" Overlapping path: "<<overlappingPath<<" Overlapping Str: "<<overlappingStr<<"  Single unitig "<<singleMiddle<<" Neighbors "<<neighbor<<endl;
+		cout<<"Included path: "<<intToString(includedPath)<<" Overlapping path: "<<intToString(overlappingPath)<<" Overlapping Str: "<<intToString(overlappingStr)<<"  Single unitig "<<intToString(singleMiddle)<<" Neighbors "<<intToString(neighbor)<<endl;
+		cout<<"Meaningful pair-mapping rate: "<<overlappingPath+overlappingStr+singleMiddle+neighbor<<"wrt"<<failed_pair<<"="<<100*(overlappingPath+overlappingStr+singleMiddle+neighbor)/(overlappingPath+overlappingStr+singleMiddle+neighbor+failed_pair)<<"%"<<endl;
 
 	}
 	cout<<endl;
