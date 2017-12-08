@@ -905,8 +905,6 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 
 	//a unique unitig between them
 	//~ //TODO BFS ? bounded depth and path length
-
-
 	vector<pair<string,uNumber>> next,prev;
 	vector<uNumber> next2,prev2,inter;
 	//inter=uniquePath(unitig,unitig2);
@@ -930,12 +928,12 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	sort(prev2.begin(),prev2.end());
 	set_intersection (prev2.begin(), prev2.end(), next2.begin(), next2.end(), back_inserter(inter));
 	if(inter.size()==1 ){
-		if(unitigs[abs(inter[0])].size()<1000){
+		//~ if(unitigs[abs(inter[0])].size()<1000){
 			numbers.push_back(inter[0]);
 			numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 			singleMiddle++;
 			return true;
-		}
+		//~ }
 	}
 	//~ //TODO CAN DO BETTER
 	string merge(overlapping(unitig,unitig2,50));
