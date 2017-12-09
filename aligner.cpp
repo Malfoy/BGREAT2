@@ -594,6 +594,7 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 		if(inter.empty()){
 			cout<<i<<endl;
 			cout<<"bug compaction super reads"<<endl;
+			cin.get();
 			return {};
 		}else{
 			path=inter;
@@ -805,10 +806,7 @@ pair<string,string> Aligner::recoverSuperReadsPaired( const vector<uNumber>& vec
 
 string overlapping(const string& str1, const string& str2, uint overlapMin){
 	if(overlapMin>str1.size() or overlapMin>str2.size()){return "";}
-	//~ cout<<"go"<<endl;
-	//~ cout<<str1<<" "<<str2<<endl;
 	string suffix(str1.substr(str1.size()-overlapMin));
-	//~ cout<<suffix<<endl;
 	int pos = str2.find(suffix, 0);
 	if(pos !=-1){
 		//~ int temp = str2.find(suffix,pos+1);
@@ -817,24 +815,14 @@ string overlapping(const string& str1, const string& str2, uint overlapMin){
 			//~ return "";
 		//~ }%TODO PROBLEM OF SUFFIX REPETITION
 	}else{
-		//~ cout<<"fail2"<<endl;cin.get();
 		return "";
 	}
 	if(overlapMin+pos<=str1.size()){
 
 		if(str2.substr(0,pos)==str1.substr(str1.size()-overlapMin-pos,pos)){
-
-						//~ cout<<"success"<<endl;
-
 			return str1+str2.substr((uint)pos+overlapMin);
 		}
-		//~ cout<<str2.substr(0,pos)<<endl;
-		//~ cout<<str1.substr(str1.size()-overlapMin-pos,pos)<<endl;
-						//~ cout<<"fail4"<<endl;cin.get();
-
 	}
-				//~ cout<<"fail3"<<endl;cin.get();
-
 	return "";
 }
 
@@ -845,7 +833,6 @@ bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int b
 		return false;
 	}
 	for(uint i(0);i<length;++i){
-		//~ cout<<numbers[begin1+i]<<" "<<numbers[begin2+i]<<endl;
 		if(numbers[begin1+i]!=numbers[begin2+i]){
 			return false;
 		}
@@ -855,21 +842,71 @@ bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int b
 
 
 
-bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2){
-	//~ cout<<"go"<<endl;
-	//TODO WTF IS THAT
-		//they overlap
-	//~ uNumber lastOne(numbers[numbers.size()-1]);
-	//~ for(int i(numbers2.size()-1);i>=0;--i){
-		//~ if(numbers2[i]==lastOne){
-			//~ if(equalV(numbers,numbers2,numbers.size()-1-i,0,i)){
-				//~ numbers2={};
+uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& res, uint depth, uint start){
+	//RETURN 0 if 0 PATH FOUND 1 IF ONE PAH FOUND 2 if MULTIPLE PATH FOUND
 
-				//~ return true;
-			//~ }
-		//~ }
-	//~ }
-	//~ cout<<numbers.size()<<endl;
+	string unitig(getUnitig(numbers));
+	vector<pair<string,uNumber>> next;
+	vector<uNumber> inter;
+	vector<uNumber> res_sauv=res;
+	bool found(false);
+	uint valid;
+	int next_unitig;
+	if(stringMode){
+		next=(getBegin((unitig.substr(unitig.size()-k+1))));
+	}else{
+		next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
+	}
+
+	for(uint i(0);i<next.size();++i){
+		//~ if(find(res.begin(),res.end(),next[i].second)==res.end() and next[i].second!=start and next[i].second!=numbers){
+		if(true){
+			//~ cout<<i<<endl;
+			if(next[i].second==numbers2){
+				if(found){
+					return 2;
+				}
+				return 1;
+			}else{
+				if(depth>5){
+					return 0;
+				}
+				res=res_sauv;
+				res.push_back(next[i].second);
+				uint valid=find_path_to(next[i].second,numbers2,res,depth+1,start);
+				if (valid==2){
+					return 2;
+				}
+				if(valid==0){
+					res=res_sauv;
+					continue;
+				}
+				if(valid==1){
+
+					if(found){
+						return 2;
+					}else{
+						found=true;
+						inter=res;
+					}
+				}
+			}
+		}else{
+			return 0;
+		}
+	}
+
+	if(found){
+		res=inter;
+		return 1;
+	}
+	return 0;
+}
+
+
+
+
+bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2){
 	for(uint i(0);i<numbers.size();++i){
 		bool overlap(true);
 		uint j(0);
@@ -892,71 +929,64 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
-	//they overlap of k-1
-	if(isNeighboor(numbers[numbers.size()-1],numbers2[0])){
-		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-		numbers2={};
-		neighbor++;
+	//~ string unitig(recoverSuperReads(numbers));
+	//~ string unitig2((recoverSuperReads(numbers2)));
+	//~ string merge(overlapping(unitig,unitig2,50));
+	//~ if(merge!=""){
+		//~ vector<uNumber> numbers3;
+		//~ alignReadFrom(merge,numbers3,numbers[0]);
+		//~ if(not numbers3.empty()){
+			//~ numbers3=getcleanPaths(numbers3,false,true);
+			//~ numbers=numbers3;
+			//~ numbers2={};
+			//~ overlappingStr++;
+
+			//~ return true;
+		//~ }
+	//~ }
+
+	vector<uNumber> inter;
+
+	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,numbers[numbers.size()-1]);
+
+	//~ uint res=0;
+	if(res==1){
+
+
+		//~ if(inter.size()>0){
+			//~ cout<<numbers[numbers.size()-1]<<" "<<numbers2[0]<<endl;
+			//~ cout<<"number ";
+			//~ for(uint iii(0);iii<numbers.size();++iii){
+				//~ cout<<numbers[iii]<<" ";
+			//~ }
+			//~ cout<<endl;
+			//~ cout<<"number2 ";
+			//~ for(uint iii(0);iii<numbers2.size();++iii){
+				//~ cout<<numbers2[iii]<<" ";
+			//~ }
+			//~ cout<<endl;
+			//~ cout<<"inter ";
+			//~ for(uint iii(0);iii<inter.size();++iii){
+				//~ cout<<inter[iii]<<" ";
+			//~ }
+			//~ cout<<endl;
+			numbers.insert(numbers.end(),inter.begin(),inter.end());
+			numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+			numbers2={};
+			//~ for(uint iii(0);iii<numbers.size();++iii){
+				//~ cout<<numbers[iii]<<" ";
+			//~ }
+			//~ cout<<endl<<endl;
+			//~ recoverSuperReads(numbers);
+			//~ if (numbers[numbers.size()-1]==18 or numbers[numbers.size()-1]==-18 or numbers2[0]==18 or numbers2[0]==-18){
+				//~ cin.get();
+			//~ }
+		//~ }
+		singleMiddle++;
+		//~ cout<<3<<flush;
 		return true;
 	}
 
-	string unitig(recoverSuperReads(numbers));
-	string unitig2((recoverSuperReads(numbers2)));
-
-	//a unique unitig between them
-	//~ //TODO BFS ? bounded depth and path length
-	vector<pair<string,uNumber>> next,prev;
-	vector<uNumber> next2,prev2,inter;
-	//inter=uniquePath(unitig,unitig2);
-	if(stringMode){
-		next=(getBegin((unitig.substr(unitig.size()-k+1))));
-	}else{
-		next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
-	}
-	for(uint i(0);i<next.size();++i){
-		next2.push_back(next[i].second);
-	}
-	sort(next2.begin(),next2.end());
-	if(stringMode){
-		prev=(getEnd(unitig2.substr(0,k-1)));
-	}else{
-		prev=(getEnd(str2num(unitig2.substr(0,k-1))));
-	}
-	for(uint i(0);i<prev.size();++i){
-		prev2.push_back(prev[i].second);
-	}
-	sort(prev2.begin(),prev2.end());
-	set_intersection (prev2.begin(), prev2.end(), next2.begin(), next2.end(), back_inserter(inter));
-	if(inter.size()==1 ){
-		//~ if(unitigs[abs(inter[0])].size()<1000){
-			numbers.push_back(inter[0]);
-			numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-			singleMiddle++;
-			return true;
-		//~ }
-	}
-	//~ //TODO CAN DO BETTER
-	string merge(overlapping(unitig,unitig2,50));
-	if(merge!=""){
-		vector<uNumber> numbers3;
-		alignReadFrom(merge,numbers3,numbers[0]);
-		if(not numbers3.empty()){
-			numbers3=getcleanPaths(numbers3,false,true);
-			// if(merge!=recoverSuperReads(numbers3)){
-				// cout<<merge<<endl;
-				// cout<<recoverSuperReads(numbers3)<<endl;
-				// cin.get();
-			// }
-			// numbers=getcleanPaths(numbers3,false,true);
-			numbers=numbers3;
-			numbers2={};
-			overlappingStr++;
-
-			return true;
-		}
-		//~ //cout<<"failnadine"<<endl;cin.get();
-	}
-	//~ //cout<<"failcuisine"<<endl;cin.get();
 	failed_pair++;
 	return false;
 }
@@ -982,8 +1012,20 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 	//~ cout<<vec.size()<<endl;
 
 	//if they overlap
+	auto numberSAUV=numbers;
 	if(compactVectors(numbers,numbers2)){
 		++superReads;
+		if("-18;-34;39;35;-18;38;"==recoverSuperReadsNoStr(numbers)){cout<<"found"<<endl;
+			for(uint i(0);i<numberSAUV.size();++i){
+				cout<<numberSAUV[i]<<";";
+			}
+			cout<<endl;
+			for(uint i(0);i<numbers2.size();++i){
+				cout<<numbers2[i]<<";";
+			}
+			cout<<"found"<<endl;
+			exit(0);
+		}
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
 	//~ cout<<"go"<<endl;
@@ -2005,6 +2047,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	}
 	file=reads.substr(last);
 	delete(readFile);
+	cout<<file<<endl;
 	readFile=new zstr::ifstream(file);
 	//~ readFile.open(file);
 	if(not readFile->good()){

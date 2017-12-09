@@ -178,6 +178,8 @@ kmer nuc2intrc(char c){
 	return 0;
 }
 
+
+
 //TODO ENCODE THE NUC
 string codeMiss(const string& read, const string& ref){
 	string res;
@@ -215,6 +217,7 @@ string compactionEnd(const string& seq1,const string& seq2, uint k){
 	if(end1==begrc2){return seq1+(rc2.substr(k));}
 	return "";
 }
+
 
 
 

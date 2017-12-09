@@ -150,7 +150,6 @@ vector<uNumber> Aligner::alignReadGreedyAnchors(const string& read, uint errorMa
 
 //TODO SEGFAULT HERE
 vector<uNumber> Aligner::alignReadGreedyAnchorsstr(const string& read, uint errorMax, const pair<pair<uint,uint>,uint>& anchor, uint& errors){
-	//~ cout<<"go"<<endl;
 	vector<uNumber> pathBegin,pathEnd;
 	string unitig("");
 	bool returned(false);
@@ -758,7 +757,6 @@ vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
 
 
 void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=false){
-	//~ cout<<"go"<<endl;
 	path={};
 	vector<int> pathMem;
 	uint errors(0);
