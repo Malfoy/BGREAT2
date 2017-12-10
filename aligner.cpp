@@ -620,36 +620,54 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 			path=inter;
 		}
 	}
+	//~ cout<<"length: "<<path.size()<<endl;
 	return path.substr(numbers[0], readSize);
 }
 
 
 vector<uNumber> Aligner::path_clean(const vector<uNumber>& numbers, uint readSize){
 	vector<uNumber> res;
-	if(numbers.size()<2 or 	numbers[0]+k+1 >= unitigs[abs(numbers[1])].size() ){//TODO update the vector instead or say nay
+	if(numbers.size()<2 ){
 		return res;
 	}
-	res.push_back(numbers[0]);
-	res.push_back(numbers[1]);
-	string path(getUnitig(numbers[1])),unitig,inter;
-	if(path.size()-numbers[0]>=readSize){
+	//~ cout<<"list"<<endl;
+	//~ for(uint i(0);i<numbers.size();++i){
+		//~ cout<<numbers[i]<<" ";
+	//~ }
+	//~ cout<<endl;
+	uint pos_start(numbers[0]);
+	uint indice_start(1);
+	//~ cout<<"A"<<flush;
+	while(pos_start+k-1 >= unitigs[abs(numbers[indice_start])].size() and indice_start+2<=numbers.size()){
+		pos_start=k-1-(unitigs[abs(numbers[indice_start])].size()-pos_start);
+		indice_start++;
+	}
+	//~ cout<<"B"<<flush;
+	res.push_back(pos_start);
+	res.push_back(numbers[indice_start]);
+	string path(getUnitig(numbers[indice_start])),unitig,inter;
+	//~ cout<<"D"<<endl;
+	if(path.size()-pos_start>=readSize){
 		return res;
 	}
-	for(uint i(2); i<numbers.size(); ++i){
+	//~ cout<<"C"<<flush;
+	for(uint i(indice_start+1); i<numbers.size(); ++i){
 		unitig=(getUnitig(numbers[i]));
 		inter=(compactionEndNoRC(path, unitig, k-1));
 		res.push_back(numbers[i]);
 		if(inter.empty()){
 			cout<<i<<endl;
 			cout<<"bug compaction super reads"<<endl;
+			cin.get();
 			return {};
 		}else{
-			if(inter.size()-numbers[0]>=readSize){
+			if(inter.size()-pos_start>=readSize){
 				return res;
 			}
 			path=inter;
 		}
 	}
+	//~ cout<<4<<flush;
 	return res;
 }
 

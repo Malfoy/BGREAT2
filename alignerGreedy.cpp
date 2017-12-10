@@ -783,7 +783,17 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 				}
 				errorsFromPreviousMapping[i]=errorInMapping;
 				//MAPPING IS FOUND
+				//~ cout<<"listbefore"<<endl;
+				//~ for(uint i(0);i<path.size();++i){
+					//~ cout<<path[i]<<" ";
+				//~ }
+				//~ cout<<endl;
 				path=path_clean(path,read.size());
+				//~ cout<<"listafter"<<endl;
+				//~ for(uint i(0);i<path.size();++i){
+					//~ cout<<path[i]<<" ";
+				//~ }
+				//~ cout<<endl;
 				if(not path.empty()){
 					if(noMultiMapping){
 						if(found){
@@ -793,7 +803,10 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 								path={};
 								return;
 							}else{
-								if(path.size()<pathMem.size()){
+
+								if(path.size()!=pathMem.size()){
+									cout<<superRead<<endl;
+									cout<<superReadMem<<endl;
 									for(uint i(0);i< path.size();++i){
 										cout<<path[i]<<";";
 									}
@@ -802,7 +815,9 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 										cout<<pathMem[i]<<";";
 									}
 									pathMem=path;
+									cin.get();
 								}
+
 							}
 						}else{
 							pathMem=path;

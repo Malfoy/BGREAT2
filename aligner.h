@@ -142,7 +142,7 @@ public:
 		}else{
 			noMultiMapping=true;
 		}
-		maxPositionAnchors=8;
+		maxPositionAnchors=64;
 		compression=compressOutput;
 		headerNeeded=false;
 		uniqueOptimalMappingMode=true;

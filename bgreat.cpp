@@ -61,7 +61,7 @@ using namespace std;
 int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
-	int errors(2), threads(1), ka(31), c, effort(2),dogMode(1);
+	int errors(5), threads(1), ka(31), c, effort(1000),dogMode(1);
 	int anchorSize(ka);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false);
 	float ratioe(0.5);
@@ -150,9 +150,9 @@ int main(int argc, char ** argv){
 		<<"-k k value (graph) (31)"<<endl
 		<<"-a anchors length (k)"<<endl
 		<<"-g unitig file (unitig.fa)"<<endl
-		<<"-m number of missmatch allowed (2)"<<endl
+		<<"-m number of missmatch allowed (5)"<<endl
 		<<"-t number of threads (1)"<<endl
-		<<"-e effort put in mapping (2)"<<endl
+		<<"-e effort put in mapping (1000)"<<endl
 		<<"-f output file (paths)"<<endl
 		<<"-q for fastq read file"<<endl
 		<<"-O to keep order of the reads"<<endl<<endl
