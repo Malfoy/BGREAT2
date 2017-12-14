@@ -860,12 +860,12 @@ bool equalV(const vector<uNumber>& numbers,const vector<uNumber>& numbers2,int b
 
 
 
-uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& res, uint depth, uint start){
+uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& res, uint depth, int max_size){
 	//RETURN 0 if 0 PATH FOUND 1 IF ONE PAH FOUND 2 if MULTIPLE PATH FOUND
-
 	string unitig(getUnitig(numbers));
 	vector<pair<string,uNumber>> next;
 	vector<uNumber> inter;
+	vector<uNumber> recursion;
 	vector<uNumber> res_sauv=res;
 	bool found(false);
 	uint valid;
@@ -877,40 +877,64 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 	}
 
 	for(uint i(0);i<next.size();++i){
-		//~ if(find(res.begin(),res.end(),next[i].second)==res.end() and next[i].second!=start and next[i].second!=numbers){
-		if(true){
-			//~ cout<<i<<endl;
-			if(next[i].second==numbers2){
-				if(found){
-					return 2;
-				}
-				return 1;
+		if(next[i].second==numbers2){
+			if(found){
+				return 2;
 			}else{
-				if(depth>5){
-					return 0;
-				}
-				res=res_sauv;
-				res.push_back(next[i].second);
-				uint valid=find_path_to(next[i].second,numbers2,res,depth+1,start);
-				if (valid==2){
-					return 2;
-				}
-				if(valid==0){
-					res=res_sauv;
-					continue;
-				}
-				if(valid==1){
-
-					if(found){
-						return 2;
-					}else{
-						found=true;
-						inter=res;
-					}
-				}
+				found=true;
+				inter=res;
 			}
+			//~ return 1;
+			//~ cout<<endl;
+			//~ for(uint iii(0);iii<res.size();++iii){
+				//~ cout<<res[iii]<<" ";
+			//~ }
+			//~ cout<<endl;
 		}else{
-			return 0;
+			if(depth<5){
+				recursion.push_back(next[i].second);
+			}
+			//~ res=res_sauv;
+			//~ res.push_back(next[i].second);
+			//~ uint valid=find_path_to(next[i].second,numbers2,res,depth+1,start);
+			//~ if (valid==2){
+				//~ cout<<"ARGH"<<endl;
+				//~ return 2;
+			//~ }
+			//~ if(valid==0){
+				//~ res=res_sauv;
+				//~ continue;
+			//~ }
+			//~ if(valid==1){
+
+				//~ if(found){
+					//~ cout<<"ARGH"<<endl;
+					//~ return 2;
+				//~ }else{
+					//~ found=true;
+					//~ inter=res;
+				//~ }
+			//~ }
+		}
+	}
+
+	for(uint i(0);i<recursion.size();++i){
+		res=res_sauv;
+		res.push_back(recursion[i]);
+		uint valid=0;
+		if(unitigs[abs(recursion[i])].size()-k+1 < max_size){
+			valid=find_path_to(recursion[i],numbers2,res,depth+1,max_size-(unitigs[abs(recursion[i])].size()-k+1));
+		}
+		if(valid==2){
+			return 2;
+		}
+		if(valid==1){
+			if(found){
+				return 2;
+			}else{
+				found=true;
+				inter=res;
+			}
 		}
 	}
 
@@ -964,12 +988,12 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	//~ }
 
 	vector<uNumber> inter;
-
-	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,numbers[numbers.size()-1]);
+	//~ cout<<"c parti"<<endl;
+	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,2000);
 
 	//~ uint res=0;
 	if(res==1){
-
+		//~ cout<<"success"<<endl;
 
 		//~ if(inter.size()>0){
 			//~ cout<<numbers[numbers.size()-1]<<" "<<numbers2[0]<<endl;
@@ -1004,7 +1028,17 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		//~ cout<<3<<flush;
 		return true;
 	}
-
+	//~ cout<<"c fail"<<endl;
+	//~ cout<<"number ";
+	//~ for(uint iii(0);iii<numbers.size();++iii){
+		//~ cout<<numbers[iii]<<" ";
+	//~ }
+	//~ cout<<endl;
+	//~ cout<<"number2 ";
+	//~ for(uint iii(0);iii<numbers2.size();++iii){
+		//~ cout<<numbers2[iii]<<" ";
+	//~ }
+	//~ cin.get();
 	failed_pair++;
 	return false;
 }

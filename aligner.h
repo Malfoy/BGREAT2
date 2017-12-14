@@ -335,7 +335,7 @@ public:
 	void addIndicesBeginStr(unitigIndicesstr& indices, string bin,vector<pair<string,uNumber>>& result);
 	string path2nuc(const vector<int32_t>& path);
 	vector<uNumber> path_clean(const vector<uNumber>& numbers, uint readSize);
-	uint find_path_to(uNumber numbers, uNumber numbers2,vector<uNumber>& res, uint depth,uint start);
+	uint find_path_to(uNumber numbers, uNumber numbers2,vector<uNumber>& res, uint depth,int start);
 
 
 
