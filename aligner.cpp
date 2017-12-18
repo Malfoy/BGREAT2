@@ -1,8 +1,7 @@
 /*****************************************************************************
  *   Bgreat : De Bruijn Graph Read Mapping Tool
- *   Copyright (C) 2014  INRIA
  *   Authors: Antoine Limasset
- *   Contact: antoine.limasset@inria.fr, INRIA/IRISA/GenScale, Campus de Beaulieu, 35042 Rennes Cedex, France
+ *   Contact: antoine.limasset@gmail.com
  *   Source: https://github.com/Malfoy/BGREAT
  *
  *
