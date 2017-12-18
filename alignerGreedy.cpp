@@ -797,27 +797,12 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 				if(not path.empty()){
 					if(noMultiMapping){
 						if(found){
-							superRead=(recoverSuperReadsCor(path,read.size()));
-							superReadMem=(recoverSuperReadsCor(pathMem,read.size()));
-							if(superRead!=superReadMem){
+							//~ superRead=(recoverSuperReadsCor(path,read.size()));
+							//~ superReadMem=(recoverSuperReadsCor(pathMem,read.size()));
+							//~ if(superRead!=superReadMem){
+							if(path!=pathMem){
 								path={};
 								return;
-							}else{
-
-								if(path.size()!=pathMem.size()){
-									cout<<superRead<<endl;
-									cout<<superReadMem<<endl;
-									for(uint i(0);i< path.size();++i){
-										cout<<path[i]<<";";
-									}
-									cout<<endl;
-									for(uint i(0);i< pathMem.size();++i){
-										cout<<pathMem[i]<<";";
-									}
-									pathMem=path;
-									cin.get();
-								}
-
 							}
 						}else{
 							pathMem=path;
@@ -832,7 +817,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 			}
 		}
 		++errors;
-		if(perfect or found){
+		if(found){
 			path=pathMem;
 			++alignedRead;
 			return;
