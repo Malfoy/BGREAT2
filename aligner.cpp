@@ -88,7 +88,7 @@ void Aligner::getReads(vector<pair<string,string>>& reads, uint n){
 		for(uint i(0);i<n;++i){
 			getline(*readFile,header);
 			getline(*readFile,read);
-		point:
+			point:
 			c=readFile->peek();
 			if(c=='>'){
 				if(read.size()>0){
@@ -1386,6 +1386,10 @@ void Aligner::indexUnitigsAux(){
 	vector<kmer>* leftOver=new vector<kmer>;
 	vector<kmer>* rightOver=new vector<kmer>;
 	vector<kmer>* anchors=new vector<kmer>;
+	vector<vector<kmer>>* anchorsV=new vector<vector<kmer>>;
+	for(uint i(0);i<1024;++i){
+		anchorsV->push_back({});
+	}
 	rightOver->push_back(0);
 	leftOver->push_back(0);
 	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
@@ -1413,13 +1417,13 @@ void Aligner::indexUnitigsAux(){
 			}
 			if(dogMode){
 				kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
-				anchors->push_back(canon);
+				(*anchorsV)[canon%1014].push_back(canon);
 				for(uint j(0);j+anchorSize<line.size();++j){
 					updateK(seq,line[j+anchorSize]);
 					updateRCK(rcSeq,line[j+anchorSize]);
 					if((j+1)%fracKmer==0){
 						canon=(min(seq, rcSeq));
-						anchors->push_back(canon);
+						(*anchorsV)[canon%1014].push_back(canon);
 					}
 				}
 			}
@@ -1432,6 +1436,19 @@ void Aligner::indexUnitigsAux(){
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
+	if(vectorMode){
+		uint i(0);
+			#pragma omp parallel for num_threads(coreNumber)
+			for(i=0;i<1014;++i){
+				sort( (*anchorsV)[i].begin(), (*anchorsV)[i].end() );
+				(*anchorsV)[i].erase( unique( (*anchorsV)[i].begin(), (*anchorsV)[i].end() ), (*anchorsV)[i].end() );
+			}
+			for(i=0;i<1014;++i){
+
+				anchors->insert(anchors->end(),(*anchorsV)[i].begin(),(*anchorsV)[i].end());
+			}
+
+		}
 	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
 
 	cout<<"Creating MPHF: "<<flush;auto start3=system_clock::now();
@@ -1444,11 +1461,6 @@ void Aligner::indexUnitigsAux(){
 	rightsize=rightOver->size();
 	delete rightOver;
 	if(dogMode){
-		if(vectorMode){
-			//TODO MULTITHREAD
-			sort( anchors->begin(), anchors->end() );
-			anchors->erase( unique( anchors->begin(), anchors->end() ), anchors->end() );
-		}
 		auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
 		anchorsMPHF= boomphf::mphf<kmer,hasher>(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}

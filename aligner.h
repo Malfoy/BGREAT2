@@ -132,7 +132,7 @@ public:
 	string unitigFileName, pathToWrite;
 	bool correctionMode, vectorMode, rcMode, fastq, dogMode,fullMemory,pairedMode,stringMode,keepOrder, preciseOutput,stringModeAnchor,noMultiMapping,uniqueOptimalMappingMode,optimalMappingMode, printAlignment,headerNeeded,compression, anyOptimalMapping,compressionMode;
 
-	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any,bool compressionM){
+	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any,bool compressionM,uint occurence_anchors){
 		nbBuckets=2;
 		compressionMode=compressionM;
 		iterLoop=0;
@@ -141,7 +141,7 @@ public:
 		}else{
 			noMultiMapping=true;
 		}
-		maxPositionAnchors=64;
+		maxPositionAnchors=occurence_anchors;
 		compression=compressOutput;
 		headerNeeded=false;
 		uniqueOptimalMappingMode=true;
