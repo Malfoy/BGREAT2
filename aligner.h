@@ -100,6 +100,9 @@ struct unitigIndicesVector{
 
 
 
+
+
+
 class Aligner{
 public:
 	ifstream unitigFile;
@@ -335,7 +338,7 @@ public:
 	string path2nuc(const vector<int32_t>& path);
 	vector<uNumber> path_clean(const vector<uNumber>& numbers, uint readSize);
 	uint find_path_to(uNumber numbers, uNumber numbers2,vector<uNumber>& res, uint depth,int start);
-
+	void Crush_bubbles();
 
 
 };

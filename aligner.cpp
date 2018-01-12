@@ -1376,6 +1376,122 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 	return list;
 }
 
+void Aligner::Crush_bubbles(){
+	string unitig;
+	vector<bool> nope(unitigs.size(),false);
+	for(uint i(1);i<unitigs.size();++i){
+
+		unitig=unitigs[i];
+
+		cout<<"go"<<i<<endl;
+		cout<<unitig.size()<<endl;
+		cin.get();
+		int grand_son(0);
+		bool good(true);
+		if(unitig.size()>k+1){
+			cout<<1<<endl;
+			vector<pair<string,uNumber>> rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
+			for(uint i(0); i<rangeUnitigs.size(); ++i){
+				cout<<2<<endl;
+				auto son=(rangeUnitigs[i].first);
+				if(nope[abs(rangeUnitigs[i].second)]){
+					good=false;
+					break;
+				}
+				vector<pair<string,uNumber>> rangeUnitigs2=getBegin(str2num(son.substr(son.size()-k+1,k-1)));
+				if(rangeUnitigs2.size()!=1){
+					good=false;
+					break;
+				}
+				cout<<3<<endl;
+				if(grand_son==0){
+					grand_son=rangeUnitigs2[0].second;
+				}else{
+					if(grand_son!=rangeUnitigs2[0].second){
+						good=false;
+						break;
+					}
+				}
+			}
+			cout<<4<<endl;
+			if(good){
+
+				cout<<abs(grand_son)<<endl;
+				if (unitigs[abs(grand_son)].size()>k+1){
+					for(uint i(1); i<rangeUnitigs.size(); ++i){
+						cout<<"yes"<<endl;
+						cout<<abs(rangeUnitigs[i].second)<<endl;
+						cin.get();
+
+						nope[abs(rangeUnitigs[i].second)]=true;
+						//~ unitigs[abs(rangeUnitigs[i].second)]="";
+						//~ unitigsRC[abs(rangeUnitigs[i].second)]="";
+					}
+				}
+			}
+			cout<<5<<endl;
+
+
+
+			good=true;
+			grand_son=(0);
+			unitig=unitigsRC[i];
+			cout<<12<<endl;
+
+			rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
+			for(uint i(0); i<rangeUnitigs.size(); ++i){
+				cout<<22<<endl;
+				auto son=(rangeUnitigs[i].first);
+				if(nope[abs(rangeUnitigs[i].second)]){
+					good=false;
+					break;
+				}
+				auto num=str2num(son.substr(son.size()-k+1,k-1));
+				vector<pair<string,uNumber>> rangeUnitigs2=getBegin(num);
+				if(rangeUnitigs2.size()!=1){
+					good=false;
+					break;
+				}
+				cout<<32<<endl;
+				if(grand_son==0){
+					grand_son=rangeUnitigs2[0].second;
+				}else{
+					if(grand_son!=rangeUnitigs2[0].second){
+						good=false;
+						break;
+					}
+				}
+			}
+			cout<<4.2<<endl;
+			if(good){
+				cout<<4.2<<"g"<<endl;
+				if (unitigs[grand_son].size()>k+1){
+					for(uint i(1); i<rangeUnitigs.size(); ++i){
+						cout<<"yes"<<endl;
+						cout<<abs(rangeUnitigs[i].second)<<endl;
+						cin.get();
+						nope[abs(rangeUnitigs[i].second)]=true;
+						//~ unitigs[rangeUnitigs[i].second]="";
+						//~ unitigsRC[rangeUnitigs[i].second]="";
+					}
+				}
+			}
+		}
+
+	}
+
+	for(uint i(0);i<unitigs.size();++i){
+		unitig=unitigs[i];
+		//~ cout<<nope[i]<<endl;
+		if(unitig.size()>=k and  not nope[i]){
+			cout<<">x\n";
+			cout<<unitig<<"\n";
+		}
+	}
+
+
+
+}
 
 //TODO MULTITHREAD
 void Aligner::indexUnitigsAux(){
