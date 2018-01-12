@@ -1444,7 +1444,7 @@ void Aligner::Crush_bubbles(){
 				}
 			}
 			if(good){
-				if (unitigs[grand_son].size()>k+50s){
+				if (unitigs[grand_son].size()>k+50){
 					for(uint i(1); i<rangeUnitigs.size(); ++i){
 						nope[abs(rangeUnitigs[i].second)]=true;
 						//~ unitigs[rangeUnitigs[i].second]="";
