@@ -1386,8 +1386,10 @@ void Aligner::Crush_bubbles(){
 		int grand_son(0);
 		bool good(true);
 		if(unitig.size()>k+1){
+			//~ cout<<"1"<<endl;
 			vector<pair<string,uNumber>> rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 			for(uint i(0); i<rangeUnitigs.size(); ++i){
+				//~ cout<<"2"<<endl;
 				auto son=(rangeUnitigs[i].first);
 				if(nope[abs(rangeUnitigs[i].second)]){
 					good=false;
@@ -1420,37 +1422,47 @@ void Aligner::Crush_bubbles(){
 			good=true;
 			grand_son=(0);
 			unitig=unitigsRC[i];
-
+			//~ cout<<"a1"<<endl;
 			rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 			for(uint i(0); i<rangeUnitigs.size(); ++i){
+				//~ cout<<"a2"<<endl;
 				auto son=(rangeUnitigs[i].first);
 				if(nope[abs(rangeUnitigs[i].second)]){
 					good=false;
 					break;
 				}
+				//~ cout<<"a3"<<endl;
 				auto num=str2num(son.substr(son.size()-k+1,k-1));
 				vector<pair<string,uNumber>> rangeUnitigs2=getBegin(num);
 				if(rangeUnitigs2.size()!=1){
 					good=false;
 					break;
 				}
+				//~ cout<<"a4"<<endl;
 				if(grand_son==0){
+					//~ cout<<"a5"<<endl;
 					grand_son=rangeUnitigs2[0].second;
 				}else{
+					//~ cout<<"a6"<<endl;
 					if(grand_son!=rangeUnitigs2[0].second){
+						//~ cout<<"a7"<<endl;
 						good=false;
 						break;
 					}
 				}
+				//~ cout<<"a8"<<endl;
 			}
 			if(good){
-				if (unitigs[grand_son].size()>k+50){
+				//~ cout<<"a9"<<endl;
+				if (unitigs[abs(grand_son)].size()>k+50){
+					//~ cout<<"a9.5"<<endl;
 					for(uint i(1); i<rangeUnitigs.size(); ++i){
 						nope[abs(rangeUnitigs[i].second)]=true;
 						//~ unitigs[rangeUnitigs[i].second]="";
 						//~ unitigsRC[rangeUnitigs[i].second]="";
 					}
 				}
+				//~ cout<<"a10"<<endl;
 			}
 		}
 
@@ -1459,8 +1471,8 @@ void Aligner::Crush_bubbles(){
 	for(uint i(0);i<unitigs.size();++i){
 		unitig=unitigs[i];
 		if(unitig.size()>=k and  not nope[i]){
-			cout<<">x\n";
-			cout<<unitig<<"\n";
+			cerr<<">x\n";
+			cerr<<unitig<<"\n";
 		}
 	}
 
