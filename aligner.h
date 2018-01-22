@@ -107,7 +107,7 @@ class Aligner{
 public:
 	ifstream unitigFile;
 	istream* readFile;
-	ofstream pathFile, noOverlapFile, notMappedFile;
+	ofstream pathFile, noOverlapFile, notMappedFile,graphFile;
 	FILE * pathFilef;
 	FILE * readFileF;
 	vector<FILE *> pathFileComp;

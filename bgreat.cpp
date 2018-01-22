@@ -179,6 +179,7 @@ int main(int argc, char ** argv){
 	supervisor.indexUnitigs();
 
 	if(Bulles){
+		supervisor.graphFile.open("popped_dbg.fa");
 		supervisor.Crush_bubbles();
 		return 0;
 	}

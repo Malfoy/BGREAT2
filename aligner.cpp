@@ -1387,7 +1387,7 @@ void Aligner::Crush_bubbles(){
 
 		int grand_son(0);
 		bool good(true);
-		if(unitig.size()>k+20){
+		if(unitig.size()>k){
 			//~ cout<<"1"<<endl;
 			if(stringMode){
 				 rangeUnitigs=getBegin((unitig.substr(unitig.size()-k+1,k-1)));
@@ -1422,7 +1422,7 @@ void Aligner::Crush_bubbles(){
 			}
 			if(good and grand_son!=0){
 				//~ cout<<"unique grand son !"<<endl;
-				if (unitigs[abs(grand_son)].size()>k+20){
+				if (unitigs[abs(grand_son)].size()>k){
 					for(uint i(1); i<rangeUnitigs.size(); ++i){
 						nope[abs(rangeUnitigs[i].second)]=true;
 						//~ unitigs[abs(rangeUnitigs[i].second)]="";
@@ -1474,7 +1474,7 @@ void Aligner::Crush_bubbles(){
 			}
 			if(good  and grand_son!=0){
 				//~ cout<<"a9"<<endl;
-				if (unitigs[abs(grand_son)].size()>k+20){
+				if (unitigs[abs(grand_son)].size()>k){
 					//~ cout<<"a9.5"<<endl;
 					for(uint i(1); i<rangeUnitigs.size(); ++i){
 						nope[abs(rangeUnitigs[i].second)]=true;
@@ -1491,8 +1491,8 @@ void Aligner::Crush_bubbles(){
 	for(uint i(0);i<unitigs.size();++i){
 		unitig=unitigs[i];
 		if(unitig.size()>=k and  not nope[i]){
-			cerr<<">x\n";
-			cerr<<unitig<<"\n";
+			graphFile<<">x\n";
+			graphFile<<unitig<<"\n";
 		}else{
 			number_crush++;
 		}
