@@ -928,9 +928,11 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				}else{
 					//~ path2=cleanSR(path2,read2.size());
 				}
-				auto superpath_numbers=(recoverSuperReadsPaired_numbers(path,path2));
+				auto superpath=(recoverSuperReadsPairedNoStr(path,path2));
 				if(correctionMode){
 					//CORRECTION
+					//TODO CHECK OPTIMIZATION
+					auto superpath_numbers=(recoverSuperReadsPaired_numbers(path,path2));
 					if(not superpath_numbers.first.empty()){
 						if(not superpath_numbers.second.empty()){
 							superRead2=(recoverSuperReadsCor(path2,read2.size()));
