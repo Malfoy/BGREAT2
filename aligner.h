@@ -327,6 +327,8 @@ public:
 	uint missmatchNumber(const string& seq1, const string& seq2, unsigned int n);
 	void alignReadFrom(const string& read, vector<int>& path, int unumber);
 	string recoverSuperReadsCor(const vector<uNumber>& numbers,uint readSize);
+	string recoverSuperReadsCor(const vector<uNumber>& numbers);
+	string recoverSuperReadsCorClean(const vector<uNumber>& numbers);
 	void alignReadAllOpti(const string& read, vector<vector<int>>& pathVector);
 	void alignReadAll(const string& read, vector<vector<int>>& pathVector);
 	vector<uNumber> cleanSR(const vector<uNumber>& numbers, uint readSize);
@@ -339,6 +341,8 @@ public:
 	vector<uNumber> path_clean(const vector<uNumber>& numbers, uint readSize);
 	uint find_path_to(uNumber numbers, uNumber numbers2,vector<uNumber>& res, uint depth,int start);
 	void Crush_bubbles();
+	pair<vector<uNumber>,vector<uNumber>> recoverSuperReadsPaired_numbers( const vector<uNumber>& vec, vector<uNumber>& vec2);
+
 
 
 };

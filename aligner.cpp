@@ -612,15 +612,46 @@ string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSi
 	for(uint i(2); i<numbers.size(); ++i){
 		unitig=(getUnitig(numbers[i]));inter=(compactionEndNoRC(path, unitig, k-1));
 		if(inter.empty()){
-			cout<<i<<endl;
-			cout<<"bug compaction super reads"<<endl;
-			return {};
+			cout<<i<<endl;cout<<"bug compaction super reads"<<endl;return {};
 		}else{
 			path=inter;
 		}
 	}
-	//~ cout<<"length: "<<path.size()<<endl;
 	return path.substr(numbers[0], readSize);
+}
+
+
+string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers){
+	if(numbers.size()<2){
+		return "";
+	}
+	string path(getUnitig(numbers[1])),unitig,inter;
+	for(uint i(2); i<numbers.size(); ++i){
+		unitig=(getUnitig(numbers[i]));inter=(compactionEndNoRC(path, unitig, k-1));
+		if(inter.empty()){
+			cout<<i<<endl;cout<<"bug compaction super reads"<<endl;return {};
+		}else{
+			path=inter;
+		}
+	}
+	return path.substr(numbers[0]);
+}
+
+
+string Aligner::recoverSuperReadsCorClean(const vector<uNumber>& numbers){
+	if(numbers.size()<1){
+		return "";
+	}
+	string path(getUnitig(numbers[0])),unitig,inter;
+	for(uint i(1); i<numbers.size(); ++i){
+		unitig=(getUnitig(numbers[i]));inter=(compactionEndNoRC(path, unitig, k-1));
+		if(inter.empty()){
+			cout<<i<<endl;cout<<"bug compaction super reads"<<endl;return {};
+		}else{
+			path=inter;
+		}
+	}
+	return path;
 }
 
 
@@ -629,27 +660,18 @@ vector<uNumber> Aligner::path_clean(const vector<uNumber>& numbers, uint readSiz
 	if(numbers.size()<2 ){
 		return res;
 	}
-	//~ cout<<"list"<<endl;
-	//~ for(uint i(0);i<numbers.size();++i){
-		//~ cout<<numbers[i]<<" ";
-	//~ }
-	//~ cout<<endl;
 	uint pos_start(numbers[0]);
 	uint indice_start(1);
-	//~ cout<<"A"<<flush;
 	while(pos_start+k-1 >= unitigs[abs(numbers[indice_start])].size() and indice_start+2<=numbers.size()){
 		pos_start=k-1-(unitigs[abs(numbers[indice_start])].size()-pos_start);
 		indice_start++;
 	}
-	//~ cout<<"B"<<flush;
 	res.push_back(pos_start);
 	res.push_back(numbers[indice_start]);
 	string path(getUnitig(numbers[indice_start])),unitig,inter;
-	//~ cout<<"D"<<endl;
 	if(path.size()-pos_start>=readSize){
 		return res;
 	}
-	//~ cout<<"C"<<flush;
 	for(uint i(indice_start+1); i<numbers.size(); ++i){
 		unitig=(getUnitig(numbers[i]));
 		inter=(compactionEndNoRC(path, unitig, k-1));
@@ -666,7 +688,6 @@ vector<uNumber> Aligner::path_clean(const vector<uNumber>& numbers, uint readSiz
 			path=inter;
 		}
 	}
-	//~ cout<<4<<flush;
 	return res;
 }
 
@@ -674,7 +695,6 @@ vector<uNumber> Aligner::path_clean(const vector<uNumber>& numbers, uint readSiz
 
 //TODO CHECK END ALSO
 vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
-	//~ if(numbers.size()<3){return numbers;}
 	vector<uNumber> result;
 	string unitig;
 	uint position(numbers[0]);
@@ -706,12 +726,6 @@ vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
 
 	string readCore1(recoverSuperReadsCor(numbers,readSize));
 	string readCore2(recoverSuperReadsCor(result,readSize));
-	//~ if(readCore1!=readCore2){
-		//~ cout<<readCore1<<" and "<<readCore2<<endl;
-	//~ }
-	//~ if(result.size()<numbers.size()){
-			//~ cout<<"win";
-	//~ }
 
 	return result;
 }
@@ -762,9 +776,7 @@ vector<uNumber> Aligner::getcleanPaths(const vector<uNumber>& numbers, bool reve
 
 
 bool Aligner::isNeighboor(const uint number1, const uint number2){
-	//~ cout<<"euuuuuh"<<endl;
 	string unitig1(getUnitig(number1)), unitig2(getUnitig(number2));
-	//~ cout<<"gocompaction"<<endl;
 	string inter(compactionEndNoRC(unitig1, unitig2, k-1));
 	if(inter.empty()){
 		return false;
@@ -883,37 +895,10 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 				found=true;
 				inter=res;
 			}
-			//~ return 1;
-			//~ cout<<endl;
-			//~ for(uint iii(0);iii<res.size();++iii){
-				//~ cout<<res[iii]<<" ";
-			//~ }
-			//~ cout<<endl;
 		}else{
 			if(depth<5){
 				recursion.push_back(next[i].second);
 			}
-			//~ res=res_sauv;
-			//~ res.push_back(next[i].second);
-			//~ uint valid=find_path_to(next[i].second,numbers2,res,depth+1,start);
-			//~ if (valid==2){
-				//~ cout<<"ARGH"<<endl;
-				//~ return 2;
-			//~ }
-			//~ if(valid==0){
-				//~ res=res_sauv;
-				//~ continue;
-			//~ }
-			//~ if(valid==1){
-
-				//~ if(found){
-					//~ cout<<"ARGH"<<endl;
-					//~ return 2;
-				//~ }else{
-					//~ found=true;
-					//~ inter=res;
-				//~ }
-			//~ }
 		}
 	}
 
@@ -987,57 +972,16 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	//~ }
 
 	vector<uNumber> inter;
-	//~ cout<<"c parti"<<endl;
 	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,2000);
-
 	//~ uint res=0;
 	if(res==1){
-		//~ cout<<"success"<<endl;
-
 		//~ if(inter.size()>0){
-			//~ cout<<numbers[numbers.size()-1]<<" "<<numbers2[0]<<endl;
-			//~ cout<<"number ";
-			//~ for(uint iii(0);iii<numbers.size();++iii){
-				//~ cout<<numbers[iii]<<" ";
-			//~ }
-			//~ cout<<endl;
-			//~ cout<<"number2 ";
-			//~ for(uint iii(0);iii<numbers2.size();++iii){
-				//~ cout<<numbers2[iii]<<" ";
-			//~ }
-			//~ cout<<endl;
-			//~ cout<<"inter ";
-			//~ for(uint iii(0);iii<inter.size();++iii){
-				//~ cout<<inter[iii]<<" ";
-			//~ }
-			//~ cout<<endl;
 			numbers.insert(numbers.end(),inter.begin(),inter.end());
 			numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 			numbers2={};
-			//~ for(uint iii(0);iii<numbers.size();++iii){
-				//~ cout<<numbers[iii]<<" ";
-			//~ }
-			//~ cout<<endl<<endl;
-			//~ recoverSuperReads(numbers);
-			//~ if (numbers[numbers.size()-1]==18 or numbers[numbers.size()-1]==-18 or numbers2[0]==18 or numbers2[0]==-18){
-				//~ cin.get();
-			//~ }
-		//~ }
 		singleMiddle++;
-		//~ cout<<3<<flush;
 		return true;
 	}
-	//~ cout<<"c fail"<<endl;
-	//~ cout<<"number ";
-	//~ for(uint iii(0);iii<numbers.size();++iii){
-		//~ cout<<numbers[iii]<<" ";
-	//~ }
-	//~ cout<<endl;
-	//~ cout<<"number2 ";
-	//~ for(uint iii(0);iii<numbers2.size();++iii){
-		//~ cout<<numbers2[iii]<<" ";
-	//~ }
-	//~ cin.get();
 	failed_pair++;
 	return false;
 }
@@ -1048,7 +992,6 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 	//If one is empty return one read
 	vector<uNumber> numbers(getcleanPaths(vec,false,true));
 	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
-	//~ cout<<"clean"<<endl;
 	if(numbers.size()<=0){
 		if(numbers2.size()<=0){
 			return {"",""};
@@ -1060,36 +1003,42 @@ pair<string,string> Aligner::recoverSuperReadsPairedNoStr( const vector<uNumber>
 			return{recoverSuperReadsNoStr(numbers),""};
 		}
 	}
-	//~ cout<<vec.size()<<endl;
 
 	//if they overlap
 	auto numberSAUV=numbers;
 	if(compactVectors(numbers,numbers2)){
 		++superReads;
-		if("-18;-34;39;35;-18;38;"==recoverSuperReadsNoStr(numbers)){cout<<"found"<<endl;
-			for(uint i(0);i<numberSAUV.size();++i){
-				cout<<numberSAUV[i]<<";";
-			}
-			cout<<endl;
-			for(uint i(0);i<numbers2.size();++i){
-				cout<<numbers2[i]<<";";
-			}
-			cout<<"found"<<endl;
-			exit(0);
-		}
 		return{recoverSuperReadsNoStr(numbers),""};
 	}
-	//~ cout<<"go"<<endl;
-	//~ for(uint i(0);i<numbers.size();++i){
-		//~ cout<<numbers[i]<<" ";
-	//~ }
-	//~ cout<<endl;
-		//~ for(uint i(0);i<numbers2.size();++i){
-		//~ cout<<numbers2[i]<<" ";
-	//~ }
-//~ cout<<endl;
 	++notCompatedSR;
 	return{recoverSuperReadsNoStr(numbers),recoverSuperReadsNoStr(numbers2)};
+}
+
+
+pair<vector<uNumber>,vector<uNumber>> Aligner::recoverSuperReadsPaired_numbers( const vector<uNumber>& vec, vector<uNumber>& vec2){
+	//If one is empty return one read
+	vector<uNumber> numbers(getcleanPaths(vec,false,true));
+	vector<uNumber> numbers2(getcleanPaths(vec2,true,true));
+	if(numbers.size()<=0){
+		if(numbers2.size()<=0){
+			return {{},{}};
+		}else{
+			return{(numbers2),{}};
+		}
+	}else{
+		if(numbers2.size()<=0){
+			return{(numbers),{}};
+		}
+	}
+
+	//if they overlap
+	auto numberSAUV=numbers;
+	if(compactVectors(numbers,numbers2)){
+		++superReads;
+		return{(numbers),{}};
+	}
+	++notCompatedSR;
+	return{(numbers),(numbers2)};
 }
 
 
@@ -1561,19 +1510,17 @@ void Aligner::indexUnitigsAux(){
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
-	if(vectorMode){
+	//~ if(vectorMode){
 		uint i(0);
-			#pragma omp parallel for num_threads(coreNumber)
-			for(i=0;i<1014;++i){
-				sort( (*anchorsV)[i].begin(), (*anchorsV)[i].end() );
-				(*anchorsV)[i].erase( unique( (*anchorsV)[i].begin(), (*anchorsV)[i].end() ), (*anchorsV)[i].end() );
-			}
-			for(i=0;i<1014;++i){
-
-				anchors->insert(anchors->end(),(*anchorsV)[i].begin(),(*anchorsV)[i].end());
-			}
-
-		}
+	#pragma omp parallel for num_threads(coreNumber)
+	for(i=0;i<1014;++i){
+		sort( (*anchorsV)[i].begin(), (*anchorsV)[i].end() );
+		(*anchorsV)[i].erase( unique( (*anchorsV)[i].begin(), (*anchorsV)[i].end() ), (*anchorsV)[i].end() );
+	}
+	for(i=0;i<1014;++i){
+		anchors->insert(anchors->end(),(*anchorsV)[i].begin(),(*anchorsV)[i].end());
+	}
+	//~ }
 	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
 
 	cout<<"Creating MPHF: "<<flush;auto start3=system_clock::now();
@@ -1700,10 +1647,14 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
 	vector<kmer>* anchors=new vector<kmer>;
+	vector<vector<kmer>>* anchorsV=new vector<vector<kmer>>;
+	for(uint i(0);i<1024;++i){
+		anchorsV->push_back({});
+	}
 	leftOver->push_back("");
 	rightOver->push_back("");
 	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
-	while(!unitigFile.eof()){
+	while(not unitigFile.eof()){
 		getline(unitigFile,line);
 		getline(unitigFile,line);
 		if(line.size()>=k){
@@ -1725,16 +1676,14 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 			if(end>=rcEnd){
 				leftOver->push_back(rcEnd);
 			}
-			if(dogMode){
-				kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
-				anchors->push_back(canon);
-				for(uint j(0);j+anchorSize<line.size();++j){
-					updateK(seq,line[j+anchorSize]);
-					updateRCK(rcSeq,line[j+anchorSize]);
-					if((j+1)%fracKmer==0){
-						canon=(min(seq, rcSeq));
-						anchors->push_back(canon);
-					}
+			kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
+			(*anchorsV)[canon%1024].push_back(canon);
+			for(uint j(0);j+anchorSize<line.size();++j){
+				updateK(seq,line[j+anchorSize]);
+				updateRCK(rcSeq,line[j+anchorSize]);
+				if((j+1)%fracKmer==0){
+					canon=(min(seq, rcSeq));
+					(*anchorsV)[canon%1024].push_back(canon);
 				}
 			}
 		}
@@ -1746,6 +1695,18 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
+	//~ if(vectorMode){
+	uint i(0);
+	#pragma omp parallel for num_threads(coreNumber)
+	for(i=0;i<1024;++i){
+		sort( (*anchorsV)[i].begin(), (*anchorsV)[i].end() );
+		(*anchorsV)[i].erase( unique( (*anchorsV)[i].begin(), (*anchorsV)[i].end() ), (*anchorsV)[i].end() );
+	}
+	for(i=0;i<1024;++i){
+		anchors->insert(anchors->end(),(*anchorsV)[i].begin(),(*anchorsV)[i].end());
+	}
+	//~ }
+
 	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
 
 	cout<<"Creating MPHF: "<<flush;auto start3=system_clock::now();
@@ -1757,15 +1718,8 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	rightMPHFstr= MPHFSTR(rightOver->size(),data_iterator2,coreNumber,gammaFactor,false);
 	rightsize=rightOver->size();
 	delete rightOver;
-	if(dogMode){
-		if(vectorMode){
-			//TODO MULTITHREAD
-			sort( anchors->begin(), anchors->end() );
-			anchors->erase( unique( anchors->begin(), anchors->end() ), anchors->end() );
-		}
-		auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
-		anchorsMPHF= MPHF(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
-	}
+	auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
+	anchorsMPHF= MPHF(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){

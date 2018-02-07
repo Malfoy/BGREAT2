@@ -712,16 +712,6 @@ vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
 				}
 			}
 			if(not found){
-				//~ for(uint iii(1);iii<v1.size();++iii){
-					//~ cout<<v1[iii]<<" ";
-				//~ }
-				//~ cout<<endl;
-				//~ for(uint iii(1);iii<v2.size();++iii){
-					//~ cout<<v2[iii]<<" ";
-				//~ }
-				//~ cout<<endl;
-				//~ cin.get();
-				//~ return {};
 			}
 		}
 		return v1;
@@ -735,15 +725,6 @@ vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
 				}
 			}
 			if(not found){
-				//~ for(uint iii(1);iii<v1.size();++iii){
-					//~ cout<<v1[iii]<<" ";
-				//~ }
-				//~ cout<<endl;
-				//~ for(uint iii(1);iii<v2.size();++iii){
-					//~ cout<<v2[iii]<<" ";
-				//~ }
-				//~ cout<<endl;
-				//~ cin.get();
 				return {};
 			}
 		}
@@ -782,17 +763,7 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 				}
 				errorsFromPreviousMapping[i]=errorInMapping;
 				//MAPPING IS FOUND
-				//~ cout<<"listbefore"<<endl;
-				//~ for(uint i(0);i<path.size();++i){
-					//~ cout<<path[i]<<" ";
-				//~ }
-				//~ cout<<endl;
 				path=path_clean(path,read.size());
-				//~ cout<<"listafter"<<endl;
-				//~ for(uint i(0);i<path.size();++i){
-					//~ cout<<path[i]<<" ";
-				//~ }
-				//~ cout<<endl;
 				if(not path.empty()){
 					if(noMultiMapping){
 						if(found){
@@ -917,7 +888,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
 	vector<vector<int>> pathVector;
-	string read,read2,header,header2,corrected,superRead,toWrite,align;
+	string read,read2,header,header2,corrected,superRead,superRead2,suffix_stop,toWrite,align;
 	vector<string> toWriteComp(nbBuckets);
 	pair<string,string> superpath;
 	while(not readFile->eof()){
@@ -957,7 +928,44 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				}else{
 					//~ path2=cleanSR(path2,read2.size());
 				}
-				superpath=(recoverSuperReadsPairedNoStr(path,path2));
+				auto superpath_numbers=(recoverSuperReadsPaired_numbers(path,path2));
+				if(correctionMode){
+					//CORRECTION
+					if(not superpath_numbers.first.empty()){
+						if(not superpath_numbers.second.empty()){
+							superRead2=(recoverSuperReadsCor(path2,read2.size()));
+							superRead=(recoverSuperReadsCor(path,read.size()));
+							toWrite+=header+'\n'+superRead+'\n'+header2+'\n'+superRead2+'\n';
+						}else{
+							if(path2.empty()){
+								superRead=(recoverSuperReadsCor(path,read.size()));
+								toWrite+=header+'\n'+superRead+'\n';
+								toWrite+=header2+'\n'+read2+'\n';
+							}else{
+								if(path.empty()){
+									superRead=(recoverSuperReadsCor(path2,read2.size()));
+									toWrite+=header+'\n'+superRead+'\n';
+									toWrite+=header2+'\n'+read2+'\n';
+								}else{
+									superRead=recoverSuperReadsCorClean(superpath_numbers.first);
+									superRead=superRead.substr(path[0]);
+									superRead=superRead.substr(0,superRead.size()-(path2[0]));
+									toWrite+=header+'\n'+superRead+'\n';
+								}
+							}
+						}
+					}else{
+						if(not superpath_numbers.second.empty()){
+							superRead2=(recoverSuperReadsCor(path2,read.size()));
+							toWrite+=header+'\n'+read+'\n';
+							toWrite+=header2+'\n'+superRead2+'\n';
+						}else{
+							toWrite+=header+'\n'+read+'\n';
+							toWrite+=header2+'\n'+read2+'\n';
+						}
+					}
+					continue;
+				}
 				if(superpath.first!=""){
 					if(superpath.second!=""){
 						if(headerNeeded){
@@ -1026,22 +1034,15 @@ void Aligner::alignPartGreedy(uint indiceThread){
 							toWrite+=header+'\n'+superRead+'\n';
 						}
 					}else if(compressionMode){
-						//~ cout<<"test"<<endl;
-						//~ cout<<path[1]<<endl;
-						//~ cout<<sizeBuckets<<endl;
 						int goodBucket(path[1]);
 						if(goodBucket<0){goodBucket=-goodBucket;}
 						goodBucket/=sizeBuckets;
-						//~ cout<<goodBucket<<endl;
-
-						//~ cout<<goodBucket<<endl;
 						toWriteComp[goodBucket]+=path2nuc(path);//WRITE ANCHORS AND NUCLEOTIDE TO MAKE THE PATH
 						//~ toWriteComp[goodBucket]+=to_string(path[0])+":"+to_string(read.size())+":";//Read position and size
 						toWriteComp[goodBucket]+=to_string(path[0])+":";//Read position
 						superRead=(recoverSuperReadsCor(path,read.size()));
 						//~ toWriteComp[goodBucket]+=codeMiss(read, superRead);//ENCODE THE MISSMATCHES
 						toWriteComp[goodBucket]+=(char)255;
-						//~ cout<<"end"<<endl;
 					}else{
 						//REGULAR MODE
 						path=cleanSR(path,read.size());
