@@ -38,7 +38,6 @@
 #include <set>
 
 
-
 using namespace std;
 using namespace chrono;
 
@@ -972,7 +971,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	//~ }
 
 	vector<uNumber> inter;
-	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,2000);
+	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,5,2000);
 	//~ uint res=0;
 	if(res==1){
 		//~ if(inter.size()>0){
@@ -1489,16 +1488,14 @@ void Aligner::indexUnitigsAux(){
 			if(end>=rcEnd){
 				leftOver->push_back(rcEnd);
 			}
-			if(dogMode){
-				kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
-				(*anchorsV)[canon%1014].push_back(canon);
-				for(uint j(0);j+anchorSize<line.size();++j){
-					updateK(seq,line[j+anchorSize]);
-					updateRCK(rcSeq,line[j+anchorSize]);
-					if((j+1)%fracKmer==0){
-						canon=(min(seq, rcSeq));
-						(*anchorsV)[canon%1014].push_back(canon);
-					}
+			kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
+			(*anchorsV)[canon%1014].push_back(canon);
+			for(uint j(0);j+anchorSize<line.size();++j){
+				updateK(seq,line[j+anchorSize]);
+				updateRCK(rcSeq,line[j+anchorSize]);
+				if((j+1)%fracKmer==0){
+					canon=(min(seq, rcSeq));
+					(*anchorsV)[canon%1014].push_back(canon);
 				}
 			}
 		}
