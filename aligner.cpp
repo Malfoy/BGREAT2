@@ -895,7 +895,7 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 				inter=res;
 			}
 		}else{
-			if(depth<5){
+			if(depth<10){
 				recursion.push_back(next[i].second);
 			}
 		}
@@ -971,13 +971,13 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	//~ }
 
 	vector<uNumber> inter;
-	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,5,2000);
+	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,200000);
 	//~ uint res=0;
 	if(res==1){
 		//~ if(inter.size()>0){
-			numbers.insert(numbers.end(),inter.begin(),inter.end());
-			numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
-			numbers2={};
+		numbers.insert(numbers.end(),inter.begin(),inter.end());
+		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
+		numbers2={};
 		singleMiddle++;
 		return true;
 	}
