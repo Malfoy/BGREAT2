@@ -154,23 +154,22 @@ int main(int argc, char ** argv){
 		<<"-x read file (paired)"<<endl
 		<<"-k k value (graph) (31)"<<endl
 		<<"-a anchors length (k)"<<endl
-		<<"-o maximal occurence of an anchor (8)"<<endl
 		<<"-g unitig file (unitig.fa)"<<endl
 		<<"-m number of missmatch allowed (5)"<<endl
 		<<"-t number of threads (1)"<<endl
-		<<"-e effort put in mapping (1000)"<<endl
 		<<"-f output file (paths)"<<endl
 		<<"-q for fastq read file"<<endl
 		<<"-O to keep order of the reads"<<endl<<endl
 
 		<<"Advanced options"<<endl
 		<<"-c to output corrected reads"<<endl
-
 		<<"-C to output compressed reads"<<endl
 		<<"-p to more precise output"<<endl
 		<<"-P to print the alignments"<<endl
 		<<"-A to output all possible mapping"<<endl
 		<<"-B to output all possible optimal mapping"<<endl
+		<<"-o maximal occurence of an anchor (8)"<<endl
+		<<"-e effort put in mapping (1000)"<<endl
 		<<"-F to output any optimal mapping"<<endl;
 		//~ <<"-C to output any optimal mapping"<<endl;
 		return 0;
