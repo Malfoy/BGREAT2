@@ -1,20 +1,18 @@
-Improved version of BGREAT
+# BGREAT2
+
+## Improved version of BGREAT
 
 [![License](http://img.shields.io/:license-affero-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.en.html)
 
 [![Build Status](https://travis-ci.org/Malfoy/BWISE.svg?branch=master)](https://travis-ci.org/Malfoy/BGREAT2)
 
 
-
-
-BGREAT 2
-
 Bgreat now index anchors from the unitigs and do not need an other tool to align on large unitigs.
 If too much memory is used try to reduce the proportion of kmer index with -i option as example -i 10 will index 1/10 kmers.
 Bgreat index by default all kmers.
 Bgreat can be used to correct reads from a DBG (correction mode) or to know where the reads appear in the graph.
 
-usage:
+## Usage:
 
 -u read file
 Unpaired Mapping
@@ -52,26 +50,29 @@ Intuitevely, the read is  "corrected" according to the graph sequence, mode used
 
 The advanced options are experimental and in current developpement and should not be used
 
-Path mode:
+## Path mode:
 
 In the  default mode, the numbers outputed correspond to the paths of unitigs a read (or pair of reads) maps on.
-
+`
 >read1
-3;4;-6; mean that the read1 mapped on unitig 3 then 4 then the reverse complement of the unitig 6.
+3;4;-6; 
+`
+
+mean that the read1 mapped on unitig 3 then 4 then the reverse complement of the unitig 6.
 
 To get the corresponding sequence the tool numberToSequences will do the conversion (warning: large files may be produced this way due to redundancy of large unitigs)
 
-usage:
+Usage:
 ./numbersToSequences  unitigs.fa paths 31 > superReads.fa
 
 
 
-In correction mode:
+## In correction mode:
 In this mode the corrected reads are direclty outputed.
 If the -O option is used, the corrected reads will be in the right order.
 
 
-Example usage:
+## Example command lines:
 
 Map an unpaired reads file on a low k DBG in a output file "output_paths"
 
