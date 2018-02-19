@@ -954,27 +954,25 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
-	//~ string unitig(recoverSuperReads(numbers));
-	//~ string unitig2((recoverSuperReads(numbers2)));
-	//~ string merge(overlapping(unitig,unitig2,50));
-	//~ if(merge!=""){
-		//~ vector<uNumber> numbers3;
-		//~ alignReadFrom(merge,numbers3,numbers[0]);
-		//~ if(not numbers3.empty()){
-			//~ numbers3=getcleanPaths(numbers3,false,true);
-			//~ numbers=numbers3;
-			//~ numbers2={};
-			//~ overlappingStr++;
+	string unitig(recoverSuperReads(numbers));
+	string unitig2((recoverSuperReads(numbers2)));
+	string merge(overlapping(unitig,unitig2,15));
 
-			//~ return true;
-		//~ }
-	//~ }
+	if(merge!=""){
+		vector<uNumber> numbers3;
+		alignReadFrom(merge,numbers3,numbers[0]);
+		if(not numbers3.empty()){
+			numbers3=getcleanPaths(numbers3,false,true);
+			numbers=numbers3;
+			numbers2={};
+			overlappingStr++;
+			return true;
+		}
+	}
 
 	vector<uNumber> inter;
-	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,200000);
-	//~ uint res=0;
+	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,2000);
 	if(res==1){
-		//~ if(inter.size()>0){
 		numbers.insert(numbers.end(),inter.begin(),inter.end());
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
 		numbers2={};
