@@ -149,20 +149,24 @@ int main(int argc, char ** argv){
 	}
 	if(reads=="" and pairedReads==""){
 		cout
-		<<"Standard options"<<endl
+		<<"Mandatory arguments"<<endl
 		<<"-u read file (unpaired)"<<endl
 		<<"-x read file (paired)"<<endl
-		<<"-k k value (graph) (31)"<<endl
-		<<"-a anchors length (k)"<<endl
-		<<"-g unitig file (unitig.fa)"<<endl
-		<<"-m number of missmatch allowed (5)"<<endl
-		<<"-t number of threads (1)"<<endl
+		<<"-k k value used for graph "<<endl
+		<<"-g unitig file (unitig.fa)"<<endl<<endl
+
+		<<"Regular options"<<endl
 		<<"-f output file (paths)"<<endl
-		<<"-q for fastq read file"<<endl
-		<<"-O to keep order of the reads"<<endl<<endl
+		<<"-q if  read file are FASTQ"<<endl
+		<<"-O to keep order of the reads"<<endl
+		<<"-a anchors length (<k)"<<endl
+		<<"-m number of missmatch allowed (5)"<<endl
+		<<"-t number of threads used (1)"<<endl
+		<<"-c to output corrected reads"<<endl
+		<<"-z to compress output file"<<endl
+		<<"-i anchor fraction to be indexed"<<endl<<endl
 
 		<<"Advanced options"<<endl
-		<<"-c to output corrected reads"<<endl
 		<<"-C to output compressed reads"<<endl
 		<<"-p to more precise output"<<endl
 		<<"-P to print the alignments"<<endl

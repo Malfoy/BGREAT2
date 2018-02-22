@@ -1,11 +1,19 @@
 # BGREAT2
 
-## Improved version of BGREAT
+## Paired Read mapping on de Bruijn graphs
 
 [![License](http://img.shields.io/:license-affero-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.en.html)
 
 [![Build Status](https://travis-ci.org/Malfoy/BWISE.svg?branch=master)](https://travis-ci.org/Malfoy/BGREAT2)
 
+## Description:
+Bgreat2 is intended to map reads or read pairs on de Bruijn graphs in an efficient manner.
+The de Bruijn graph should be represented as a set of unitigs (we advise the use of Bcalm in order to do so https://github.com/GATB/bcalm).
+The mapping result can be represented by path in the graphs (list of nodes) or by the actual sequences of the graph.
+This last behavior have been shown able to correct a set a of reads  https://travis-ci.org/Malfoy/BCOOL
+
+
+## Bgreat2 versus Bgreat:
 
 Bgreat now index anchors from the unitigs and do not need an other tool to align on large unitigs.
 If too much memory is used try to reduce the proportion of kmer index with -i option as example -i 10 will index 1/10 kmers.
@@ -31,6 +39,11 @@ Value of k used to construct the graph
 Size of the anchors used to start mapping
 Can be used if k is way larger than 31
 
+#### -i indexed anchors fraction
+
+By default Bgreat index all anchors from the graph.
+With -i 10 it index on out of ten anchors, in order to reduce the memory usage.
+
 #### -g unitig file
 
 Unitig file in fasta
@@ -44,6 +57,8 @@ Default value is 5
 #### -t number of thread
 
 #### -f output file name
+
+#### -z to compress the output file
 
 #### -q input reads are Fastq
 Note that Bgreat ignore quality information
@@ -62,7 +77,7 @@ In the  default mode, the numbers outputed correspond to the paths of unitigs a 
 
 \>read1
 
-3;4;-6; 
+3;4;-6;
 
 
 Mean that the read1 mapped on unitig 3 then 4 then the reverse complement of the unitig 6.
@@ -83,7 +98,12 @@ If the -O option is used, the corrected reads will be in the right order.
 
 Map an unpaired reads file on a low k DBG in a output file "output_paths"
 
-``` ./bgreat -u reads.fa  -g dbg27.fa -k 27 -f output_paths```
+```./bgreat -u reads.fa  -g dbg27.fa -k 27 -f output_paths```
+
+Can also work with zipped files
+
+```./bgreat -u reads.fa.gz  -g dbg27.fa -k 27 -f output_paths```
+
 
 Map an unpaired reads file on a low k DBG in a output file "output_paths" with a maximum of 2 missmatches
 
@@ -110,14 +130,18 @@ Map a paired reads file (interleaved format) on a high k DBG in a output file "o
 
 
 
-Correct an unpaired reads file on a low k DBG in a output file "output_paths"
+Correct an unpaired reads file on a low k DBG in a output file "reads_cor.fa"
 
-```./bgreat -u reads.fa  -g dbg27.fa -k 27 -f output_paths -c```
+```./bgreat -u reads.fa  -g dbg27.fa -k 27 -f reads_cor.fa -c ```
+
+Correct an unpaired reads file on a low k DBG in a compressed output file "reads_cor.fa.gz"
+
+```./bgreat -u reads.fa  -g dbg27.fa -k 27 -f reads_cor.fa.gz -c ```
 
 
-Create superReads from a paired reads file on a low k DBG in a output file "output_paths"
+Create superReads from a paired reads file on a low k DBG in a output file "superReads.fa"
 
-```./bgreat -x paired_reads.fa  -g dbg27.fa -k 27 -f output_paths -c```
+```./bgreat -x paired_reads.fa  -g dbg27.fa -k 27 -f superReads.fa -c```
 
 
 
