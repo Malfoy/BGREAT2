@@ -973,20 +973,24 @@ void Aligner::alignPartGreedy(uint indiceThread){
 							toWrite+=header+'\n'+superpath.first+'\n'+header2+'\n'+superpath.second+'\n';
 						}else{
 							toWrite+=superpath.first+'\n'+superpath.second+'\n';
+							//~ toWrite+=superpath.first+superpath.second;
 						}
 					}else{
 						if(headerNeeded){
 							toWrite+=header+'\n'+superpath.first+'\n';
 						}else{
 							toWrite+=superpath.first+'\n';
+							//~ toWrite+=superpath.first;
 						}
 					}
 				}else{
 					if(superpath.second!=""){
 						if(headerNeeded){
 							toWrite+=header2+'\n'+superpath.second+'\n';
+							//~ toWrite+=header2+superpath.second;
 						}else{
 							toWrite+=superpath.second+'\n';
+							//~ toWrite+=superpath.second;
 						}
 					}
 				}

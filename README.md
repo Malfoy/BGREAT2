@@ -8,17 +8,20 @@
 
 ## Description:
 Bgreat2 is intended to map reads or read pairs on de Bruijn graphs in an efficient manner.
-The de Bruijn graph should be represented as a set of unitigs (we advise the use of Bcalm in order to do so https://github.com/GATB/bcalm).
-The mapping result can be represented by path in the graphs (list of nodes) or by the actual sequences of the graph.
-This last behavior have been shown able to correct a set a of reads  https://travis-ci.org/Malfoy/BCOOL
+The de Bruijn graph should be represented as a set of unitigs.
+We advise the use of Bcalm in order to do so (https://github.com/GATB/bcalm).
+A mapping  can be represented by a path in the graph (list of nodes) or by the actual sequences of the graph.
+This last behavior have been shown able to correct a set a of reads (see  https://travis-ci.org/Malfoy/BCOOL).
 
 
 ## Bgreat2 versus Bgreat:
 
-Bgreat now index anchors from the unitigs and do not need an other tool to align on large unitigs.
+Bgreat2 now index anchors from the unitigs and do not need a third party tool to align on large unitigs.
+To do so Bgreat2 index by default all anchors.
 If too much memory is used try to reduce the proportion of kmer index with -i option as example -i 10 will index 1/10 kmers.
-Bgreat index by default all kmers.
 Bgreat can be used to correct reads from a DBG (correction mode) or to know where the reads appear in the graph.
+Bgreat can now map read pairs direclty.
+Bgreat can handle zipped files.
 
 ## Usage:
 
