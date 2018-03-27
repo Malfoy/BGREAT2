@@ -1052,6 +1052,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						//REGULAR MODE
 						path=cleanSR(path,read.size());
 						superRead=(recoverSuperReadsNoStr(path,1));
+						//~ cout<<superRead<<endl;cin.get();
 						if(superRead!=""){
 							if(printAlignment){
 								toWrite+=header+'\n'+superRead+'\n';

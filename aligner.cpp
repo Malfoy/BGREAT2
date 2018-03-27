@@ -732,23 +732,23 @@ vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
 
 
 string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offset=0){
-	//~ string path;
-	//~ if(numbers.size()<1+offset){
-		//~ return "";
-	//~ }
-	//~ for(uint i(offset); i<numbers.size(); ++i){
-		//~ path+=to_string(numbers[i])+";";
-	//~ }
-	//~ return path;
 	string path;
 	if(numbers.size()<1+offset){
 		return "";
 	}
 	for(uint i(offset); i<numbers.size(); ++i){
-		path+=(numbers[i]);
+		path+=to_string(numbers[i])+";";
 	}
-	string zero(4,NULL);
-	path+zero;
+	return path;
+	//~ string path;
+	//~ if(numbers.size()<1+offset){
+		//~ return "";
+	//~ }
+	//~ for(uint i(offset); i<numbers.size(); ++i){
+		//~ path+=(numbers[i]);
+	//~ }
+	//~ string zero(4,NULL);
+	//~ path+zero;
 	return path;
 }
 
@@ -1557,7 +1557,6 @@ void Aligner::indexUnitigsAux(){
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){
-		cout<<"MEW"<<anchorNumber*maxPositionAnchors<<" "<<anchorNumber<<endl;
 		anchorsPositionVector.resize(anchorNumber*maxPositionAnchors,{});
 	}else{
 		anchorsPosition.resize(anchorNumber*maxPositionAnchors,{0,0});
