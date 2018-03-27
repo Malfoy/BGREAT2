@@ -64,6 +64,8 @@ typedef boomphf::mphf<  std::string, Custom_string_Hasher  > MPHFSTR;
 
 typedef boomphf::SingleHashFunctor<kmer>  hasher;
 typedef boomphf::mphf<  kmer, hasher  > MPHF;
+typedef boomphf::SingleHashFunctor<uint64_t>  hasher2;
+typedef boomphf::mphf<  uint64_t, hasher2  > MPHF2;
 
 
 
@@ -114,12 +116,13 @@ public:
 	ostream* pathCompressed;
 	//~ FILE * notMappedFilef;
 	//~ FILE * readFileF;
-	MPHF leftMPHF,rightMPHF,anchorsMPHF;
+	MPHF leftMPHF,rightMPHF;
+	MPHF2 anchorsMPHF;
 	MPHFSTR leftMPHFstr,rightMPHFstr,anchorsMPHFstr;
 	vector<unitigIndices> leftIndices,rightIndices;
 	vector<unitigIndicesstr> leftIndicesstr,rightIndicesstr;
 	vector<pair<int32_t,uint32_t>> anchorsPosition;
-	vector<vector<pair<int32_t,uint32_t>>> anchorsPositionVector;
+	vector<pair<int32_t,uint32_t>> anchorsPositionVector;
 	vector<uint8_t> anchorsChecking;
 	//~ vector<string> anchorsCheckingstr;
 	atomic<uint> alignedRead, readNumber, noOverlapRead, notAligned, unitigNumber, overlaps, iter, superReads,notCompatedSR, overlappingPath,overlappingStr,singleMiddle,neighbor,includedPath,failed_pair;
@@ -192,7 +195,7 @@ public:
 		}else{
 			vectorMode=true;
 		}
-		if(anchorSize>63){
+		if(anchorSize>31){
 			stringModeAnchor=true;
 		}else{
 			stringModeAnchor=false;
@@ -200,7 +203,7 @@ public:
 		coreNumber=cores;
 		errorsMax=errorsAllowed;
 		tryNumber=effort;
-		gammaFactor=10;
+		gammaFactor=5;
 		fracKmer=dogModeInt;
 		correctionMode=bcorrectionMode;
 		fastq=bfastq;

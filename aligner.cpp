@@ -1195,13 +1195,13 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 			bool addedAnAnchor(true);
 			if(vectorMode){
 				if(num==rep){
-					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						int32_t unitigNum(anchorsPositionVector[hash][j].first);
-						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
+					for(uint j(0);j<maxPositionAnchors;++j){
+						int32_t unitigNum(anchorsPositionVector[hash*maxPositionAnchors+j].first);
+						int32_t positionUnitig(anchorsPositionVector[hash*maxPositionAnchors+j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
 						if(positionUnitig<=unitigs[unitigNumPos].size()-k){
 							if(unitigsSelected.count(unitigNumPos)==0){
-								list.push_back({anchorsPositionVector[hash][j],i});
+								list.push_back({anchorsPositionVector[hash*maxPositionAnchors+j],i});
 								//~ addedAnAnchor=true;
 							}else{
 								//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
@@ -1212,13 +1212,13 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsnostr(const string& read,
 						}
 					}
 				}else{
-					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						int32_t unitigNum(anchorsPositionVector[hash][j].first);
-						int32_t positionUnitig(anchorsPositionVector[hash][j].second);
+					for(uint j(0);j<maxPositionAnchors;++j){
+						int32_t unitigNum(anchorsPositionVector[hash*maxPositionAnchors+j].first);
+						int32_t positionUnitig(anchorsPositionVector[hash*maxPositionAnchors+j].second);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
 						if(positionUnitig+anchorSize>=k){
 							if(unitigsSelected.count(unitigNumPos)==0){
-								list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+								list.push_back({{-anchorsPositionVector[hash*maxPositionAnchors+j].first,anchorsPositionVector[hash*maxPositionAnchors+j].second},i});
 								//~ addedAnAnchor=true;
 							}else{
 								//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
@@ -1286,11 +1286,11 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 			anchorAdded++;
 			if(vectorMode){
 				if(num==rep){
-					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+					for(uint j(0);j<maxPositionAnchors;++j){
+						int32_t unitigNum(anchorsPositionVector[hash*maxPositionAnchors+j].first);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
 						if(unitigsSelected.count(unitigNumPos)==0){
-							list.push_back({anchorsPositionVector[hash][j],i});
+							list.push_back({anchorsPositionVector[hash*maxPositionAnchors+j],i});
 						}else{
 							//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
 								//~ list.push_back({anchorsPositionVector[hash][j],i});
@@ -1299,11 +1299,11 @@ vector<pair<pair<uint,uint>,uint>> Aligner::getNAnchorsstr(const string& read,ui
 						unitigsSelected[unitigNumPos]=positionUnitig;
 					}
 				}else{
-					for(uint j(0);j<anchorsPositionVector[hash].size();++j){
-						int32_t unitigNum(anchorsPositionVector[hash][j].first);
+					for(uint j(0);j<maxPositionAnchors;++j){
+						int32_t unitigNum(anchorsPositionVector[hash*maxPositionAnchors+j].first);
 						uint unitigNumPos(unitigNum>0?unitigNum:-unitigNum);
 						if(unitigsSelected.count(unitigNumPos)==0){
-							list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
+							list.push_back({{-anchorsPositionVector[hash*maxPositionAnchors+j].first,anchorsPositionVector[hash*maxPositionAnchors+j].second},i});
 						}else{
 							//~ if(unitigsSelected[unitigNumPos]!=positionUnitig+1 and unitigsSelected[unitigNumPos]!=positionUnitig-1){
 								//~ list.push_back({{-anchorsPositionVector[hash][j].first,anchorsPositionVector[hash][j].second},i});
@@ -1475,11 +1475,13 @@ void Aligner::indexUnitigsAux(){
 	uint leftsize,rightsize,anchorNumber;
 	vector<kmer>* leftOver=new vector<kmer>;
 	vector<kmer>* rightOver=new vector<kmer>;
-	vector<kmer>* anchors=new vector<kmer>;
-	vector<vector<kmer>>* anchorsV=new vector<vector<kmer>>;
-	for(uint i(0);i<1024;++i){
-		anchorsV->push_back({});
-	}
+	vector<uint64_t>* anchors=new vector<uint64_t>;
+	uint Split(coreNumber);
+	vector<vector<uint64_t>> anchorsV(Split);
+	//~ for(uint i(0);i<1024;++i){
+		//~ vector<uint64_t>* Nanchors=new vector<uint64_t>;
+		//~ anchorsV.push_back(Nanchors);
+	//~ }
 	rightOver->push_back(0);
 	leftOver->push_back(0);
 	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
@@ -1506,17 +1508,18 @@ void Aligner::indexUnitigsAux(){
 				leftOver->push_back(rcEnd);
 			}
 			kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
-			(*anchorsV)[canon%1014].push_back(canon);
+			anchorsV[canon%Split].push_back(canon);
 			for(uint j(0);j+anchorSize<line.size();++j){
 				updateK(seq,line[j+anchorSize]);
 				updateRCK(rcSeq,line[j+anchorSize]);
 				if((j+1)%fracKmer==0){
 					canon=(min(seq, rcSeq));
-					(*anchorsV)[canon%1014].push_back(canon);
+					anchorsV[canon%Split].push_back(canon);
 				}
 			}
 		}
 	}
+
 	auto end1=system_clock::now();auto waitedFor1=end1-start1;cout<<"Duration "<<duration_cast<seconds>(waitedFor1).count()<<" seconds"<<endl;
 
 	cout<<"Sorting anchors: "<<flush;auto start2=system_clock::now();
@@ -1524,17 +1527,18 @@ void Aligner::indexUnitigsAux(){
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
-	//~ if(vectorMode){
-		uint i(0);
+	uint i(0);
 	#pragma omp parallel for num_threads(coreNumber)
-	for(i=0;i<1014;++i){
-		sort( (*anchorsV)[i].begin(), (*anchorsV)[i].end() );
-		(*anchorsV)[i].erase( unique( (*anchorsV)[i].begin(), (*anchorsV)[i].end() ), (*anchorsV)[i].end() );
+	for(i=0;i<Split;++i){
+		sort( anchorsV[i].begin(), anchorsV[i].end() );
+		anchorsV[i].erase( unique( anchorsV[i].begin(), anchorsV[i].end() ), anchorsV[i].end() );
 	}
-	for(i=0;i<1014;++i){
-		anchors->insert(anchors->end(),(*anchorsV)[i].begin(),(*anchorsV)[i].end());
+	//~ exit(0);
+	for(i=0;i<Split;++i){
+		anchors->insert(anchors->end(),anchorsV[i].begin(),anchorsV[i].end());
+		anchorsV[i].clear();
+		vector<uint64_t>().swap(anchorsV[i]);
 	}
-	//~ }
 	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
 
 	cout<<"Creating MPHF: "<<flush;auto start3=system_clock::now();
@@ -1547,15 +1551,16 @@ void Aligner::indexUnitigsAux(){
 	rightsize=rightOver->size();
 	delete rightOver;
 	if(dogMode){
-		auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
-		anchorsMPHF= boomphf::mphf<kmer,hasher>(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
+		auto data_iterator3 = boomphf::range(static_cast<const uint64_t*>(&(*anchors)[0]), static_cast<const uint64_t*>((&(*anchors)[0])+anchors->size()));
+		anchorsMPHF= boomphf::mphf<uint64_t,hasher2>(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){
-		anchorsPositionVector.resize(anchorNumber,{});
+		cout<<"MEW"<<anchorNumber*maxPositionAnchors<<" "<<anchorNumber<<endl;
+		anchorsPositionVector.resize(anchorNumber*maxPositionAnchors,{});
 	}else{
-		anchorsPosition.resize(anchorNumber,{0,0});
+		anchorsPosition.resize(anchorNumber*maxPositionAnchors,{0,0});
 	}
 	anchorsChecking.resize(anchorNumber,0);
 	leftIndices.resize(leftsize,{});
@@ -1660,11 +1665,11 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	uint leftsize,rightsize,anchorNumber;
 	vector<string>* leftOver=new vector<string>;
 	vector<string>* rightOver=new vector<string>;
-	vector<kmer>* anchors=new vector<kmer>;
-	vector<vector<kmer>>* anchorsV=new vector<vector<kmer>>;
-	for(uint i(0);i<1024;++i){
-		anchorsV->push_back({});
-	}
+	vector<uint64_t>* anchors=new vector<uint64_t>;
+	vector<vector<uint64_t>> anchorsV(coreNumber);
+	//~ for(uint i(0);i<coreNumber;++i){
+		//~ anchorsV->push_back({});
+	//~ }
 	leftOver->push_back("");
 	rightOver->push_back("");
 	cout<<"Reading Unitigs: "<<flush;auto start1=system_clock::now();
@@ -1691,13 +1696,13 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 				leftOver->push_back(rcEnd);
 			}
 			kmer seq(str2num(line.substr(0,anchorSize))),rcSeq(rcb(seq,anchorSize)),canon(min(seq,rcSeq));
-			(*anchorsV)[canon%1024].push_back(canon);
+			(anchorsV)[canon%coreNumber].push_back(canon);
 			for(uint j(0);j+anchorSize<line.size();++j){
 				updateK(seq,line[j+anchorSize]);
 				updateRCK(rcSeq,line[j+anchorSize]);
 				if((j+1)%fracKmer==0){
 					canon=(min(seq, rcSeq));
-					(*anchorsV)[canon%1024].push_back(canon);
+					(anchorsV)[canon%coreNumber].push_back(canon);
 				}
 			}
 		}
@@ -1709,17 +1714,17 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	leftOver->erase( unique( leftOver->begin(), leftOver->end() ), leftOver->end() );
 	sort( rightOver->begin(), rightOver->end() );
 	rightOver->erase( unique( rightOver->begin(), rightOver->end() ), rightOver->end() );
-	//~ if(vectorMode){
 	uint i(0);
 	#pragma omp parallel for num_threads(coreNumber)
-	for(i=0;i<1024;++i){
-		sort( (*anchorsV)[i].begin(), (*anchorsV)[i].end() );
-		(*anchorsV)[i].erase( unique( (*anchorsV)[i].begin(), (*anchorsV)[i].end() ), (*anchorsV)[i].end() );
+	for(i=0;i<coreNumber;++i){
+		sort( (anchorsV)[i].begin(), (anchorsV)[i].end() );
+		(anchorsV)[i].erase( unique( (anchorsV)[i].begin(), (anchorsV)[i].end() ), (anchorsV)[i].end() );
 	}
-	for(i=0;i<1024;++i){
-		anchors->insert(anchors->end(),(*anchorsV)[i].begin(),(*anchorsV)[i].end());
+	for(i=0;i<coreNumber;++i){
+		anchors->insert(anchors->end(),(anchorsV)[i].begin(),(anchorsV)[i].end());
+		anchorsV[i].clear();
+		vector<uint64_t>().swap(anchorsV[i]);
 	}
-	//~ }
 
 	auto end2=system_clock::now();auto waitedFor2=end2-start2;cout<<"Duration "<<duration_cast<seconds>(waitedFor2).count()<<" seconds"<<endl;
 
@@ -1732,8 +1737,8 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	rightMPHFstr= MPHFSTR(rightOver->size(),data_iterator2,coreNumber,gammaFactor,false);
 	rightsize=rightOver->size();
 	delete rightOver;
-	auto data_iterator3 = boomphf::range(static_cast<const kmer*>(&(*anchors)[0]), static_cast<const kmer*>((&(*anchors)[0])+anchors->size()));
-	anchorsMPHF= MPHF(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
+	auto data_iterator3 = boomphf::range(static_cast<const uint64_t*>(&(*anchors)[0]), static_cast<const uint64_t*>((&(*anchors)[0])+anchors->size()));
+	anchorsMPHF= MPHF2(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){
@@ -1765,20 +1770,28 @@ void Aligner::fillIndices(){
 			uint64_t hash=anchorsMPHF.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
-					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+					uint jj(0);
+					while(jj<maxPositionAnchors){
 						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({i,0});
+						if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+							anchorsPositionVector[hash*maxPositionAnchors+jj]={i,0};
+						}
 						mutexV[hash%1000].unlock();
+						++jj;
 					}
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
-					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+					uint jj(0);
+					while(jj<maxPositionAnchors){
 						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({-i,0});
+						if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+							anchorsPositionVector[hash*maxPositionAnchors+jj]={-i,0};
+						}
 						mutexV[hash%1000].unlock();
+						++jj;
 					}
 				}else{
 					anchorsPosition[hash]={-i,0};
@@ -1793,20 +1806,28 @@ void Aligner::fillIndices(){
 					uint64_t hash=anchorsMPHF.lookup(canon);
 					if(canon==seq){
 						if(vectorMode){
-							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+							uint jj(0);
+							while(jj<maxPositionAnchors){
 								mutexV[hash%1000].lock();
-								anchorsPositionVector[hash].push_back({i,j+1});
+								if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+									anchorsPositionVector[hash*maxPositionAnchors+jj]={i,j+1};
+								}
 								mutexV[hash%1000].unlock();
+								++jj;
 							}
 						}else{
 							anchorsPosition[hash]={i,j+1};
 						}
 					}else{
 						if(vectorMode){
-							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+							uint jj(0);
+							while(jj<maxPositionAnchors){
 								mutexV[hash%1000].lock();
-								anchorsPositionVector[hash].push_back({-i,j+1});
+								if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+									anchorsPositionVector[hash*maxPositionAnchors+jj]={-i,j+1};
+								}
 								mutexV[hash%1000].unlock();
+								++jj;
 							}
 						}else{
 							anchorsPosition[hash]={-i,j+1};
@@ -1897,20 +1918,28 @@ void Aligner::fillIndicesstr(){
 			uint64_t hash=anchorsMPHFstr.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
-					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+					uint jj(0);
+					while(jj<maxPositionAnchors){
 						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({i,0});
+						if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+							anchorsPositionVector[hash*maxPositionAnchors+jj]={i,0};
+						}
 						mutexV[hash%1000].unlock();
+						++jj;
 					}
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
-					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+					uint jj(0);
+					while(jj<maxPositionAnchors){
 						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({-i,0});
+						if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+							anchorsPositionVector[hash*maxPositionAnchors+jj]={-i,0};
+						}
 						mutexV[hash%1000].unlock();
+						++jj;
 					}
 				}else{
 					anchorsPosition[hash]={-i,0};
@@ -1925,20 +1954,28 @@ void Aligner::fillIndicesstr(){
 					int64_t hash=anchorsMPHFstr.lookup(canon);
 					if(canon==seq){
 						if(vectorMode){
-							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+							uint jj(0);
+							while(jj<maxPositionAnchors){
 								mutexV[hash%1000].lock();
-								anchorsPositionVector[hash].push_back({i,j+1});
+								if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+									anchorsPositionVector[hash*maxPositionAnchors+jj]={i,j+1};
+								}
 								mutexV[hash%1000].unlock();
+								++jj;
 							}
 						}else{
 							anchorsPosition[hash]={i,j+1};
 						}
 					}else{
 						if(vectorMode){
-							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+							uint jj(0);
+							while(jj<maxPositionAnchors){
 								mutexV[hash%1000].lock();
-								anchorsPositionVector[hash].push_back({-i,j+1});
+								if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+									anchorsPositionVector[hash*maxPositionAnchors+jj]={-i,j+1};
+								}
 								mutexV[hash%1000].unlock();
+								++jj;
 							}
 						}else{
 							anchorsPosition[hash]={-i,j+1};
@@ -2028,20 +2065,28 @@ void Aligner::fillIndicesstrbutanchors(){
 			uint64_t hash=anchorsMPHF.lookup(canon);
 			if(canon==seq){
 				if(vectorMode){
-					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+					uint jj(0);
+					while(jj<maxPositionAnchors){
 						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({i,0});
+						if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+							anchorsPositionVector[hash*maxPositionAnchors+jj]={i,0};
+						}
 						mutexV[hash%1000].unlock();
+						++jj;
 					}
 				}else{
 					anchorsPosition[hash]={i,0};
 				}
 			}else{
 				if(vectorMode){
-					if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+					uint jj(0);
+					while(jj<maxPositionAnchors){
 						mutexV[hash%1000].lock();
-						anchorsPositionVector[hash].push_back({-i,0});
+						if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+							anchorsPositionVector[hash*maxPositionAnchors+jj]={-i,0};
+						}
 						mutexV[hash%1000].unlock();
+						++jj;
 					}
 				}else{
 					anchorsPosition[hash]={-i,0};
@@ -2056,20 +2101,28 @@ void Aligner::fillIndicesstrbutanchors(){
 					uint64_t hash=anchorsMPHF.lookup(canon);
 					if(canon==seq){
 						if(vectorMode){
-							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+							uint jj(0);
+							while(jj<maxPositionAnchors){
 								mutexV[hash%1000].lock();
-								anchorsPositionVector[hash].push_back({i,j+1});
+								if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+									anchorsPositionVector[hash*maxPositionAnchors+jj]={i,j+1};
+								}
 								mutexV[hash%1000].unlock();
+								++jj;
 							}
 						}else{
 							anchorsPosition[hash]={i,j+1};
 						}
 					}else{
 						if(vectorMode){
-							if(anchorsPositionVector[hash].size()<maxPositionAnchors){
+							uint jj(0);
+							while(jj<maxPositionAnchors){
 								mutexV[hash%1000].lock();
-								anchorsPositionVector[hash].push_back({-i,j+1});
+								if(anchorsPositionVector[hash*maxPositionAnchors+jj].first==0){
+									anchorsPositionVector[hash*maxPositionAnchors+jj]={-i,j+1};
+								}
 								mutexV[hash%1000].unlock();
+								++jj;
 							}
 						}else{
 							anchorsPosition[hash]={-i,j+1};
@@ -2198,6 +2251,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 				threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
 			}
 			for(auto &t : threads){t.join();}
+			delete readFile;
 			last=i+1;
 		}
 	}
@@ -2218,7 +2272,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 		threads.push_back(thread(&Aligner::alignPartGreedy,this,i));
 	}
 	for(auto &t : threads){t.join();}
-
+	delete readFile;
 	cout<<"The End"<<endl;
 	cout<<"Reads: "<<intToString(readNumber)<<endl;
 	cout<<"Not anchored : "<<intToString(noOverlapRead)<<" Percent: "<<(100*float(noOverlapRead))/readNumber<<endl;

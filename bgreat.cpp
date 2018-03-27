@@ -61,7 +61,7 @@ int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
 	int errors(5), threads(1), ka(31), c, effort(1000),dogMode(1);
-	int anchorSize(ka),ocurence_anchors(8);
+	int anchorSize(ka),ocurence_anchors(1);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false),Bulles(false);
 	float ratioe(0.5);
 	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:o:bqcOpMPABCFzZ")) != -1){
