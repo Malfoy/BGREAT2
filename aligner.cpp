@@ -1467,6 +1467,134 @@ cout<<number_crush<<endl;
 
 }
 
+
+
+
+void Aligner::enumerate_paths(vector<vector<uNumber>>& possible_path, uint depth,vector<uNumber> actual_path,vector<bool>& nope){
+	//~ cout<<"EN"<<depth<<endl;
+	if(depth==0){
+		possible_path.push_back(actual_path);
+		return;
+	}
+	//~ cout<<"enum "<<depth<<endl;
+	//~ cout<<actual_path.size()<<endl;
+	string unitig;
+	if(actual_path[actual_path.size()-1]>0){
+		unitig=unitigs[actual_path[actual_path.size()-1]];
+	}else{
+		unitig=unitigsRC[-actual_path[actual_path.size()-1]];
+	}
+	vector<pair<string,uNumber>> rangeUnitigs;
+	if(stringMode){
+		 rangeUnitigs=getBegin((unitig.substr(unitig.size()-k+1,k-1)));
+	}else{
+		rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
+	}
+
+	vector<uNumber> to_push;
+	if(rangeUnitigs.size()==0){
+		possible_path.push_back(actual_path);
+		return;
+	}
+
+	for(uint i(0);i<rangeUnitigs.size();++i){
+		if(nope[abs(rangeUnitigs[i].second)]){
+			continue;
+		}
+		//~ cout<<"r"<<i<<endl;
+		to_push=(actual_path);
+		to_push.push_back(rangeUnitigs[i].second);
+		//~ possible_path.push_back(to_push);
+		enumerate_paths(possible_path,depth-1,to_push,nope);
+	}
+}
+
+
+
+void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint Bulles){
+	//~ cout<<"AUX_GO"<<i<<endl;
+	string unitig;
+	if(i>0){
+		unitig=unitigs[i];
+	}else{
+		unitig=unitigsRC[-i];
+	}
+	vector<vector<uNumber>> possible_paths;
+	vector<uNumber> start;
+	start.push_back(i);
+	enumerate_paths(possible_paths,Bulles,start,nope);
+	//~ cout<<"endENUM"<<endl;
+	//~ cout<<possible_paths.size()<<endl;
+	if(possible_paths.size()<2){return;}
+	unordered_set<int> possible_end,possible_end2;
+	//~ cout<<"possible path number "<<possible_paths.size()<<endl;
+	for(uint ii(0);ii<possible_paths[0].size();++ii){
+			possible_end.insert(possible_paths[0][ii]);
+			//~ cout<<(possible_paths[0][ii])<<" ";
+		}
+		//~ cout<<endl;
+	for(uint j(1);j<possible_paths.size();++j){
+		//~ cout<<"PATH "<<abs(possible_paths[j][0])-1<<" ";
+		for(uint ii(1);ii<possible_paths[j].size();++ii){
+			//~ cout<<(possible_paths[j][ii])<<" ";
+			if(possible_end.count((possible_paths[j][ii]))==1){
+				possible_end2.insert((possible_paths[j][ii]));
+				//~ cout<<"yes";
+			}else{
+				//~ cout<<"nop";
+			}
+		}
+		//~ cout<<endl;
+		possible_end=possible_end2;
+		//~ cout<<"PES"<<possible_end.size()<<endl;;
+		possible_end2.clear();
+	}
+	//~ cout<<"possible_end"<<possible_end.size()<<endl;
+	if(possible_end.size()>0){
+		for(uint j(1);j<possible_paths.size();++j){
+			for(uint ii(1);ii<possible_paths[j].size();++ii){
+				if(possible_end.count(abs(possible_paths[j][ii]))==1){
+					break;
+				}else{
+					nope[abs(possible_paths[j][ii])]=true;
+					++number_crush;
+					//~ cout<<endl;
+					//~ cout<<"I CRUSH"<<abs(possible_paths[j][ii])-1<<endl<<endl;;
+				}
+			}
+		}
+		for(uint ii(1);ii<possible_paths[0].size();++ii){
+			nope[abs(possible_paths[0][ii])]=false;
+		}
+	}
+}
+
+
+void Aligner::Crush_bubbles_2(uint Bulles){
+	//~ cout<<"go"<<endl;
+	int number_crush(0);
+	string unitig;
+	vector<pair<string,uNumber>> next_unitigs;
+	vector<bool> nope(unitigs.size(),false);
+	for(uint i(1);i<unitigs.size();++i){
+		Crush_bubbles_aux(i,nope,number_crush,Bulles);
+		Crush_bubbles_aux(-i,nope,number_crush,Bulles);
+	}
+
+	for(uint i(1);i<unitigs.size();++i){
+		unitig=unitigs[i];
+		if(unitig.size()>=k and  not nope[i]){
+			graphFile<<">x\n";
+			graphFile<<unitig<<"\n";
+		}else{
+			number_crush++;
+		}
+	}
+	cout<<intToString(number_crush)<<endl;
+}
+
+
+
 //TODO MULTITHREAD
 void Aligner::indexUnitigsAux(){
 	string line;

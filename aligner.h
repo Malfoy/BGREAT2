@@ -345,6 +345,12 @@ public:
 	uint find_path_to(uNumber numbers, uNumber numbers2,vector<uNumber>& res, uint depth,int start);
 	void Crush_bubbles();
 	pair<vector<uNumber>,vector<uNumber>> recoverSuperReadsPaired_numbers( const vector<uNumber>& vec, vector<uNumber>& vec2);
+	void enumerate_paths(vector<vector<uNumber>>& possible_path,uint depth,vector<uNumber> actual_path,vector<bool>& nope);
+	void Crush_bubbles_2(uint Bulles);
+	void Crush_bubbles_aux(int i,vector<bool>& nope,int& nbc,uint Bulles);
+
+
+
 
 
 

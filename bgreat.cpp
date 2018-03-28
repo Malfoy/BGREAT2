@@ -61,10 +61,10 @@ int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
 	int errors(5), threads(1), ka(31), c, effort(1000),dogMode(1);
-	int anchorSize(ka),ocurence_anchors(1);
-	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false),Bulles(false);
+	int anchorSize(ka),ocurence_anchors(1),Bulles(0);
+	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false);
 	float ratioe(0.5);
-	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:o:bqcOpMPABCFzZ")) != -1){
+	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:o:bqcOpMPABCFzZ:")) != -1){
 	switch(c){
 		case 'u':
 			reads=optarg;
@@ -137,7 +137,7 @@ int main(int argc, char ** argv){
 			compressionMode=true;
 			break;
 		case 'Z':
-			Bulles=true;
+			Bulles=stoi(optarg);
 			break;
 		case 'z':
 			compressOutput=true;
@@ -181,9 +181,9 @@ int main(int argc, char ** argv){
 	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput,multi,ratioe,allOptimalMapping,allMapping,printAlignment,compressOutput,anyOptimalMapping,compressionMode,ocurence_anchors);
 	supervisor.indexUnitigs();
 
-	if(Bulles){
+	if(Bulles!=0){
 		supervisor.graphFile.open("popped_dbg.fa");
-		supervisor.Crush_bubbles();
+		supervisor.Crush_bubbles_2(Bulles);
 		return 0;
 	}
 	if(reads!=""){
