@@ -1519,6 +1519,10 @@ void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint 
 	}else{
 		unitig=unitigsRC[-i];
 	}
+	uint min_size(300);
+	if(unitig.size()<min_size){
+		return;
+	}
 	vector<vector<uNumber>> possible_paths;
 	vector<uNumber> start;
 	start.push_back(i);
@@ -1550,16 +1554,20 @@ void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint 
 		possible_end2.clear();
 	}
 	//~ cout<<"possible_end"<<possible_end.size()<<endl;
-	if(possible_end.size()>0){
+	int End_bulles(0);
+	for(uint ii(1);ii<possible_paths[0].size();++ii){
+			if(possible_end.count(abs(possible_paths[0][ii]))==1 and unitigs[abs(possible_paths[0][ii])].size()>=min_size ){
+				End_bulles=abs(possible_paths[0][ii]);
+			}
+		}
+	if(End_bulles!=0){
 		for(uint j(1);j<possible_paths.size();++j){
 			for(uint ii(1);ii<possible_paths[j].size();++ii){
-				if(possible_end.count(abs(possible_paths[j][ii]))==1){
+				if(End_bulles==(abs(possible_paths[j][ii]))){
 					break;
 				}else{
 					nope[abs(possible_paths[j][ii])]=true;
 					++number_crush;
-					//~ cout<<endl;
-					//~ cout<<"I CRUSH"<<abs(possible_paths[j][ii])-1<<endl<<endl;;
 				}
 			}
 		}
