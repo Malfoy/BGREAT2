@@ -1693,7 +1693,7 @@ void Aligner::indexUnitigsAux(){
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){
-		anchorsPositionVector.resize(anchorNumber*maxPositionAnchors,{});
+		anchorsPositionVector.resize((anchorNumber+2)*maxPositionAnchors,{});
 	}else{
 		anchorsPosition.resize(anchorNumber*maxPositionAnchors,{0,0});
 	}
