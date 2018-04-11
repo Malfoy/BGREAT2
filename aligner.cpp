@@ -1781,7 +1781,7 @@ void Aligner::indexUnitigsAuxStrfull(){
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){
-		anchorsPositionVector.resize(anchorNumber,{});
+		anchorsPositionVector.resize((anchorNumber+2)*maxPositionAnchors,{});
 	}else{
 		anchorsPosition.resize(anchorNumber,{0,0});
 	}
@@ -1877,7 +1877,7 @@ void Aligner::indexUnitigsAuxStrbutanchors(){
 	anchorNumber=anchors->size();
 	delete anchors;
 	if(vectorMode){
-		anchorsPositionVector.resize(anchorNumber,{});
+		anchorsPositionVector.resize((anchorNumber+2)*maxPositionAnchors,{});
 	}else{
 		anchorsPosition.resize(anchorNumber,{0,0});
 	}
