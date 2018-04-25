@@ -981,7 +981,8 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	}
 
 	vector<uNumber> inter;
-	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,2000);
+	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,300);
+	//~ uint res=0;
 	if(res==1){
 		numbers.insert(numbers.end(),inter.begin(),inter.end());
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
