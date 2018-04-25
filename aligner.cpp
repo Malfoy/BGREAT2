@@ -709,7 +709,7 @@ vector<uNumber> Aligner::cleanSR(const vector<uNumber>& numbers, uint readSize){
 		}
 	}
 	int lentgthAlignement(unitig.size()-position);
-	result.push_back(position);
+	//~ result.push_back(position);
 	result.push_back(numbers[i]);
 	++i;
 	for(;i<numbers.size();++i){
@@ -737,6 +737,7 @@ string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offs
 		return "";
 	}
 	for(uint i(offset); i<numbers.size(); ++i){
+		//~ cout<<numbers[i]<<endl;
 		path+=to_string(numbers[i])+";";
 	}
 	return path;
@@ -749,16 +750,13 @@ string Aligner::recoverSuperReadsNoStr(const vector<uNumber>& numbers, uint offs
 	//~ }
 	//~ string zero(4,NULL);
 	//~ path+zero;
-	return path;
 }
 
 
 
 vector<uNumber> Aligner::getcleanPaths(const vector<uNumber>& numbers, bool reverse,bool clean){
 	vector<uNumber> res;
-	if(numbers.empty()){
-		return res;
-	}
+	if(numbers.empty()){return res;}
 	if(clean){
 		if(numbers[0]+k-1> unitigs[abs(numbers[1])].size()){
 			res=vector<uNumber>(&numbers[2],&numbers[numbers.size()]);
@@ -768,16 +766,18 @@ vector<uNumber> Aligner::getcleanPaths(const vector<uNumber>& numbers, bool reve
 	}else{
 		res=vector<uNumber>(&numbers[0],&numbers[numbers.size()]);
 	}
+	//~ path_extension(res);
 	if(reverse){
-		for(uint i(0); i<res.size();++i){
-			res[i]=-res[i];
-		}
-		uNumber temp;
-		for(uint i(0); i<res.size()/2;++i){
-			temp=res[i];
-			res[i]=res[res.size()-i-1];
-			res[res.size()-i-1]=temp;
-		}
+		res=reverseVector(res);
+		//~ for(uint i(0); i<res.size();++i){
+			//~ res[i]=-res[i];
+		//~ }
+		//~ uNumber temp;
+		//~ for(uint i(0); i<res.size()/2;++i){
+			//~ temp=res[i];
+			//~ res[i]=res[res.size()-i-1];
+			//~ res[res.size()-i-1]=temp;
+		//~ }
 	}
 	return res;
 }
@@ -966,7 +966,7 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 	}
 	string unitig(recoverSuperReads(numbers));
 	string unitig2((recoverSuperReads(numbers2)));
-	string merge(overlapping(unitig,unitig2,15));
+	string merge(overlapping(unitig,unitig2,50));
 
 	if(merge!=""){
 		vector<uNumber> numbers3;
@@ -1527,33 +1527,21 @@ void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint 
 	vector<uNumber> start;
 	start.push_back(i);
 	enumerate_paths(possible_paths,Bulles,start,nope);
-	//~ cout<<"endENUM"<<endl;
-	//~ cout<<possible_paths.size()<<endl;
 	if(possible_paths.size()<2){return;}
 	unordered_set<int> possible_end,possible_end2;
-	//~ cout<<"possible path number "<<possible_paths.size()<<endl;
-	for(uint ii(0);ii<possible_paths[0].size();++ii){
-			possible_end.insert(possible_paths[0][ii]);
-			//~ cout<<(possible_paths[0][ii])<<" ";
-		}
-		//~ cout<<endl;
+	for(uint ii(1);ii<possible_paths[0].size();++ii){
+		possible_end.insert(possible_paths[0][ii]);
+	}
 	for(uint j(1);j<possible_paths.size();++j){
-		//~ cout<<"PATH "<<abs(possible_paths[j][0])-1<<" ";
 		for(uint ii(1);ii<possible_paths[j].size();++ii){
-			//~ cout<<(possible_paths[j][ii])<<" ";
 			if(possible_end.count((possible_paths[j][ii]))==1){
 				possible_end2.insert((possible_paths[j][ii]));
-				//~ cout<<"yes";
 			}else{
-				//~ cout<<"nop";
 			}
 		}
-		//~ cout<<endl;
 		possible_end=possible_end2;
-		//~ cout<<"PES"<<possible_end.size()<<endl;;
 		possible_end2.clear();
 	}
-	//~ cout<<"possible_end"<<possible_end.size()<<endl;
 	int End_bulles(0);
 	for(uint ii(1);ii<possible_paths[0].size();++ii){
 			if(possible_end.count(abs(possible_paths[0][ii]))==1 and unitigs[abs(possible_paths[0][ii])].size()>=min_size ){
@@ -1571,7 +1559,7 @@ void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint 
 				}
 			}
 		}
-		for(uint ii(1);ii<possible_paths[0].size();++ii){
+		for(uint ii(0);ii<possible_paths[0].size();++ii){
 			nope[abs(possible_paths[0][ii])]=false;
 		}
 	}
@@ -2387,15 +2375,18 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 			}
 			for(auto &t : threads){t.join();}
 			delete readFile;
+			readFile=0;
 			last=i+1;
 		}
 	}
 	file=reads.substr(last);
-	delete(readFile);
 	cout<<file<<endl;
+	delete(readFile);
+
 	readFile=new zstr::ifstream(file);
 	//~ readFile.open(file);
 	if(not readFile->good()){
+
 		cout<<"A probleme with file: "<<file<<endl;
 		return;
 	}
@@ -2408,6 +2399,7 @@ void Aligner::alignAll(bool greedy, const string& reads, bool boolPaired){
 	}
 	for(auto &t : threads){t.join();}
 	delete readFile;
+	readFile=0;
 	cout<<"The End"<<endl;
 	cout<<"Reads: "<<intToString(readNumber)<<endl;
 	cout<<"Not anchored : "<<intToString(noOverlapRead)<<" Percent: "<<(100*float(noOverlapRead))/readNumber<<endl;
@@ -2440,14 +2432,39 @@ string Aligner::printPath(const vector<int32_t>& path){
 }
 
 
-string Aligner::path2nuc(const vector<int32_t>& path){
+//~ string Aligner::path2nuc(const vector<int32_t>& path){
+	//~ string res;
+	//~ res+=to_string(path[1])+":";//ANCHOR
+	//~ for(int i(2);i<path.size();++i){
+		//~ if(path[i]>0){
+			//~ res+=unitigs[path[i]][0];
+		//~ }else{
+			//~ res+=(((unitigsRC[-path[i]]))[0]);
+		//~ }
+	//~ }
+	//~ res+=":";
+	//~ return res;
+//~ }
+
+
+
+string Aligner::path2nuc(const vector<uNumber>& path){
 	string res;
 	res+=to_string(path[1])+":";//ANCHOR
+	string unitig(getUnitig(path[1]));
+	vector<pair<string,uNumber>> next;
 	for(int i(2);i<path.size();++i){
-		if(path[i]>0){
-			res+=unitigs[path[i]][0];
+		if(stringMode){
+			next=(getBegin((unitig.substr(unitig.size()-k+1))));
 		}else{
-			res+=(((unitigsRC[-path[i]]))[0]);
+			next=(getBegin(str2num(unitig.substr(unitig.size()-k+1))));
+		}
+		for(uint j(0);j<next.size();++j){
+			if(path[i]==next[j].second){
+				res+=to_string(j);
+				unitig=(getUnitig(path[i]));
+				break;
+			}
 		}
 	}
 	res+=":";

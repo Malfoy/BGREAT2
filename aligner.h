@@ -348,12 +348,8 @@ public:
 	void enumerate_paths(vector<vector<uNumber>>& possible_path,uint depth,vector<uNumber> actual_path,vector<bool>& nope);
 	void Crush_bubbles_2(uint Bulles);
 	void Crush_bubbles_aux(int i,vector<bool>& nope,int& nbc,uint Bulles);
-
-
-
-
-
-
+	void path_extension(vector<uNumber>& path);
+	void path_extension_right(vector<uNumber>& path);
 };
 
 

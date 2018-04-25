@@ -63,7 +63,7 @@ int main(int argc, char ** argv){
 	int errors(5), threads(1), ka(31), c, effort(1000),dogMode(1);
 	int anchorSize(ka),ocurence_anchors(1),Bulles(0);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false);
-	float ratioe(0.5);
+	float ratioe(0.2);
 	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:o:bqcOpMPABCFzZ:")) != -1){
 	switch(c){
 		case 'u':
@@ -175,7 +175,6 @@ int main(int argc, char ** argv){
 		<<"-o maximal occurence of an anchor (8)"<<endl
 		<<"-e effort put in mapping (1000)"<<endl
 		<<"-F to output any optimal mapping"<<endl;
-		//~ <<"-C to output any optimal mapping"<<endl;
 		return 0;
 	}
 	Aligner supervisor(unitigs,pathFile,notAlignedFile,ka,threads,errors,fastq,correctionMode,effort,dogMode,vectorMode,true,orderKeep,anchorSize,preciseOutput,multi,ratioe,allOptimalMapping,allMapping,printAlignment,compressOutput,anyOptimalMapping,compressionMode,ocurence_anchors);
