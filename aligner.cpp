@@ -1506,6 +1506,32 @@ void Aligner::Crush_bubbles_aux(int unitigInd,vector<bool>& nope,int& number_cru
 	}
 	//SHARED POINT SELECTED
 
+	for (const auto& elem: possible_end) {
+		vector<vector<uNumber>> possible_paths2;
+		vector<uNumber> start2;
+		start2.push_back(-elem);
+		bool fail(false);
+		enumerate_paths(possible_paths2,Bulles,start2,nope);
+		for(uint j(0);j<possible_paths2.size();++j){
+			bool found(false);
+			for(uint jj(0);jj<possible_paths2[j].size();++jj){
+				if(possible_paths2[j][jj]==-unitigInd){
+					found=true;
+					break;
+				}
+			}
+			if(not found){
+				fail=true;
+				break;
+			}
+		}
+		if(not fail){
+			possible_end2.insert(elem);
+		}
+	}
+	possible_end=possible_end2;
+	possible_end2.clear();
+
 
 	int End_bulles(0);
 	bool consensus(true);
