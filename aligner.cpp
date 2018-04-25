@@ -915,9 +915,9 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 		res=res_sauv;
 		res.push_back(recursion[i]);
 		uint valid=0;
-		if(unitigs[abs(recursion[i])].size()-k+1 < max_size){
+		//~ if(unitigs[abs(recursion[i])].size()-k+1 < max_size){
 			valid=find_path_to(recursion[i],numbers2,res,depth+1,max_size-(unitigs[abs(recursion[i])].size()-k+1));
-		}
+		//~ }
 		if(valid==2){
 			return 2;
 		}
@@ -933,6 +933,7 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 
 	if(found){
 		res=inter;
+		//~ cout<<"success"<<endl;
 		return 1;
 	}
 	return 0;
@@ -964,21 +965,21 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
-	string unitig(recoverSuperReads(numbers));
-	string unitig2((recoverSuperReads(numbers2)));
-	string merge(overlapping(unitig,unitig2,50));
+	//~ string unitig(recoverSuperReads(numbers));
+	//~ string unitig2((recoverSuperReads(numbers2)));
+	//~ string merge(overlapping(unitig,unitig2,50));
 
-	if(merge!=""){
-		vector<uNumber> numbers3;
-		alignReadFrom(merge,numbers3,numbers[0]);
-		if(not numbers3.empty()){
-			numbers3=getcleanPaths(numbers3,false,true);
-			numbers=numbers3;
-			numbers2={};
-			overlappingStr++;
-			return true;
-		}
-	}
+	//~ if(merge!=""){
+		//~ vector<uNumber> numbers3;
+		//~ alignReadFrom(merge,numbers3,numbers[0]);
+		//~ if(not numbers3.empty()){
+			//~ numbers3=getcleanPaths(numbers3,false,true);
+			//~ numbers=numbers3;
+			//~ numbers2={};
+			//~ overlappingStr++;
+			//~ return true;
+		//~ }
+	//~ }
 
 	vector<uNumber> inter;
 	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,300);
