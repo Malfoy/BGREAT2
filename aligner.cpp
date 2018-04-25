@@ -1340,23 +1340,20 @@ void Aligner::Crush_bubbles(){
 	string unitig;
 	vector<pair<string,uNumber>> rangeUnitigs;
 	vector<bool> nope(unitigs.size(),false);
+	//FOREACH UNITIG
 	for(uint i(1);i<unitigs.size();++i){
 
 		unitig=unitigs[i];
-
 		int grand_son(0);
 		bool good(true);
+		//IF UNITIG LARGE ENOUGH
 		if(unitig.size()>=k){
-			//~ cout<<"1"<<endl;
-			//~ cout<<unitig<<endl;
 			if(stringMode){
 				 rangeUnitigs=getBegin((unitig.substr(unitig.size()-k+1,k-1)));
 			}else{
 				rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 			}
-			//~ cout<<rangeUnitigs.size()<<endl;
 			for(uint i(0); i<rangeUnitigs.size(); ++i){
-				//~ cout<<"son"<<endl;
 				auto son=(rangeUnitigs[i].first);
 				if(nope[abs(rangeUnitigs[i].second)]){
 					good=false;
@@ -1380,20 +1377,11 @@ void Aligner::Crush_bubbles(){
 						break;
 					}
 				}
-				//~ cout<<"unique grand son ?"<<endl;
-				//~ cout<<unitigs[rangeUnitigs[0].second]<<endl;
 			}
 			if(good and grand_son!=0){
-				//~ cout<<"unique grand son !"<<endl;
 				if (unitigs[abs(grand_son)].size()>=k){
-					//~ cout<<"GNE"<<endl;
-					//~ cout<<unitigs[rangeUnitigs[0].second]<<endl;
-					//~ cout<<rangeUnitigs.size()<<endl;
 					for(uint i(1); i<rangeUnitigs.size(); ++i){
 						nope[abs(rangeUnitigs[i].second)]=true;
-						//~ cout<<"SUPRESS"<<endl;
-						//~ unitigs[abs(rangeUnitigs[i].second)]="";
-						//~ unitigsRC[abs(rangeUnitigs[i].second)]="";
 					}
 				}
 			}
@@ -1401,20 +1389,17 @@ void Aligner::Crush_bubbles(){
 			good=true;
 			grand_son=(0);
 			unitig=unitigsRC[i];
-			//~ cout<<unitig<<endl;
 			if(stringMode){
 				 rangeUnitigs=getBegin((unitig.substr(unitig.size()-k+1,k-1)));
 			}else{
 				 rangeUnitigs=getBegin(str2num(unitig.substr(unitig.size()-k+1,k-1)));
 			}
 			for(uint i(0); i<rangeUnitigs.size(); ++i){
-				//~ cout<<"son"<<endl;
 				auto son=(rangeUnitigs[i].first);
 				if(nope[abs(rangeUnitigs[i].second)]){
 					good=false;
 					break;
 				}
-				//~ cout<<"a3"<<endl;
 				vector<pair<string,uNumber>> rangeUnitigs2;
 				if(stringMode){
 					rangeUnitigs2=getBegin((son.substr(son.size()-k+1,k-1)));
@@ -1425,34 +1410,23 @@ void Aligner::Crush_bubbles(){
 					good=false;
 					break;
 				}
-				//~ cout<<"a4"<<endl;
 				if(grand_son==0){
-					//~ cout<<"a5"<<endl;
 					grand_son=rangeUnitigs2[0].second;
 				}else{
-					//~ cout<<"a6"<<endl;
 					if(grand_son!=rangeUnitigs2[0].second){
-						//~ cout<<"a7"<<endl;
 						good=false;
 						break;
 					}
 				}
-				//~ cout<<"a8"<<endl;
 			}
 			if(good  and grand_son!=0){
-				//~ cout<<"a9"<<endl;
 				if (unitigs[abs(grand_son)].size()>=k){
-					//~ cout<<"Crush"<<endl;
 					for(uint i(1); i<rangeUnitigs.size(); ++i){
 						nope[abs(rangeUnitigs[i].second)]=true;
-						//~ unitigs[rangeUnitigs[i].second]="";
-						//~ unitigsRC[rangeUnitigs[i].second]="";
 					}
 				}
-				//~ cout<<"a10"<<endl;
 			}
 		}
-
 	}
 
 	for(uint i(1);i<unitigs.size();++i){
@@ -1473,19 +1447,11 @@ cout<<number_crush<<endl;
 
 
 void Aligner::enumerate_paths(vector<vector<uNumber>>& possible_path, uint depth,vector<uNumber> actual_path,vector<bool>& nope){
-	//~ cout<<"EN"<<depth<<endl;
 	if(depth==0){
 		possible_path.push_back(actual_path);
 		return;
 	}
-	//~ cout<<"enum "<<depth<<endl;
-	//~ cout<<actual_path.size()<<endl;
-	string unitig;
-	if(actual_path[actual_path.size()-1]>0){
-		unitig=unitigs[actual_path[actual_path.size()-1]];
-	}else{
-		unitig=unitigsRC[-actual_path[actual_path.size()-1]];
-	}
+	string unitig(getUnitig(actual_path[actual_path.size()-1]));
 	vector<pair<string,uNumber>> rangeUnitigs;
 	if(stringMode){
 		 rangeUnitigs=getBegin((unitig.substr(unitig.size()-k+1,k-1)));
@@ -1503,53 +1469,58 @@ void Aligner::enumerate_paths(vector<vector<uNumber>>& possible_path, uint depth
 		if(nope[abs(rangeUnitigs[i].second)]){
 			continue;
 		}
-		//~ cout<<"r"<<i<<endl;
 		to_push=(actual_path);
 		to_push.push_back(rangeUnitigs[i].second);
-		//~ possible_path.push_back(to_push);
 		enumerate_paths(possible_path,depth-1,to_push,nope);
 	}
 }
 
 
 
-void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint Bulles){
-	//~ cout<<"AUX_GO"<<i<<endl;
-	string unitig;
-	if(i>0){
-		unitig=unitigs[i];
-	}else{
-		unitig=unitigsRC[-i];
-	}
-	uint min_size(300);
+void Aligner::Crush_bubbles_aux(int unitigInd,vector<bool>& nope,int& number_crush,uint Bulles){
+	string unitig(getUnitig(unitigInd));
+	uint min_size(k);
 	if(unitig.size()<min_size){
 		return;
 	}
 	vector<vector<uNumber>> possible_paths;
 	vector<uNumber> start;
-	start.push_back(i);
+	start.push_back(unitigInd);
 	enumerate_paths(possible_paths,Bulles,start,nope);
 	if(possible_paths.size()<2){return;}
+	//POSSIBLE PATH ENUMERATED
+
 	unordered_set<int> possible_end,possible_end2;
 	for(uint ii(1);ii<possible_paths[0].size();++ii){
 		possible_end.insert(possible_paths[0][ii]);
 	}
+
 	for(uint j(1);j<possible_paths.size();++j){
 		for(uint ii(1);ii<possible_paths[j].size();++ii){
 			if(possible_end.count((possible_paths[j][ii]))==1){
 				possible_end2.insert((possible_paths[j][ii]));
-			}else{
 			}
 		}
 		possible_end=possible_end2;
 		possible_end2.clear();
 	}
+	//SHARED POINT SELECTED
+
+
 	int End_bulles(0);
+	bool consensus(true);
 	for(uint ii(1);ii<possible_paths[0].size();++ii){
-			if(possible_end.count(abs(possible_paths[0][ii]))==1 and unitigs[abs(possible_paths[0][ii])].size()>=min_size ){
+		if(possible_end.count(abs(possible_paths[0][ii]))==1 and unitigs[abs(possible_paths[0][ii])].size()>=min_size ){
+			if(not consensus){
 				End_bulles=abs(possible_paths[0][ii]);
+				break;
 			}
+		}else{
+			consensus=false;
 		}
+	}
+	//CLOSE ENDPOINT CHOSEN
+
 	if(End_bulles!=0){
 		for(uint j(1);j<possible_paths.size();++j){
 			for(uint ii(1);ii<possible_paths[j].size();++ii){
@@ -1561,9 +1532,16 @@ void Aligner::Crush_bubbles_aux(int i,vector<bool>& nope,int& number_crush,uint 
 				}
 			}
 		}
+		//ALL INTERMEDIARY NODE REMOVED
 		for(uint ii(0);ii<possible_paths[0].size();++ii){
-			nope[abs(possible_paths[0][ii])]=false;
+			if(End_bulles==(abs(possible_paths[0][ii]))){
+				nope[abs(possible_paths[0][ii])]=false;
+				break;
+			}else{
+				nope[abs(possible_paths[0][ii])]=false;
+			}
 		}
+		//THE FIRST PATH NODES ARE KEPT
 	}
 }
 
@@ -1575,6 +1553,7 @@ void Aligner::Crush_bubbles_2(uint Bulles){
 	vector<pair<string,uNumber>> next_unitigs;
 	vector<bool> nope(unitigs.size(),false);
 	for(uint i(1);i<unitigs.size();++i){
+		if(nope[i]){continue;}
 		Crush_bubbles_aux(i,nope,number_crush,Bulles);
 		Crush_bubbles_aux(-i,nope,number_crush,Bulles);
 	}
