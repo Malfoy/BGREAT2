@@ -184,7 +184,9 @@ string codeMiss(const string& read, const string& ref){
 	string res;
 	for(uint i(0);i<read.size();++i){
 		if(read[i]!=ref[i]){
-			res+=(char)i;
+			//~ res+=(char)i;
+			res+=to_string(i);
+			res+=to_string(int(nuc2int(read[i])-nuc2int(ref[i])));
 		}
 	}
 	return res;
