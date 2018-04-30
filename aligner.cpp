@@ -847,11 +847,11 @@ string overlapping(const string& str1, const string& str2, uint overlapMin){
 	string suffix(str1.substr(str1.size()-overlapMin));
 	int pos = str2.find(suffix, 0);
 	if(pos !=-1){
-		//~ int temp = str2.find(suffix,pos+1);
-		//~ if(temp !=-1){
+		int temp = str2.find(suffix,pos+1);
+		if(temp !=-1){
 			//~ cout<<"fail1"<<endl;cin.get();
-			//~ return "";
-		//~ }%TODO PROBLEM OF SUFFIX REPETITION
+			return "";
+		}//TODO PROBLEM OF SUFFIX REPETITION
 	}else{
 		return "";
 	}
@@ -905,7 +905,7 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 				inter=res;
 			}
 		}else{
-			if(depth<10){
+			if(depth<max_depth_pair){
 				recursion.push_back(next[i].second);
 			}
 		}
@@ -915,9 +915,9 @@ uint Aligner::find_path_to(uNumber numbers, uNumber numbers2, vector<uNumber>& r
 		res=res_sauv;
 		res.push_back(recursion[i]);
 		uint valid=0;
-		//~ if(unitigs[abs(recursion[i])].size()-k+1 < max_size){
+		if(unitigs[abs(recursion[i])].size()-k+1 < max_size){
 			valid=find_path_to(recursion[i],numbers2,res,depth+1,max_size-(unitigs[abs(recursion[i])].size()-k+1));
-		//~ }
+		}
 		if(valid==2){
 			return 2;
 		}
@@ -965,25 +965,8 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 			return true;
 		}
 	}
-	//~ string unitig(recoverSuperReads(numbers));
-	//~ string unitig2((recoverSuperReads(numbers2)));
-	//~ string merge(overlapping(unitig,unitig2,50));
-
-	//~ if(merge!=""){
-		//~ vector<uNumber> numbers3;
-		//~ alignReadFrom(merge,numbers3,numbers[0]);
-		//~ if(not numbers3.empty()){
-			//~ numbers3=getcleanPaths(numbers3,false,true);
-			//~ numbers=numbers3;
-			//~ numbers2={};
-			//~ overlappingStr++;
-			//~ return true;
-		//~ }
-	//~ }
-
 	vector<uNumber> inter;
 	uint res=find_path_to(numbers[numbers.size()-1],numbers2[0],inter,0,300);
-	//~ uint res=0;
 	if(res==1){
 		numbers.insert(numbers.end(),inter.begin(),inter.end());
 		numbers.insert(numbers.end(),numbers2.begin(),numbers2.end());
@@ -991,6 +974,24 @@ bool Aligner::compactVectors(vector<uNumber>& numbers, vector<uNumber>& numbers2
 		singleMiddle++;
 		return true;
 	}
+	string unitig(recoverSuperReads(numbers));
+	string unitig2((recoverSuperReads(numbers2)));
+	string merge(overlapping(unitig,unitig2,51));
+
+	if(merge!=""){
+		vector<uNumber> numbers3;
+		alignReadFrom(merge,numbers3,numbers[0]);
+		if(not numbers3.empty()){
+			numbers3=getcleanPaths(numbers3,false,true);
+			numbers=numbers3;
+			numbers2={};
+			overlappingStr++;
+			return true;
+		}
+	}
+
+
+
 	failed_pair++;
 	return false;
 }
