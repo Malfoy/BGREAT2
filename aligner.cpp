@@ -1480,7 +1480,7 @@ void Aligner::enumerate_paths(vector<vector<uNumber>>& possible_path, uint depth
 
 void Aligner::Crush_bubbles_aux(int unitigInd,vector<bool>& nope,int& number_crush,uint Bulles){
 	string unitig(getUnitig(unitigInd));
-	uint min_size(k);
+	uint min_size(500);
 	if(unitig.size()<min_size){
 		return;
 	}
@@ -1493,7 +1493,9 @@ void Aligner::Crush_bubbles_aux(int unitigInd,vector<bool>& nope,int& number_cru
 
 	unordered_set<int> possible_end,possible_end2;
 	for(uint ii(1);ii<possible_paths[0].size();++ii){
-		possible_end.insert(possible_paths[0][ii]);
+		if(unitigs[abs(possible_paths[0][ii])].size()>=min_size){
+			possible_end.insert(possible_paths[0][ii]);
+		}
 	}
 
 	for(uint j(1);j<possible_paths.size();++j){
@@ -1537,7 +1539,7 @@ void Aligner::Crush_bubbles_aux(int unitigInd,vector<bool>& nope,int& number_cru
 	int End_bulles(0);
 	bool consensus(true);
 	for(uint ii(1);ii<possible_paths[0].size();++ii){
-		if(possible_end.count(abs(possible_paths[0][ii]))==1 and unitigs[abs(possible_paths[0][ii])].size()>=min_size ){
+		if(possible_end.count(abs(possible_paths[0][ii]))==1  ){
 			if(not consensus){
 				End_bulles=abs(possible_paths[0][ii]);
 				break;
