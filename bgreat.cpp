@@ -61,7 +61,7 @@ int main(int argc, char ** argv){
 	// initRc();
 	string reads, pairedReads, unitigs("unitig.fa"),pathFile("paths"), notAlignedFile("notAligned.fa");
 	int errors(5), threads(1), ka(31), c, effort(1000),dogMode(1);
-	int anchorSize(ka),ocurence_anchors(1),Bulles(0);
+	int anchorSize(31),ocurence_anchors(1),Bulles(0);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false);
 	float ratioe(0.1);
 	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:o:bqcOpMPABCFzZ:")) != -1){
@@ -159,12 +159,12 @@ int main(int argc, char ** argv){
 		<<"-f output file (paths)"<<endl
 		<<"-q if  read file are FASTQ"<<endl
 		<<"-O to keep order of the reads"<<endl
-		<<"-a anchors length (<k)"<<endl
+		<<"-a anchors length (31)"<<endl
 		<<"-m number of missmatch allowed (5)"<<endl
 		<<"-t number of threads used (1)"<<endl
 		<<"-c to output corrected reads"<<endl
 		<<"-z to compress output file"<<endl
-		<<"-i anchor fraction to be indexed"<<endl<<endl
+		<<"-i anchor fraction to be indexed (default 1=all, 5 for one out of 5)"<<endl<<endl
 
 		<<"Advanced options"<<endl
 		<<"-C to output compressed reads"<<endl
@@ -172,7 +172,7 @@ int main(int argc, char ** argv){
 		<<"-P to print the alignments"<<endl
 		<<"-A to output all possible mapping"<<endl
 		<<"-B to output all possible optimal mapping"<<endl
-		<<"-o maximal occurence of an anchor (8)"<<endl
+		<<"-o maximal occurence of an anchor (1)"<<endl
 		<<"-e effort put in mapping (1000)"<<endl
 		<<"-F to output any optimal mapping"<<endl;
 		return 0;
