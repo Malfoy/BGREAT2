@@ -1,25 +1,11 @@
 CC=g++
 OS := $(shell uname)
-ifeq ($(OS),Darwin)
-  # Run MacOS commands
-  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -lz
-  LDFLAGS=-flto -lpthread -lz
-else
-  # check for Linux and add use of OpenMP
-  CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp -lz
-  LDFLAGS=-flto -lpthread -fopenmp -lz
-endif
 
 
-ifeq ($(gprof),1)
-CFLAGS=-std=c++0x -pg -O4   -march=native
-LDFLAGS=-pg
-endif
 
-ifeq ($(valgrind),1)
-CFLAGS=-std=c++0x -O4 -g
-LDFLAGS=-g
-endif
+# check for Linux and add use of OpenMP
+CFLAGS=  -Wall  -Ofast -std=c++11  -flto -pipe -funit-at-a-time  -Wfatal-errors -fopenmp -lz
+LDFLAGS=$(zobu) -flto -lpthread -fopenmp -lz
 
 
 
