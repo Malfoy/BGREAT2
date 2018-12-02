@@ -63,7 +63,7 @@ int main(int argc, char ** argv){
 	int errors(5), threads(1), ka(31), c, effort(1000),dogMode(1);
 	int anchorSize(31),ocurence_anchors(1),Bulles(0);
 	bool brute(false),fastq(false),correctionMode(false),orderKeep(false),vectorMode(false),preciseOutput(false),multi(false),printAlignment(false),allOptimalMapping(false),allMapping(false),compressOutput(false),anyOptimalMapping(false),compressionMode(false);
-	float ratioe(0.1);
+	float ratioe(0.9);
 	while ((c = getopt (argc, argv, "u:x:k:g:m:t:e:f:a:i:r:o:bqcOpMPABCFzZ:")) != -1){
 	switch(c){
 		case 'u':
