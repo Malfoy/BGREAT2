@@ -1051,7 +1051,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 					}
 					if(correctionMode){
 						//CORRECTION
-						if(not path.empty()){
+						if(not path.empty() and read.size()> k and read.size()<1000){
 							superRead=(recoverSuperReadsCor(path,read.size()));
 							if(superRead!=""){
 								toWrite+=header+'\n'+superRead+'\n';
@@ -1059,7 +1059,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 								toWrite+=header+'\n'+read+'\n';
 							}
 						}else{
-							//~ toWrite+=header+'\n'+read+'\n';
+							toWrite+=header+'\n'+read+'\n';
 						}
 					}else if(preciseOutput){
 						//PRECISE MODE

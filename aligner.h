@@ -194,7 +194,11 @@ public:
 			anchorSize=k;
 			vectorMode=false;
 		}else{
-			vectorMode=true;
+			if(occurence_anchors>1){
+				vectorMode=true;
+			}else{
+				vectorMode=false;
+			}
 		}
 		if(anchorSize>31){
 			stringModeAnchor=true;

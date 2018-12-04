@@ -1768,11 +1768,11 @@ void Aligner::indexUnitigsAuxStrfull(){
 	rightsize=rightOver->size();
 	delete rightOver;
 	if(dogMode){
-		if(vectorMode){
+		//~ if(vectorMode){
 			//TODO MULTITHREAD
 			sort( anchors->begin(), anchors->end() );
 			anchors->erase( unique( anchors->begin(), anchors->end() ), anchors->end() );
-		}
+		//~ }
 		auto data_iterator3 = boomphf::range(static_cast<const string*>(&(*anchors)[0]), static_cast<const string*>((&(*anchors)[0])+anchors->size()));
 		anchorsMPHFstr= MPHFSTR(anchors->size(),data_iterator3,coreNumber,gammaFactor,false);
 	}
