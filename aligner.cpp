@@ -603,7 +603,7 @@ string Aligner::recoverSuperReads(const vector<uNumber>& numbers){
 
 
 
-string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSize){
+string Aligner::recoverSuperReadsCor(const vector<uNumber>& numbers, uint readSize=10000000){
 	if(numbers.size()<2){
 		return "";
 	}

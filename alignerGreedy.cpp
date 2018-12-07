@@ -968,41 +968,47 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				}
 				auto superpath=(recoverSuperReadsPairedNoStr(path,path2));
 				if(correctionMode){
-					//CORRECTION
-					//TODO CHECK OPTIMIZATION
+					//~ cout<<1<<endl;
+					if(path.empty()){
+						if(path2.empty()){
+							//~ cout<<2<<endl;
+							toWrite+=header+'\n'+read+'\n';
+							toWrite+=header2+'\n'+read2+'\n';
+							continue;
+						}else{
+							//~ cout<<3<<endl;
+							superRead2=(recoverSuperReadsCor(path2,read2.size()));
+							toWrite+=header+'\n'+read+'\n';
+							toWrite+=header2+'\n'+superRead2+'\n';
+							continue;
+						}
+					}else{
+						//~ cout<<4<<endl;
+						if(path2.empty()){
+							//~ cout<<5<<endl;
+							superRead=(recoverSuperReadsCor(path,read.size()));
+							toWrite+=header+'\n'+superRead+'\n';
+							toWrite+=header2+'\n'+read2+'\n';
+							continue;
+						}
+					}
+					//BOTH ARE LAIGNED AT THIS POINT
 					auto superpath_numbers=(recoverSuperReadsPaired_numbers(path,path2));
 					if(not superpath_numbers.first.empty()){
 						if(not superpath_numbers.second.empty()){
+							//~ cout<<6<<endl;
+							//NO MERGE
 							superRead2=(recoverSuperReadsCor(path2,read2.size()));
 							superRead=(recoverSuperReadsCor(path,read.size()));
 							toWrite+=header+'\n'+superRead+'\n'+header2+'\n'+superRead2+'\n';
 						}else{
-							if(path2.empty()){
-								superRead=(recoverSuperReadsCor(path,read.size()));
-								toWrite+=header+'\n'+superRead+'\n';
-								toWrite+=header2+'\n'+read2+'\n';
-							}else{
-								if(path.empty()){
-									superRead=(recoverSuperReadsCor(path2,read2.size()));
-									toWrite+=header+'\n'+superRead+'\n';
-									toWrite+=header2+'\n'+read2+'\n';
-								}else{
-									superRead=recoverSuperReadsCorClean(superpath_numbers.first);
-									superRead=superRead.substr(path[0]);
-									superRead=superRead.substr(0,superRead.size()-(path2[0]));
-									toWrite+=header+'\n'+superRead+'\n';
-								}
-							}
+							//~ cout<<7<<endl;
+							//MERGE
+							superRead=(recoverSuperReadsCor(path));
+							toWrite+=header+'\n'+superRead+'\n';
 						}
 					}else{
-						if(not superpath_numbers.second.empty()){
-							superRead2=(recoverSuperReadsCor(path2,read.size()));
-							toWrite+=header+'\n'+read+'\n';
-							toWrite+=header2+'\n'+superRead2+'\n';
-						}else{
-							toWrite+=header+'\n'+read+'\n';
-							toWrite+=header2+'\n'+read2+'\n';
-						}
+						cout <<"should not happend"<<endl;
 					}
 					continue;
 				}

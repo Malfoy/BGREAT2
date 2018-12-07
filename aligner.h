@@ -140,7 +140,7 @@ public:
 
 	Aligner(const string& Unitigs, const string& paths, const string& notMapped, uint kValue, uint cores,uint errorsAllowed, bool bfastq, bool bcorrectionMode, uint effort, uint dogModeInt, bool vectorModeBool, bool rcModeBool,bool orderKeep,uint anchorsSize,bool preciseB,bool multi,float ratioe,bool ballOptimalMapping,bool ballMapping,bool bprintAlignment,bool compressOutput,bool any,bool compressionM,uint occurence_anchors){
 		nbBuckets=2;
-		max_depth_pair=10;
+		max_depth_pair=5;
 		compressionMode=compressionM;
 		iterLoop=0;
 		if(any){
