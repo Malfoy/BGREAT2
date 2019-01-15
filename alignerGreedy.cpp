@@ -14,7 +14,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty ofF
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero General Public License for more details.
- *
+ *consen
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
@@ -775,7 +775,7 @@ vector<int> Aligner::inclued(vector<int>& v1, vector<int>& v2){
 
 
 
-void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=false){
+void Aligner::alignReadOpti(const string& read, vector<int>& path, bool perfect=false){
 	path={};
 	vector<int> pathMem;
 	uint errors(0);
@@ -836,6 +836,65 @@ void Aligner::alignReadOpti(const string& read, vector<int>& path,bool perfect=f
 	if(not path.empty()){
 		++alignedRead;
 	}else{
+	}
+}
+
+void consensus( string& consensus,const string& newread,const string& actualread){
+	for(uint i(0);i<consensus.size();++i){
+		if(consensus[i]!=newread[i]){
+			consensus[i]=(actualread[i]);
+		}
+	}
+
+}
+
+
+void Aligner::alignReadOpti_correction(const string& read, string& corrected_seq){
+	vector<int> path={};
+	uint errors(0);
+	vector<pair<pair<uint,uint>,uint>> listAnchors(getNAnchors(read,tryNumber));
+	vector<int> errorsFromPreviousMapping(listAnchors.size(),-1);
+	if(listAnchors.empty()){
+		++noOverlapRead;
+		return;
+	}
+	string superRead,superReadMem;
+	random_shuffle ( listAnchors.begin(), listAnchors.end() );
+	while(errors<=errorsMax){
+		bool found(false);
+		uint errorInMapping(0);
+		for(uint i(0);i<listAnchors.size();++i){
+			path={};
+			errorInMapping=0;
+			if(errorsFromPreviousMapping[i]<=(int)errors){
+				if(stringMode){
+					path=alignReadGreedyAnchorsstr(read,errors,listAnchors[i],errorInMapping);
+				}else{
+					path=alignReadGreedyAnchors(read,errors,listAnchors[i],errorInMapping);
+				}
+				errorsFromPreviousMapping[i]=errorInMapping;
+				//MAPPING IS FOUND
+				path=path_clean(path,read.size());
+				if(not path.empty()){
+					if(found){
+						superRead=(recoverSuperReadsCor(path,read.size()));
+						consensus(corrected_seq,superRead,read);
+					}else{
+						found=true;
+						superRead=(recoverSuperReadsCor(path,read.size()));
+						corrected_seq=superRead;
+					}
+				}
+			}
+		}
+		++errors;
+		if(found){
+			++alignedRead;
+			return;
+		}
+	}
+	if(not path.empty()){
+		++alignedRead;
 	}
 }
 
@@ -926,7 +985,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 	vector<pair<string,string>> multiread;
 	vector<uNumber> path,path2;
 	vector<vector<int>> pathVector;
-	string read,read2,header,header2,corrected,superRead,superRead2,suffix_stop,toWrite,align;
+	string read,read2,header,header2,corrected,superRead,superRead2,suffix_stop,toWrite,align,consensus;
 	vector<string> toWriteComp(nbBuckets);
 	pair<string,string> superpath;
 	while(not readFile->eof()){
@@ -1046,7 +1105,17 @@ void Aligner::alignPartGreedy(uint indiceThread){
 				header=multiread[i].first;
 				read=multiread[i].second;
 				++readNumber;
-				if(uniqueOptimalMappingMode){
+				if(correctionMode){
+					consensus="";
+					alignReadOpti_correction(read,consensus);
+					if(consensus.empty()){
+						toWrite+=header+'\n'+read+'\n';
+						++notAligned;continue;
+					}else{
+						toWrite+=header+'\n'+consensus+'\n';
+						continue;
+					}
+				}else if(uniqueOptimalMappingMode){
 					alignReadOpti(read,path);
 					if(path.empty()){
 						if(correctionMode){
@@ -1055,19 +1124,7 @@ void Aligner::alignPartGreedy(uint indiceThread){
 						++notAligned;
 						continue;
 					}
-					if(correctionMode){
-						//CORRECTION
-						if(not path.empty() and read.size()> k and read.size()<1000){
-							superRead=(recoverSuperReadsCor(path,read.size()));
-							if(superRead!=""){
-								toWrite+=header+'\n'+superRead+'\n';
-							}else{
-								toWrite+=header+'\n'+read+'\n';
-							}
-						}else{
-							toWrite+=header+'\n'+read+'\n';
-						}
-					}else if(preciseOutput){
+					if(preciseOutput){
 						//PRECISE MODE
 						uint position(path[0]);
 						path=vector<uNumber>(&path[1],&path[path.size()]);

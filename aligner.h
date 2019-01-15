@@ -355,6 +355,7 @@ public:
 	void Crush_bubbles_aux(int i,vector<bool>& nope,int& nbc,uint Bulles);
 	void path_extension(vector<uNumber>& path);
 	void path_extension_right(vector<uNumber>& path);
+	void alignReadOpti_correction(const string& read, string& corrected_seq);
 };
 
 
